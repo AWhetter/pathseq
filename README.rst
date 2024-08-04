@@ -19,6 +19,11 @@ pathseq
 
 A pathlib-like library for working with file sequences.
 
+TODO: Note special features
+* pathlib-first API
+* Multi-dimension ranges (eg animated udim)
+* Support for UDIM tokens
+* Sequence compression?
 
 Getting Started
 ---------------

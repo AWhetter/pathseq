@@ -26,6 +26,8 @@ classifiers = [
 requires-python = ">=3.9"
 dynamic = ["version", "description"]
 dependencies = [
+    "lark",
+    "typing_extensions",
 ]
 
 [project.urls]
