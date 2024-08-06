@@ -1,11 +1,18 @@
-:mod:`pathseq`
-==============
+**********
+Quickstart
+**********
 
-:mod:`pathseq` is a pathlib-like library for working with file sequences.
+First, start by importing pathseq:
 
 .. code-block:: pycon
 
-    >>> from pathseq import PathSequence
+    >>> import pathseq
+
+* Basic parsing of each pad string
+* Looping over paths in a sequence
+
+.. code-block:: pycon
+
     >>> seq = PathSequence("/path/to/images.1-5####.exr")
     >>> for path in seq:
     ...     print(path)
@@ -16,15 +23,9 @@
     PosixPath("/path/to/images.0004.exr")
     PosixPath("/path/to/images.0005.exr")
 
-    >>> seq2 = PathSequence.from_disk("/path/to/images.####.exr")
-    >>> seq2 == seq
-    True
+* Multi-dimension ranges (eg animated UDIMs)
 
-    >>> seq.parent
-    PosixPath("/path/to")
-    >>> seq3 = seq.parent / PathSequence("images.1-5####.exr")
-    >>> seq3 == seq
-    True
+.. code-block:: pycon
 
     >>> anim_udims = PathSequence("/path/to/textures.1011-1012<UDIM>_1-3#.tex")
     >>> for path in seq:
@@ -37,15 +38,23 @@
     PosixPath("/path/to/images.1012_0002.exr")
     PosixPath("/path/to/images.1012_0003.exr")
 
+* Conversions
+* Basic hashing, and mutability
+* Joining and parenting
 
-Documentation
--------------
+.. code-block:: pycon
 
-.. toctree::
-    :hidden:
+    >>> seq.parent
+    PosixPath("/path/to")
+    >>> seq3 = seq.parent / PathSequence("images.1-5####.exr")
+    >>> seq3 == seq
+    True
 
-    quickstart
-    user/index
-    reference/index
+* Type checking (has_subsamples)
 
-.. TODO
+* Composition of a sequence (name, ranges + separators, suffixes)
+* Reformatting and setting new ranges
+* Complex equality and normalisation
+
+* API reference
+* Grammar

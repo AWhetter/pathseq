@@ -9,47 +9,14 @@ from typing import overload, Union
 
 import lark
 from typing_extensions import (
-    Self,  # PY311+
-    TypeAlias,  # PY310+
+    Self,  # PY311
+    TypeAlias,  # PY310
+    TypeGuard,  # PY310
 )
 
 from ._file_num_set import FileNumSet, GRAMMAR as RANGE_GRAMMAR, SequenceReducer
 
 Segment: TypeAlias = Union[str, os.PathLike[str], "PurePathSequence"]
-
-
-# Frame number formats:
-# Blender: https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html#render-options
-# * "#" and "@" are both a single character of digits.
-# Houdini: https://www.sidefx.com/docs/houdini/render/expressions.html
-# * "$Fd", where "d" is the number of digits.
-# * Also "$FF" but not recommended.
-# * Plus more complex expressions.
-# Katana: https://learn.foundry.com/katana/3.0/Content/ug/viewing_renders/importing_exporting_catalog.html
-# * "#" is a single character of digits.
-# Maya: https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-25A1CE65-0C66-4114-B8F1-51FE5A638218
-# * Not clear...but seems to be "#" is a single character of digits.
-# Nuke: Read: https://learn.foundry.com/nuke/content/reference_guide/image_nodes/read.html
-#       Write: https://learn.foundry.com/nuke/content/reference_guide/image_nodes/write.html
-# * "#" is a single character of digits.
-# * "%04d" is printf-style formatting.
-# USD value clips: https://openusd.org/release/api/_usd__page__value_clips.html#Usd_ValueClips_Metadata
-# * "#" is a single character of digits.
-
-# UDIM formats:
-# Arnold: https://help.autodesk.com/view/ARNOL/ENU/?guid=arnold_user_guide_ac_filename_tokens_ac_token_udim_html
-# Blender: https://docs.blender.org/manual/en/latest/modeling/meshes/uv/workflows/udims.html#file-substitution-tokens
-# Houdini: https://www.sidefx.com/docs/houdini/vex/functions/expand_udim.html
-# Mari: https://learn.foundry.com/mari/Content/tutorials/tutorial_5/tutorial_exporting_importing.html
-# USD: https://openusd.org/docs/UsdPreviewSurface-Proposal.html#UsdPreviewSurfaceProposal-TextureReader
-# All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
-# * <UDIM>: UDIM = 1001 + U + V*10
-# * <UVTILE>: uU_vV
-# Houdini additionally uses:
-# * %(UDIM)d: Same as <UDIM> but with user specified padding
-# * %(U)d: The UVTILE style u-coordinate (int(u)+1), with user specified padding
-# * %(V)d: The UVTILE style v-coordinate (int(v)+1), with user specified padding
-# * %(UVTILE)d: Same as <UVTILE> but with user specified padding
 
 
 _GRAMMAR = r"""
@@ -88,7 +55,7 @@ _PARSER = lark.Lark(_GRAMMAR, parser="lalr", transformer=PathSeqReducer())
 
 
 @dataclass
-class _PurePathPart:
+class PathPart:
     path: str
     file_num_set: FileNumSet | None
 
@@ -112,9 +79,14 @@ class PurePathSequence:
 
     def __init__(self, *pathsegments: Segment) -> None:
         self._path = pathlib.PurePath(*pathsegments)
-        parts = self._path.parts
-        parsed_parts = tuple(_PARSER.parse(part) for part in parts)
-        # TODO: Parse each part
+        self._parsed: list[PaddedRange | str] | None = None
+
+    def _parsed_name(self):
+        if not self._parsed:
+            name = self._path.name
+            self._parsed = _PARSER.parse(name)
+
+        return self._parsed
 
     # General properties
     # TODO: Sequences with the same range should match.
@@ -191,26 +163,58 @@ class PurePathSequence:
     def name(self) -> str:
         return self._path.name
 
+    # TODO: But what about when the range is last. Maybe this doesn't make sense.
+    # TODO: What about when there is only the name and ranges?
     @property
     def suffix(self) -> str:
-        return self._path.suffix
+        parsed = self._parsed_name()
+        last = ""
+        for x in parsed:
+            if isinstance(x, str):
+                last = x
+
+        if "." not in last:
+            return last
+
+        return f".{last.rsplit('.', 1)[-1]}"
 
     @property
-    def suffixes(self) -> list[str]:
-        """Everything after the padding?"""
-        raise NotImplementedError
+    def suffixes(self) -> Sequence[str]:
+        parsed = self._parsed_name()
+        last = ""
+        for x in parsed:
+            if isinstance(x, str):
+                last = x
 
+        if "." not in last:
+            return last
+
+        start = 0 if last.startswith(".") else 1
+        return [f".{x}" for x in last.split('.')[start:]]
+
+    # TODO: But what about when the range is first. Maybe this doesn't make sense.
+    # TODO: What about when there is only the suffixes and ranges?
     @property
     def stem(self) -> str:
-        raise NotImplementedError
+        parsed = self._parsed_name()
+        first = ""
+        for x in parsed:
+            if isinstance(x, str):
+                first = ""
+                break
+
+        if "." not in first:
+            return first
+
+        return first.split('.', 1)[0]
 
     @property
-    def parents(self) -> Sequence[Self]:
-        raise NotImplementedError
+    def parents(self) -> Sequence[pathlib.PurePath]:
+        return self._path.parents
 
     @property
-    def parent(self) -> Self | pathlib.PurePath:
-        raise NotImplementedError
+    def parent(self) -> pathlib.PurePath:
+        return self._path.parent
 
     def as_posix(self) -> str:
         return self._path.as_posix()
@@ -218,39 +222,31 @@ class PurePathSequence:
     def is_reserved(self) -> bool:
         return self._path.is_reserved()
 
-    def is_relative_to(self, other: Segment) -> bool:
-        raise NotImplementedError
+    def is_relative_to(self, other: pathlib.PurePath) -> bool:
+        return self._path.is_relative_to(other)
 
     def match(self, path_pattern: str, *, case_sensitive: bool | None = None) -> bool:
-        pass
+        raise NotImplementedError
 
     def relative_to(self, other: Segment, *, walk_up: bool = False) -> Self:
-        pass
+        return self._path.relative_to(other, walk_up=walk_up)
 
     def with_name(self, name: str) -> Self:
-        pass
+        return self.with_segments(self._path.with_name(name))
 
     def with_stem(self, stem: str) -> Self:
-        pass
+        return self.with_segments(self._path.with_stem(stem))
 
     def with_suffix(self, suffix: str) -> Self:
-        pass
+        raise NotImplementedError
 
     def joinpath(self, *other: Segment) -> Self:
-        pass
+        raise NotImplementedError
 
-    def with_segments(self, *other: Segment) -> Self:
-        pass
+    def with_segments(self, *pathsegments: Segment) -> Self:
+        return type(self)(*pathsegments)
 
     # Sequence specific methods
-    def as_path(self) -> pathlib.PurePath:
-        """blah
-
-        Raises:
-            ValueError: If there is more than one path in this sequence,
-                and therefore it cannot be represented as a single path object.
-        """
-
     # TODO: Should we inherit from Sequence or similar?
     @overload
     def __getitem__(self, index: int) -> pathlib.PurePath:
@@ -264,12 +260,53 @@ class PurePathSequence:
         pass
 
     def __iter__(self) -> Iterable[pathlib.PurePath]:
-        pass
+        # TODO: Note order of iteration over multi-dimension ranges
+        ranges: list[FileNumSet | None] = []
+
+        for x in self._parsed_name():
+            if isinstance(x, PaddedRange):
+                ranges.append(x.file_num_set)
+
+        if not ranges:
+            yield self._path
+            return
+
+        iterators = [iter(x if x is not None else (None,)) for x in ranges]
+        result = [next(iterator) for iterator in iterators]
+        while True:
+            # Exhaust the first iterator
+            iterator = iterators[0]
+            for x in iterator:
+                result[0] = x
+                yield self.path(*result)
+
+            for i, iterator in enumerate(iterators[1:], start=1):
+                try:
+                    result[i] = next(iterator)
+                except StopIteration:
+                    pass
+                else:
+                    # The earlier ranges have been exhausted, so reset them.
+                    iterators[:i] = [iter(x if x is not None else (None,)) for x in ranges[:i]]
+                    result[:i] = [next(iterator) for iterator in iterators[:i]]
+                    break
+            else:
+                # All ranges have been exhausted
+                break
 
     def __len__(self) -> int:
-        pass
+        result = 1
+
+        for x in self._parsed_name():
+            if isinstance(x, PaddedRange):
+                # TODO: Note that an unset range is considered hardcoded.
+                if x.file_num_set is not None:
+                    result *= len(x.file_num_set)
+
+        return result
 
     # TODO: Document how 'name' is constructed (stem, padding, suffix)
+    # Note that we actually want to split into part objects (str, range)
     @property
     def padding(self) -> str:
         """The right-most padding of the final path component.
@@ -280,8 +317,9 @@ class PurePathSequence:
 
     @property
     def paddings(self) -> tuple[str]:
-        """All padding string in the final path component."""
+        """All padding strings in the final path component."""
 
+    # TODO: Or maybe set via part objects?
     def with_paddings(self, *paddings: str) -> Self:
         """Set new pads.
 
@@ -300,13 +338,16 @@ class PurePathSequence:
         None means don't fill in this range.
         """
 
-    def file_num_set(self) -> FileNumSet | None:
-        """The right-most file numbers of the final path component."""
-
+    # TODO: Or just via part objects?
     def file_num_sets(self) -> tuple[FileNumSet] | None:
         """All file number sets in the final path component."""
 
     def with_file_num_sets(self, sets: Iterable[FileNumSet]) -> Self:
+        pass
+
+    # TODO: Make these classes generic
+    @staticmethod
+    def has_subsamples(seq: Self) -> TypeGuard[Self[Decimal]]:
         pass
 
 

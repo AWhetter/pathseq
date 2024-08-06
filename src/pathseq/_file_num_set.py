@@ -189,9 +189,6 @@ class FileNumSet(Set[T]):
         if not self._ranges:
             return False
 
-        if not isinstance(item, self._ranges[0].start.__class__):
-            return False
-
         return any(item in rng for rng in self._ranges)
 
     def __iter__(self) -> Iterable[T]:
@@ -227,7 +224,7 @@ class FileNumSet(Set[T]):
         raise NotImplemented
 
     def __str__(self) -> str:
-        return ",".join(str(rng) for rng in self._ranges)
+        return ",".join(str(rng) for rng in self._ranges if rng)
 
     @staticmethod
     def has_subsamples(file_num_set: FileNumSet[T]) -> TypeGuard[FileNumSet[decimal.Decimal]]:

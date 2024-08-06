@@ -30,6 +30,7 @@ class PathSequence(PurePathSequence):
     @classmethod
     def from_disk(cls, pattern: Self | str) -> Self:
         """Create a sequence using the range of files or directories on disk."""
+        # TODO: What about when not all of the files in a dimension exist?
 
     @classmethod
     def glob(cls, pattern: str | pathlib.PurePath) -> Iterable[Self | pathlib.Path]:
