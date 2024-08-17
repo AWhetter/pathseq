@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
 from decimal import Decimal
 import os
 import pathlib
-from typing import overload, Union
+from typing import NamedTuple, overload, Union
 
-import lark
 from typing_extensions import (
     Self,  # PY311
     TypeAlias,  # PY310
@@ -15,49 +13,9 @@ from typing_extensions import (
 )
 
 from ._file_num_set import FileNumSet, GRAMMAR as RANGE_GRAMMAR, SequenceReducer
+from ._parsing import parse_path_sequence
 
 Segment: TypeAlias = Union[str, os.PathLike[str], "PurePathSequence"]
-
-
-_GRAMMAR = r"""
-    path_seq: ranges PAD_FORMAT path_seq
-        | PATH_CHAR [path_seq] -> unroll
-
-    PATH_CHAR: /./
-
-    PAD_FORMAT: /#+(\.#+)?/
-        | "<UDIM>"
-        | "<UVTILE>"
-""" + RANGE_GRAMMAR + r"\n%override start: path_seq"
-
-@lark.v_args(inline=True)
-class PathSeqReducer(SequenceReducer):
-    def unroll(self, char, seq):
-        if not seq:
-            return [char]
-
-        if isinstance(seq[0], str):
-            return [char + seq[0]] + seq[1:]
-
-        return [char] + seq
-
-    def path_seq(self, ranges, format_, seq):
-        # TODO: Normalise all ranges to the same type
-        return [PaddedRange(FileNumSet(ranges), str(format_))] + seq
-
-
-@dataclass
-class PaddedRange:
-    file_num_set: FileNumSet | None
-    padding: str
-
-_PARSER = lark.Lark(_GRAMMAR, parser="lalr", transformer=PathSeqReducer())
-
-
-@dataclass
-class PathPart:
-    path: str
-    file_num_set: FileNumSet | None
 
 
 # TODO: What about sequences that do not have the range baked into the string?
@@ -79,23 +37,23 @@ class PurePathSequence:
 
     def __init__(self, *pathsegments: Segment) -> None:
         self._path = pathlib.PurePath(*pathsegments)
-        self._parsed: list[PaddedRange | str] | None = None
+        self._parsed = None
 
     def _parsed_name(self):
         if not self._parsed:
             name = self._path.name
-            self._parsed = _PARSER.parse(name)
+            self._parsed = parse_path_sequence(name)
 
         return self._parsed
 
     # General properties
-    # TODO: Sequences with the same range should match.
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             return NotImplemented
 
-        return self._path == other._path
+        return self._parsed_name == other._parsed_name
 
+    # TODO: Sequences with the same range should match.
     # TODO: Ranges don't have these so maybe sequences shouldn't either
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
@@ -131,6 +89,7 @@ class PurePathSequence:
         return hash((type(self), self._path))
 
     # Path operations
+    # TODO: Remove and explain why
     def __truediv__(self, key):
         try:
             return self.with_segments(self, key)
@@ -163,50 +122,22 @@ class PurePathSequence:
     def name(self) -> str:
         return self._path.name
 
-    # TODO: But what about when the range is last. Maybe this doesn't make sense.
     # TODO: What about when there is only the name and ranges?
     @property
     def suffix(self) -> str:
         parsed = self._parsed_name()
-        last = ""
-        for x in parsed:
-            if isinstance(x, str):
-                last = x
-
-        if "." not in last:
-            return last
-
-        return f".{last.rsplit('.', 1)[-1]}"
+        return parsed.suffixes[-1]
 
     @property
     def suffixes(self) -> Sequence[str]:
         parsed = self._parsed_name()
-        last = ""
-        for x in parsed:
-            if isinstance(x, str):
-                last = x
+        return parsed.suffixes
 
-        if "." not in last:
-            return last
-
-        start = 0 if last.startswith(".") else 1
-        return [f".{x}" for x in last.split('.')[start:]]
-
-    # TODO: But what about when the range is first. Maybe this doesn't make sense.
     # TODO: What about when there is only the suffixes and ranges?
     @property
     def stem(self) -> str:
         parsed = self._parsed_name()
-        first = ""
-        for x in parsed:
-            if isinstance(x, str):
-                first = ""
-                break
-
-        if "." not in first:
-            return first
-
-        return first.split('.', 1)[0]
+        return parsed.stem
 
     @property
     def parents(self) -> Sequence[pathlib.PurePath]:
@@ -261,11 +192,9 @@ class PurePathSequence:
 
     def __iter__(self) -> Iterable[pathlib.PurePath]:
         # TODO: Note order of iteration over multi-dimension ranges
-        ranges: list[FileNumSet | None] = []
-
-        for x in self._parsed_name():
-            if isinstance(x, PaddedRange):
-                ranges.append(x.file_num_set)
+        ranges: list[FileNumSet | None] = [
+            x.file_num_set for x in self._parsed_name().ranges[::2]
+        ]
 
         if not ranges:
             yield self._path
@@ -306,7 +235,6 @@ class PurePathSequence:
         return result
 
     # TODO: Document how 'name' is constructed (stem, padding, suffix)
-    # Note that we actually want to split into part objects (str, range)
     @property
     def padding(self) -> str:
         """The right-most padding of the final path component.

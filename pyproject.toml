@@ -27,6 +27,7 @@ requires-python = ">=3.9"
 dynamic = ["version", "description"]
 dependencies = [
     "lark",
+    "python-statemachine",
     "typing_extensions",
 ]
 
