@@ -18,7 +18,7 @@ Composition of a name
 The name file of a file in a regular :mod:`pathlib.Path` object has two components:
 the stem and suffix.
 
-.. code-block:: plain
+.. code-block:: text
 
    /directory/file.tar.gz
               ^---------^

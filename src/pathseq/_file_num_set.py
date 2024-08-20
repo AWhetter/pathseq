@@ -9,7 +9,7 @@ from typing_extensions import (
 )
 
 from ._arithmetic_sequence import ArithmeticSequence, T
-from ._parsing import parse_file_num_set
+from ._parse_file_num_set import parse_file_num_set
 
 
 # TODO: Do something smarter (eg for overlapping sequences, or even logarithmic sequences)

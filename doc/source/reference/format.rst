@@ -1,10 +1,10 @@
 Format of Sequence Strings
 ==========================
 
-The name of a file sequence in a path sequence has three components:
-the 
+The name of a path sequence has three components:
+the stem, the ranges, and the suffixes.
 
-.. code-block:: plain
+.. code-block:: text
 
    /directory/file.1001-1010#.tar.gz
               ^--------------------^
@@ -12,32 +12,133 @@ the
               ^-----------------^^-^-----
               |stem             ||suffix|
 
+There are three types of sequences:
+
+* Ranges start name: Where the ranges come before the stem and suffixes.
+* Ranges in name: Where the ranges come after the stem and before the suffixes.
+* Ranges end name: Where the ranges come after the stem and suffixes.
+
+.. tip::
+
+   Putting the frame ranges between the stem
+   and the file suffixes, all separated by a ".",
+   is recommended for best compatibility with VFX software.
+
+   .. todo::
+
+      And to make usage of stem and suffix easier (See "composition of a name").
+      Maybe we should only support ranges in this particular location...
+
+   .. code-block:: text
+
+      file.1001-1010#.exr
+      file.1001-1010#.tar.gz
+
+   In file sequences with multi-dimension ranges,
+   it is recommended to separate ranges with a "_"
+   so that it is clearer that there are two ranges in the resulting file paths
+   rather than a single range with subframes.
+
+   .. code-block:: text
+
+      # Good
+      file.1011-1019<UDIM>_1-5#.tar.gz  # file.1011_1.tar.gz
+      file.1011-1019<UDIM>_1-5x0.5#.#.tar.gz  # file.1011_1.5.tar.gz
+
+      # Bad
+      file.1011-1019<UDIM>.1-5#.#.tar.gz
+      # In file.1011.5.tar.gz, it is unclear if there's number from two ranges (1001 and 5),
+      # or a single subframes (1011.5).
+
+
 Grammars
 --------
 
+Frame ranges
+~~~~~~~~~~~~
 
-.. productionlist::
+Frame ranges are simple enough to form an unambiguous
+`Context Free Grammar <https://en.wikipedia.org/wiki/Context-free_grammar>`_.
 
+.. productionlist:: frame_ranges
    ranges: range ("," range)*
-
    range: FILE_NUM ["-" FILE_NUM ["x" NUM]]
-
    FILE_NUM: "-"? NUM
    NUM: /
        (0|[1-9][0-9]*)       # the digits
        (\.0|\.[0-9]*[1-9])?  # the subsamples
    /x
 
-.. productionlist::
+File Sequences
+~~~~~~~~~~~~~~
 
-   path_seq: ranges PAD_FORMAT path_seq
-       | PATH_CHAR [path_seq]
+.. note::
 
-   PATH_CHAR: /./
+   File sequences, cannot be parsed with an unambiguous context free grammar.
+   The fact that strings of arbitrary characters can exist either side of the frame ranges
+   means that a valid file sequence can always be parsed both as
+   a list of arbitrary characters and as a set of ranges surrounded by arbitrary characters.
 
-   PAD_FORMAT: /#+(\.#+)?/
-       | "<UDIM>"
-       | "<UVTILE>"
+   Considering that it takes :math:`O(n^3)` time to parse unambiguous grammars,
+   we take an informal approach to parsing file sequences.
+
+File sequences are parsed by a two step process consisting of tokenisation
+and parsing those tokens with a
+`Deterministic Finite State Machine <https://en.wikipedia.org/wiki/Deterministic_finite_automaton>`_.
+That state machine is as follows:
+
+.. kroki:: format.pikchr
+   :type: pikchr
+   :align: left
+
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image
+
+     oval "stem" fit
+
+  This is some text to the side maybe?
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image
+
+     box "prefix" fit
+
+  This is some text to the side maybe?
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image
+
+     oval "range" fit
+
+  This is some text to the side maybe?
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image
+
+     box "inter-range" fit
+
+  This is some text to the side maybe?
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image
+
+     box "postfix" fit
+
+  This is some text to the side maybe?
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image
+
+     oval "suffixes" fit
+
+  This is some text to the side maybe?
 
 
 Compatibility with VFX Software
@@ -53,39 +154,6 @@ Frame Number Formats
 In pathseq, a ``#`` always represents a single digit of padding.
 Subframes can also be included by adding a ``#`` for each digit after a decimal point
 (eg. ``####.##`` would render frame ``1.5`` as ``0001.50``).
-
-.. tip::
-
-   Putting the frame ranges between the basename (minus any file suffixes)
-   and the file suffixes, all separated by a ".",
-   is recommended for best compatibility with VFX software.
-
-   .. todo::
-
-      And to make usage of stem and suffix easier (See "composition of a name").
-      Maybe we should only support ranges in this particular location...
-
-   .. code-block:: plain
-
-      file.1001-1010#.exr
-      file.1001-1010#.tar.gz
-
-   In file sequences with multi-dimension ranges,
-   it is recommended to separate ranges with a "_"
-   so that it is clearer that there are two ranges in the resulting file paths
-   rather than a single range with subframes.
-
-   .. code-block:: plain
-
-      # Good
-      file.1011-1019<UDIM>_1-5#.tar.gz  # file.1011_1.tar.gz
-      file.1011-1019<UDIM>_1-5x0.5#.#.tar.gz  # file.1011_1.5.tar.gz
-
-      # Bad
-      file.1011-1019<UDIM>.1-5#.#.tar.gz
-      # In file.1011.5.tar.gz, it is unclear if there's number from two ranges (1001 and 5),
-      # or a single subframes (1011.5).
-
 
 .. todo::
 
@@ -165,7 +233,7 @@ Source: https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-309A77DA-F5ED-
 
 # * Not clear...but seems to be "#" is a single character of digits.
 
-.. code-block:: plain
+.. code-block:: text
 
    name.#.ext
    name.ext.#
@@ -176,7 +244,7 @@ Source: https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-309A77DA-F5ED-
 
 Source: https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-6379FC90-954B-4530-AB36-998B6F1E0315
 
-.. code-block:: plain
+.. code-block:: text
 
    myimage@.ext
    myimage.@.ext
@@ -219,7 +287,7 @@ describes two tokens for representing UDIMs in file names.
   four digit number that is calculated as follows:
   :math:`UDIM = 1001 + U + V * 10`.
   :math:`U` is he integer portion of the u coordinate,
-   and :math:`V` is the integer portion of the v coordinate.
+  and :math:`V` is the integer portion of the v coordinate.
 * ``<UVTILE>``: Originating from Mudbox, this token represents the string
   "u*U*_v*V*", where *U* is :math:`1+` the integer portion of the u coordinate,
   and *V* is :math:`1+` the integer portion of the v coordinate.

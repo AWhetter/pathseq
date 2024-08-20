@@ -12,8 +12,8 @@ from typing_extensions import (
     TypeGuard,  # PY310
 )
 
-from ._file_num_set import FileNumSet, GRAMMAR as RANGE_GRAMMAR, SequenceReducer
-from ._parsing import parse_path_sequence
+from ._file_num_set import FileNumSet
+from ._parse_path_sequence import parse_path_sequence
 
 Segment: TypeAlias = Union[str, os.PathLike[str], "PurePathSequence"]
 

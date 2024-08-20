@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import decimal
-import re
 
 import lark
 
 from ._error import ParseError
-from .._arithmetic_sequence import ArithmeticSequence, T
+from ._arithmetic_sequence import ArithmeticSequence, T
 
 _GRAMMAR = r"""
     start: ranges
@@ -22,18 +21,6 @@ _GRAMMAR = r"""
     /x
 """
 _PARSER = lark.Lark(_GRAMMAR, parser="lalr")
-RANGE_RE = re.compile(
-    r"""
-    (-?\d+(?:\.\d+)?)
-    (?:                       # optional range
-        -                     #   range delimiter
-        (-?\d+(?:\.\d+)?)     #   end frame
-        (?:                   #   optional stepping
-            x                 #     step type
-            (\d+(?:\.\d+)?)   #     step value
-        )?
-    )?
-""", re.VERBOSE)
 
 
 @lark.v_args(inline=True)

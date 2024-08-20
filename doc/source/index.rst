@@ -47,5 +47,6 @@ Documentation
     quickstart
     user/index
     reference/index
+    maintainer
 
 .. TODO

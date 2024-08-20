@@ -1,32 +1,109 @@
 from __future__ import annotations
 
+import abc
 import collections
+import dataclasses
 from dataclasses import dataclass
 import enum
 import pathlib
 import re
-from typing import Literal, NamedTuple
+from typing import Literal, TypeAlias, Union
 
 from statemachine import StateMachine, State
 
 from ._error import NotASequenceError, ParseError
-from ._file_num_set import RANGE_RE
-from .._file_num_set import FileNumSet
+from ._file_num_set import FileNumSet
 
 _SEPARATORS = {".", "_"}
+RANGE_RE = re.compile(
+    r"""
+    -?\d+(?:\.\d+)?
+    (?:                       # optional range
+        -                     #   range delimiter
+        -?\d+(?:\.\d+)?       #   end frame
+        (?:                   #   optional stepping
+            x                 #     step type
+            \d+(?:\.\d+)?     #     step value
+        )?
+    )?
+""", re.VERBOSE)
+PAD_FORMAT_RE = re.compile(
+    r"""
+        (?:
+            \#+(?:\\.\#+)?
+            | <UDIM>
+            | <UVTILE>
+        )
+    """,
+    flags=re.VERBOSE
+)
 RANGES_RE = re.compile(
     f"""
     (
-        (?P<ranges>{RANGE_RE.pattern} (, {RANGE_RE.pattern})*)?
-        (?P<pad_format>(
-            #+(\.#+)?
-            | <UDIM>
-            | <UVTILE>
-        ))
+        (?:{RANGE_RE.pattern} (?:, {RANGE_RE.pattern})*)?
+        {PAD_FORMAT_RE.pattern}
     )
     """,
-    flags=RANGE_RE.flags | re.VERBOSE,
+    flags=RANGE_RE.flags | PAD_FORMAT_RE.flags | re.VERBOSE,
 )
+
+
+@dataclass
+class RangesStartName:
+    prefix_separator: Literal[""]
+    ranges: list[PaddedRange | str]
+    postfix_separator: str
+    stem: str
+    suffixes: list[str]
+
+    def __str__(self):
+        return _stringify_parsed_sequence(self)
+
+
+@dataclass
+class RangesInName:
+    stem: str
+    prefix_separator: str
+    ranges: list[PaddedRange | str]
+    postfix_separator: str
+    suffixes: list[str]
+
+    def __str__(self):
+        return _stringify_parsed_sequence(self)
+
+
+@dataclass
+class RangesEndName:
+    stem: str
+    suffixes: list[str]
+    prefix_separator: str
+    ranges: list[PaddedRange | str]
+    postfix_separator: Literal[""]
+
+    def __str__(self):
+        return _stringify_parsed_sequence(self)
+
+
+ParsedSequence: TypeAlias = Union[RangesStartName, RangesInName, RangesEndName]
+
+
+def _stringify_parsed_sequence(seq: ParsedSequence) -> str:
+    result = ""
+    for field in dataclasses.fields(seq):
+        value = getattr(seq, field.name)
+        if isinstance(value, list):
+            for item in value:
+                result += str(item)
+        else:
+            result += value
+
+    return result
+
+
+@dataclass
+class PaddedRange:
+    file_num_set: FileNumSet | Literal[""]
+    pad_format: str
 
 
 class TokenType(enum.Enum):
@@ -51,18 +128,18 @@ class Token:
 def _tokenise(seq: str) -> list[str | Token]:
     raw_tokens = re.split(RANGES_RE, seq)
 
-    seq_type: type[RangeStartsName | RangeInName | RangeEndsName]
+    seq_type: type[ParsedSequence]
     if not raw_tokens[-1]:
         raw_tokens.pop()
-        seq_type = RangeEndsName
+        seq_type = RangesEndName
         if not raw_tokens[0]:
             raise ParseError(
                 seq, len(seq), reason="Expected a stem and file suffixes"
             )
     elif not raw_tokens[0]:
-        seq_type = RangeStartsName
+        seq_type = RangesStartName
     else:
-        seq_type = RangeInName
+        seq_type = RangesInName
 
     column = 0
     tokens = []
@@ -77,11 +154,11 @@ def _tokenise(seq: str) -> list[str | Token]:
                     column,
                 )
                 tokens.append(token)
-                if seq_type is not RangeInName:
+                if seq_type is not RangesInName:
                     raise ParseError(
                         seq, len(seq), reason="Expected file suffixes"
                     )
-            elif seq_type is RangeEndsName:
+            elif seq_type is RangesEndName:
                 separator = None
                 if any(raw_token.endswith(sep) for sep in _SEPARATORS):
                     separator = Token(
@@ -109,7 +186,7 @@ def _tokenise(seq: str) -> list[str | Token]:
                 if separator:
                     tokens.append(separator)
             else:
-                assert seq_type is RangeInName
+                assert seq_type is RangesInName
                 if any(raw_token.endswith(sep) for sep in _SEPARATORS):
                     token = Token(
                         TokenType.STEM,
@@ -144,40 +221,69 @@ def _tokenise(seq: str) -> list[str | Token]:
                 column,
             )
             tokens.append(token)
-        elif i == len(raw_tokens):
-            assert seq_type is RangeInName
-            if any(raw_token.startswith(sep) for sep in _SEPARATORS if sep != "."):
+        elif i == len(raw_tokens) - 1:
+            if seq_type is RangesInName:
+                if any(raw_token.startswith(sep) for sep in _SEPARATORS if sep != "."):
+                    token = Token(
+                        TokenType.SEPARATOR,
+                        raw_token[0],
+                        column,
+                    )
+                    tokens.append(token)
+                    raw_token = raw_token[1:]
+                    column += 1
+
                 token = Token(
-                    TokenType.SEPARATOR,
-                    raw_token[0],
+                    TokenType.SUFFIXES,
+                    raw_token,
                     column,
                 )
                 tokens.append(token)
-                raw_token = raw_token[1:]
-                column += 1
+            else:
+                assert seq_type is RangesStartName
+                separator = None
+                if any(raw_token.startswith(sep) for sep in _SEPARATORS):
+                    separator = Token(
+                        TokenType.SEPARATOR,
+                        raw_token[0],
+                        column,
+                    )
+                    tokens.append(separator)
+                    path = pathlib.Path(raw_token[1:])
+                else:
+                    path = pathlib.Path(raw_token)
 
-            token = Token(
-                TokenType.SUFFIXES,
-                raw_token,
-                column,
-            )
-            tokens.append(token)
+                token = Token(
+                    TokenType.STEM,
+                    path.stem,
+                    column + (1 if separator is not None else 0),
+                )
+                tokens.append(token)
+                token = Token(
+                    TokenType.SUFFIXES,
+                    "".join(path.suffixes),
+                    token.end_column,
+                )
+                tokens.append(token)
 
         column += len(raw_token)
 
     assert all(isinstance(token, Token) for token in tokens)
-    if not any(token.type == TokenType.RANGES):
+    if not any(token.type == TokenType.RANGE for token in tokens):
         raise NotASequenceError(seq)
 
-    num_stems = sum(1 for token in tokens if token.type == TokenType.STEM)
-    assert num_stems == 1
-    num_suffixes = sum(1 for token in tokens if token.type == TokenType.SUFFIXES)
-    assert num_suffixes == 1
-    num_separators = sum(1 for token in tokens if token.type == TokenType.SEPARATOR)
-    assert (num_separators <= 2) if seq_type is RangeInName else (num_separators <= 1)
-    assert sum(1 for token in tokens if token.type == TokenType.PAD_FORMAT) % 2 == 1
-    assert sum(1 for token in tokens if token.type == TokenType.INTER_RANGE) % 2 == 1
-    assert all(token.value for token in tokens)
+    if __debug__:
+        num_stems = sum(1 for token in tokens if token.type == TokenType.STEM)
+        assert num_stems == 1
+        num_suffixes = sum(1 for token in tokens if token.type == TokenType.SUFFIXES)
+        assert num_suffixes == 1
+        num_separators = sum(1 for token in tokens if token.type == TokenType.SEPARATOR)
+        assert (num_separators <= 2) if seq_type is RangesInName else (num_separators <= 1)
+        num_ranges = sum(1 for token in tokens if token.type == TokenType.RANGE)
+        assert num_ranges % 2 == 1
+        num_inter_ranges = sum(1 for token in tokens if token.type == TokenType.INTER_RANGE)
+        assert num_inter_ranges == num_ranges - 1
+        assert all(token.value for token in tokens)
 
     return tokens
 
@@ -186,7 +292,7 @@ class SeqParser(StateMachine):
     init = State(initial=True)
     range_starts_name = State()
     starts_inter_range = State()
-    starts_prefix_separator = State()
+    starts_postfix_separator = State()
     starts_stem = State()
     starts_suffixes = State()
 
@@ -210,10 +316,10 @@ class SeqParser(StateMachine):
         | init.to(range_later, validators="expect_range_or_stem")
         | range_starts_name.to(starts_inter_range, cond="is_inter_range")
         | starts_inter_range.to(range_starts_name, cond="expect_range")
-        | range_starts_name.to.itself(on="on_blank_inter_range")
-        | range_starts_name.to(starts_prefix_separator, cond="is_separator")
+        | range_starts_name.to.itself(on="on_blank_inter_range", cond="is_range")
+        | range_starts_name.to(starts_postfix_separator, cond="is_separator")
         | range_starts_name.to(starts_stem, validators="expect_inter_or_sep_or_stem")
-        | starts_prefix_separator.to(starts_stem, validators="expect_stem")
+        | starts_postfix_separator.to(starts_stem, validators="expect_stem")
         | starts_stem.to(starts_suffixes, validators="expect_suffixes")
         | range_later.to(in_prefix_separator, cond="is_separator")
         | range_later.to(range_in_name, cond="is_range")
@@ -226,7 +332,9 @@ class SeqParser(StateMachine):
         | range_later.to(range_ends_name, validators="expect_sep_or_range_or_suffixes")
         | range_ends_name.to(ends_prefix_separator, cond="is_separator")
         | range_ends_name.to(ends_range, validators="expect_separator_or_range")
+        | ends_prefix_separator.to(ends_range, validators="expect_range")
         | ends_range.to(ends_inter_range, validators="expect_inter_range")
+        | ends_inter_range.to(ends_range, validators="expect_range")
     )
 
     finalise = (
@@ -235,16 +343,14 @@ class SeqParser(StateMachine):
         | ends_range.to(parsed)
     )
 
-    def __init__(self):
+    def __init__(self, seq: str) -> None:
         super().__init__()
 
-        self._tokens = collections.deque()
-
-        self._seq = ""
-        self._range_type: type[RangeStartsName] | type[RangeInName] | type[RangeEndsName] | None = None
+        self._seq = seq
+        self._range_type: type[ParsedSequence] | None = None
         self._stem = None
         self._prefix_separator = ""
-        self._ranges: PathRanges = []
+        self._ranges: list[PaddedRange | str] = []
         self._postfix_separator = ""
         self._suffixes = []
 
@@ -270,7 +376,7 @@ class SeqParser(StateMachine):
         return self._validate_stem(token, "Expected an inter-range string, a range separator, or a stem")
 
     def expect_inter_or_sep_or_suffixes(self, token: Token) -> bool:
-        return self._validate_stem(token, "Expected an inter-range string, a range separator, or file suffixes")
+        return self._validate_suffixes(token, "Expected an inter-range string, a range separator, or file suffixes")
 
     def expect_stem(self, token: Token) -> bool:
         return self._validate_stem(token, "Expected a stem")
@@ -282,10 +388,13 @@ class SeqParser(StateMachine):
         return self._validate_range(token, "Expected the ranges")
 
     def expect_separator_or_range(self, token: Token) -> bool:
-        return self._validate_range(token, "Expected a range separator or the ranges")
+        return self._validate_range(token, "Expected a range separator or a range")
 
     def expect_inter_range(self, token: Token) -> bool:
         return self._validate_inter_range(token, "Expected an inter-range string")
+
+    def expect_sep_or_range_or_suffixes(self, token: Token) -> bool:
+        return self._validate_suffixes(token, "Expected a range separator, a ranges, or file suffixes")
 
     def _validate_range(self, token: Token, reason: str) -> bool:
         if token.type != TokenType.RANGE:
@@ -313,10 +422,9 @@ class SeqParser(StateMachine):
         return True
 
     def on_enter_range_starts_name(self, token):
-        self._range_type = RangeStartsName
+        self._range_type = RangesStartName
 
-        file_num_set = FileNumSet.from_str(token.value)
-        self._ranges.append(file_num_set)
+        self._ranges.append(self._parse_padded_range(token))
 
     def on_enter_starts_inter_range(self, token):
         self._ranges.append(token.value)
@@ -324,41 +432,65 @@ class SeqParser(StateMachine):
     def on_blank_inter_range(self):
         self._ranges.append("")
 
-    def on_enter_starts_prefix_separator(self, token):
-        self._prefix_separator = token.value
+    def on_enter_starts_postfix_separator(self, token):
+        self._postfix_separator = token.value
 
     def on_enter_starts_stem(self, token):
+        self._stem = token.value
+
+    def on_enter_starts_suffixes(self, token):
+        self._suffixes = self._parse_suffixes(token)
+
+    def on_enter_range_later(self, token):
         self._stem = token.value
 
     def on_enter_in_prefix_separator(self, token):
         self._prefix_separator = token.value
 
-    def on_enter_range_in_name(self, token):
-        self._range_type = RangeInName
+    def _parse_padded_range(self, token) -> PaddedRange:
+        match = PAD_FORMAT_RE.search(token.value)
+        pad_format = match.group(0)
+        file_num_set = token.value[:-len(pad_format)]
+        if file_num_set:
+            file_num_set = FileNumSet.from_str(file_num_set)
+        return PaddedRange(file_num_set, pad_format)
 
-        match = RANGES_RE.fullmatch(token.value)
-        file_num_set = ""
-        if match.group("ranges"):
-            file_num_set = FileNumSet.from_str(token.value)
-        pad_format = match.group("pad_format")
-        range_ = PaddedRange(file_num_set, pad_format)
-        self._ranges.append(range_)
+    def _parse_suffixes(self, token) -> list[str]:
+        suffixes = []
+        buffer = token.value[0]
+        for char in token.value[1:]:
+            if char == ".":
+                suffixes.append(buffer)
+                buffer = char
+            else:
+                buffer += char
+
+        suffixes.append(buffer)
+        return suffixes
+
+    def on_enter_range_in_name(self, token):
+        self._range_type = RangesInName
+
+        self._ranges.append(self._parse_padded_range(token))
 
     def on_enter_in_postfix_separator(self, token):
         self._postfix_separator = token.value
 
     def on_enter_in_suffixes(self, token):
-        self._suffixes = token.value
+        self._suffixes = self._parse_suffixes(token)
 
     def on_enter_range_ends_name(self, token):
-        self._range_type = RangeEndsName
+        self._range_type = RangesEndName
 
-        self._suffixes = token.value
+        self._suffixes = self._parse_suffixes(token)
+
+    def on_enter_ends_range(self, token):
+        self._ranges.append(self._parse_padded_range(token))
 
     def on_enter_ends_prefix_separator(self, token):
         self._prefix_separator = token.value
 
-    def on_enter_finalise(self) -> RangeStartsName | RangeInName | RangeEndsName:
+    def on_finalise(self) -> ParsedSequence:
         kwargs = {
             "stem": self._stem,
             "prefix_separator": self._prefix_separator,
@@ -368,53 +500,20 @@ class SeqParser(StateMachine):
         }
         return self._range_type(**kwargs)
 
-    def parse(self, seq: str) -> RangeStartsName | RangeInName | RangeEndsName:
-        self._seq = seq
-        self._tokens = collections.deque(_tokenise(seq))
+    @classmethod
+    def parse(cls, seq: str) -> ParsedSequence:
+        machine = cls(seq)
+        tokens = collections.deque(_tokenise(seq))
         while True:
             try:
-                token = self._tokens.popleft()
+                token = tokens.popleft()
             except IndexError:
                 break
             else:
-                self.pump(token)
+                machine.pump(token)
 
-        return self.finalise()
-
-
-class RangeStartsName(NamedTuple):
-    prefix_separator: Literal[""]
-    ranges: PathRanges
-    postfix_separator: str
-    stem: str
-    suffixes: list[str]
+        return machine.finalise()
 
 
-class RangeInName(NamedTuple):
-    stem: str
-    prefix_separator: str
-    ranges: PathRanges
-    postfix_separator: str
-    suffixes: list[str]
-
-
-class RangeEndsName(NamedTuple):
-    stem: str
-    suffixes: list[str]
-    prefix_separator: str
-    ranges: PathRanges
-    postfix_separator: Literal[""]
-
-
-@dataclass
-class PaddedRange:
-    file_num_set: FileNumSet | Literal[""]
-    pad_format: str
-
-
-class PathRanges(list[PaddedRange | str]):
-    pass
-
-
-def parse_path_sequence(seq: str) -> RangeStartsName | RangeInName | RangeEndsName:
-    return SeqParser().parse(seq)
+def parse_path_sequence(seq: str) -> RangesStartName | RangesInName | RangesEndName:
+    return SeqParser.parse(seq)

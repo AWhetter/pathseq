@@ -17,6 +17,8 @@ release = pathseq.__version__
 
 extensions = [
     'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
+    'sphinxcontrib.kroki',
 ]
 
 templates_path = ['_templates']
@@ -29,6 +31,9 @@ exclude_patterns = []
 
 html_theme = 'furo'
 html_static_path = ['_static']
+html_css_files = [
+    'kroki_lists.css',
+]
 
 
 # -- Options for intersphinx -------------------------------------------------

@@ -13,13 +13,13 @@ class ParseError(ValueError):
         prefix = "  "
         lines.append(f"{prefix}{seq}")
         if column >= 0:
-            lines.append(f"{prefix}{' ' * column}{'^' * end_column - column}")
+            lines.append(f"{prefix}{' ' * column}{'^' * (self.end - column)}")
             message = "\n".join(lines)
 
         super().__init__(message)
 
 
-class NotASequenceError(ParseError):
+class NotASequenceError(ValueError):
     def __init__(self, seq: str) -> None:
         message = f"{seq} is not a file sequence"
         super().__init__(message)
