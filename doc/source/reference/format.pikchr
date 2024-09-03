@@ -24,12 +24,12 @@ START_POSTFIX: box "postfix" fit
 START_STEM: oval "stem" fit
             arrow from START_RANGE.e to START_STEM.w
 
-right
-arrow from START_STEM.e
-START_SUFFIXES: oval "suffixes" fit
-arrow
+arrow right linerad from START_STEM.e then down 1.5*$h then right linerad+arrowht
+START_SUFFIXES: box "suffixes" fit
+arrow right linerad then up 1.5*$h then right 3*linerad+arrowht
 circle radius 10%
 circle radius 20% invisible "Ranges started name" ljust
+arrow from START_STEM.e to 2nd last circle.w
 
 // In Range
 LATER_STEM: oval "stem" fit at 4.5*$h below START_RANGE
@@ -52,12 +52,21 @@ IN_INTER: box "inter-range" fit at 1.5*$h below IN_RANGE
 
 arrow right 4*linerad from IN_RANGE.e then down 1.5*$h then right linerad+arrowht
 IN_POSTFIX: box "postfix" fit
-arrow right linerad then up 1.5*$h then right 3*linerad+arrowht
-IN_SUFFIXES: oval "suffixes" fit
-             arrow from IN_RANGE.e to IN_SUFFIXES.w
-arrow from IN_SUFFIXES.e
+arrow right linerad then up 1.5*$h then right linerad+arrowht
+IN_SUFFIXES_ENTER: dot invisible
+arrow right linerad then down 1.5*$h then right linerad+arrowht
+IN_SUFFIXES: box "suffixes" fit
+line right linerad then up 1.5*$h then right linerad+arrowht
 circle radius 10%
 circle radius 20% invisible "Ranges inside name" ljust
+arrow from IN_RANGE.e to 2nd last circle.w
+
+line from START_RANGE.e right linerad*4 \
+    then down 3*$h \
+    then right even with IN_POSTFIX.e \
+    then right linerad \
+    then down even with IN_SUFFIXES_ENTER.w \
+    then to IN_SUFFIXES_ENTER.w
 
 // Ends Range
 arrow from LATER_STEM.e down 4.5*$h then right linerad+arrowht
@@ -80,7 +89,7 @@ END_INTER: box "inter-range" fit at 1.5*$h below END_RANGE
 right
 arrow from END_RANGE.e
 circle radius 10%
-circle radius 20% invisible "Ranges inside name" ljust
+circle radius 20% invisible "Ranges end name" ljust
 
 line invisible right 18*linerad
 Legend: [

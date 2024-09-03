@@ -1,7 +1,16 @@
 import decimal
 
 from hypothesis import assume, given
-from hypothesis.strategies import booleans, composite, decimals, integers, just, one_of, sampled_from, tuples
+from hypothesis.strategies import (
+    booleans,
+    composite,
+    decimals,
+    integers,
+    just,
+    one_of,
+    sampled_from,
+    tuples,
+)
 import pytest
 
 from pathseq._decimal_range import DecimalRange
@@ -40,18 +49,23 @@ def invalid_ranges(draw):
 
 
 @composite
-def valid_ranges(draw):
-    valid_start = decimals(allow_nan=False, allow_infinity=False)
+def valid_ranges(draw, max_len=10000):
+    places = draw(integers(0, 6))
+    valid_start = decimals(allow_nan=False, allow_infinity=False, places=places)
     start = draw(valid_start)
 
     # Only allow ranges that we can loop over in a sensible amount of time
-    diffs = decimals(max_value=1500, allow_nan=False, allow_infinity=False)
+    diffs = decimals(
+        max_value=1500, allow_nan=False, allow_infinity=False, places=places
+    )
     diff = draw(diffs)
     if draw(booleans()):
         diff = -diff
     stop = start + diff
 
-    valid_step = decimals(max_value=1000000, allow_nan=False, allow_infinity=False).filter(lambda x: not x.is_zero())
+    valid_step = decimals(
+        max_value=diff / max_len, allow_nan=False, allow_infinity=False, places=places
+    ).filter(lambda x: not x.is_zero())
     step = draw(valid_step)
 
     try:
@@ -93,12 +107,21 @@ def test_bool(values):
         assert not bool(range_)
 
 
+# TODO: This test is too slow
+@pytest.mark.skip
+@given(valid_ranges())
+def test_len(values):
+    range_ = DecimalRange(*values)
+    len_ = sum(1 for _ in range_)
+    assert len(range_) == len_
+
+
 @composite
 def ranges_with_index(draw):
     values = draw(valid_ranges())
     range_ = DecimalRange(*values)
     assume(bool(range_))
-    index = draw(integers(min_value=0, max_value=len(range_)-1))
+    index = draw(integers(min_value=0, max_value=len(range_) - 1))
     return (range_, index)
 
 
@@ -118,7 +141,12 @@ def test_contains_truthy(range_and_index):
         assert value in range_
 
 
-@given(valid_ranges(), decimals(allow_nan=False, allow_infinity=False).filter(lambda x: x.as_integer_ratio()[1] != 1))
+@given(
+    valid_ranges(),
+    decimals(allow_nan=False, allow_infinity=False).filter(
+        lambda x: x.as_integer_ratio()[1] != 1
+    ),
+)
 def test_contains_falsey(values, index):
     range_ = DecimalRange(*values)
 

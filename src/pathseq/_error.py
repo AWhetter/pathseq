@@ -1,5 +1,7 @@
 class ParseError(ValueError):
-    def __init__(self, seq: str, column: int, end_column: int = -1, reason: str | None = None):
+    def __init__(
+        self, seq: str, column: int, end_column: int = -1, reason: str | None = None
+    ):
         self.seq = seq
         self.column = column
         self.end = end_column if end_column >= 1 else (column + 1)

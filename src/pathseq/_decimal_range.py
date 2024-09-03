@@ -1,30 +1,37 @@
 from collections.abc import Iterable
 import decimal
+import math
 
 
 class DecimalRange:
-    def __init__(self, start: decimal.Decimal, stop: decimal.Decimal, step: decimal.Decimal) -> None:
+    def __init__(
+        self, start: decimal.Decimal, stop: decimal.Decimal, step: decimal.Decimal
+    ) -> None:
         self._start = start
         self._stop = stop
         self._step = step
 
         if not (start.is_finite() and stop.is_finite()):
-            raise ValueError(f"{self.__class__.__name__}() can only accept finite start and stop numbers")
+            raise ValueError(
+                f"{self.__class__.__name__}() can only accept finite start and stop numbers"
+            )
 
         if not step.is_normal():
-            raise ValueError(f"{self.__class__.__name__}() can only accept normal step numbers")
+            raise ValueError(
+                f"{self.__class__.__name__}() can only accept normal step numbers"
+            )
 
     @property
     def start(self) -> decimal.Decimal:
-       return self._start
+        return self._start
 
     @property
     def stop(self) -> decimal.Decimal:
-       return self._stop
+        return self._stop
 
     @property
     def step(self) -> decimal.Decimal:
-       return self._step
+        return self._step
 
     def __bool__(self) -> bool:
         return bool(len(self))
@@ -87,11 +94,29 @@ class DecimalRange:
                 current += self._step
 
     def __len__(self) -> int:
+        # x_n = a + d(n-1)
+        # stop > start + step * (n-1)
+        # stop - start > step * (n-1)
+        # (stop - start) / step > (n-1)
+        # (stop - start) / step + 1 > n
+
         if self._step > 0 and self._start < self._stop:
-            return int((self._stop - self._step - self._start) // self._step) + 1
+            n_minus_one = (self._stop - self._start) / self._step
+            num, denom = n_minus_one.as_integer_ratio()
+            # stop is part of the range, but the range is non-inclusive
+            if denom == 1:
+                return num
+
+            return math.floor(n_minus_one + 1)
 
         if self._step < 0 and self._start > self._stop:
-            return int((self._start + self._step - self._stop) // -self._step) + 1
+            n_minus_one = (self._stop - self._start) / self._step
+            num, denom = n_minus_one.as_integer_ratio()
+            # stop is part of the range, but the range is non-inclusive
+            if denom == 1:
+                return num
+
+            return math.floor(n_minus_one + 1)
 
         return 0
 

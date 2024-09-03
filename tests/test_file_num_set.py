@@ -20,7 +20,11 @@ def _valid_int_ranges():
         ("1-10x2", range(1, 11, 2), "1-9x2"),
         ("1001-1500x2", range(1001, 1501, 2), "1001-1499x2"),
         ("1-10,20-30", Ranges(range(1, 11), range(20, 31)), "1-10,20-30"),
-        ("1-10,20-30,40-50", Ranges(range(1, 11), range(20, 31), range(40, 51)), "1-10,20-30,40-50"),
+        (
+            "1-10,20-30,40-50",
+            Ranges(range(1, 11), range(20, 31), range(40, 51)),
+            "1-10,20-30,40-50",
+        ),
     ]
     for set_str, file_nums, normalised_str in test_cases:
         yield pytest.param((set_str, file_nums, normalised_str), id=set_str)

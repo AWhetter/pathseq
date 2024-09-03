@@ -231,7 +231,7 @@ Maya
 
 Source: https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-309A77DA-F5ED-4474-8413-317D7AB241E6
 
-# * Not clear...but seems to be "#" is a single character of digits.
+# * Not clear...but seems to be "#" any number of digits.
 
 .. code-block:: text
 
@@ -298,19 +298,22 @@ Arnold
 ^^^^^^
 
 Source: https://help.autodesk.com/view/ARNOL/ENU/?guid=arnold_user_guide_ac_filename_tokens_ac_token_udim_html
-# All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
+
+All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
 
 Blender
 ^^^^^^^
 
 Source: https://docs.blender.org/manual/en/latest/modeling/meshes/uv/workflows/udims.html#file-substitution-tokens
-# All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
+
+All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
 
 Houdini
 ^^^^^^^
 
 Source: https://www.sidefx.com/docs/houdini/vex/functions/expand_udim.html
-# All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
+
+All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
 
 Houdini additionally uses:
 * ``%(UDIM)d``: Same as <UDIM> but with user specified padding
@@ -322,13 +325,15 @@ Mari
 ^^^^
 
 Source: https://learn.foundry.com/mari/Content/tutorials/tutorial_5/tutorial_exporting_importing.html
-# All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
+
+All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
 
 Maya
 ^^^^
 
 Source: https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-309A77DA-F5ED-4474-8413-317D7AB241E6
-# All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
+
+All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
 
 # Maya additionally uses:
 # * u<u>_v<v>: Zero indexed UV tile style u and v coordinate
@@ -343,7 +348,8 @@ USD
 ^^^
 
 Source: https://openusd.org/docs/UsdPreviewSurface-Proposal.html#UsdPreviewSurfaceProposal-TextureReader
-# All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
+
+All match MaterialX spec: https://materialx.org/Specification.html (Arnold only supports <UDIM>)
 
 
 ZBrush

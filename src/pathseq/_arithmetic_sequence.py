@@ -51,6 +51,20 @@ class ArithmeticSequence(Set[T]):
     def step(self) -> T:
         return self._range.step
 
+    def __eq__(self, other):
+        if not isinstance(other, ArithmeticSequence):
+            return NotImplemented
+
+        return (
+            isinstance(self.start, other.start.__class__)
+            and self.start == other.start
+            and self.end == other.end
+            and self.step == other.step
+        )
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.start, self.end, self.step))
+
     def __contains__(self, item: T) -> bool:
         return item in self._range
 
@@ -77,4 +91,3 @@ class ArithmeticSequence(Set[T]):
             return f"{self.__class__.__name__}({self.start}, {self.end})"
 
         return f"{self.__class__.__name__}({self.start}, {self.end}, {self.step})"
-

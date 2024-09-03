@@ -84,21 +84,21 @@ class FileNumSet(Set[T]):
         if not isinstance(other, FileNumSet):
             return NotImplemented
 
-        return (
-            len(self._ranges) == len(other._ranges)
-            and all(r1 == r2 for r1, r2 in zip(self._ranges, other._ranges))
+        return len(self._ranges) == len(other._ranges) and all(
+            r1 == r2 for r1, r2 in zip(self._ranges, other._ranges)
         )
+
+    def __hash__(self) -> int:
+        return hash((type(self), self._ranges))
 
     # TODO: Are there other inherited methods that we could override for speed?
 
     # TODO: Should we also inherit from Sequence or similar?
     @overload
-    def __getitem__(self, index: int) -> T:
-        ...
+    def __getitem__(self, index: int) -> T: ...
 
     @overload
-    def __getitem__(self, index: slice) -> Self:
-        ...
+    def __getitem__(self, index: slice) -> Self: ...
 
     def __getitem__(self, index):
         raise NotImplementedError
@@ -111,7 +111,9 @@ class FileNumSet(Set[T]):
         return f"{self.__class__.__name__}({self})"
 
     @staticmethod
-    def has_subsamples(file_num_set: FileNumSet[T]) -> TypeGuard[FileNumSet[decimal.Decimal]]:
+    def has_subsamples(
+        file_num_set: FileNumSet[T],
+    ) -> TypeGuard[FileNumSet[decimal.Decimal]]:
         if not file_num_set:
             return False
 

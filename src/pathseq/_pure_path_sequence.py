@@ -4,7 +4,7 @@ from collections.abc import Iterable, Sequence
 from decimal import Decimal
 import os
 import pathlib
-from typing import NamedTuple, overload, Union
+from typing import overload, Union
 
 from typing_extensions import (
     Self,  # PY311
@@ -14,11 +14,11 @@ from typing_extensions import (
 
 from ._file_num_set import FileNumSet
 from ._parse_path_sequence import parse_path_sequence
+from ._type import PaddedRange
 
 Segment: TypeAlias = Union[str, os.PathLike[str], "PurePathSequence"]
 
 
-# TODO: What about sequences that do not have the range baked into the string?
 class PurePathSequence:
     """A generic class that represents a path sequence in the system's path flavour.
 
@@ -29,7 +29,14 @@ class PurePathSequence:
     * No __bytes__ because not a filesystem path.
     * No __fspath__ because not a filesystem path.
     * No as_uri because not a filesystem path.
+    * No __truediv__ (only __rtruediv__) or joinpath because sequences are supported only in
+      the last part of the path.
+    * No match because not a filesystem path that can be matched against.
+
+    Raises:
+        NotASequenceError: When the given path does not represent a sequence.
     """
+
     def __new__(cls, *args, **kwargs):
         if cls is PurePathSequence:
             cls = PureWindowsPathSequence if os.name == "nt" else PurePosixPathSequence
@@ -37,21 +44,14 @@ class PurePathSequence:
 
     def __init__(self, *pathsegments: Segment) -> None:
         self._path = pathlib.PurePath(*pathsegments)
-        self._parsed = None
-
-    def _parsed_name(self):
-        if not self._parsed:
-            name = self._path.name
-            self._parsed = parse_path_sequence(name)
-
-        return self._parsed
+        self._parsed = parse_path_sequence(self._path.name)
 
     # General properties
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
             return NotImplemented
 
-        return self._parsed_name == other._parsed_name
+        return self._path.parent == other._path.parent and self._parsed == other._parsed
 
     # TODO: Sequences with the same range should match.
     # TODO: Ranges don't have these so maybe sequences shouldn't either
@@ -86,19 +86,12 @@ class PurePathSequence:
         return str(self._path)
 
     def __hash__(self):
-        return hash((type(self), self._path))
+        return hash((type(self), self._path.parent, self._parsed))
 
     # Path operations
-    # TODO: Remove and explain why
-    def __truediv__(self, key):
-        try:
-            return self.with_segments(self, key)
-        except TypeError:
-            return NotImplemented
-
     def __rtruediv__(self, key):
         try:
-            return self.with_segments(key, self)
+            return self.with_segments(key, self._path)
         except TypeError:
             return NotImplemented
 
@@ -122,21 +115,24 @@ class PurePathSequence:
     def name(self) -> str:
         return self._path.name
 
-    # TODO: What about when there is only the name and ranges?
+    # Note: Can be the empty string
     @property
     def suffix(self) -> str:
-        parsed = self._parsed_name()
-        return parsed.suffixes[-1]
+        suffixes = self.suffixes
+        if not suffixes:
+            return ""
+
+        return suffixes[-1]
 
     @property
     def suffixes(self) -> Sequence[str]:
-        parsed = self._parsed_name()
+        parsed = self._parsed
         return parsed.suffixes
 
-    # TODO: What about when there is only the suffixes and ranges?
+    # Note: Can be the empty string
     @property
     def stem(self) -> str:
-        parsed = self._parsed_name()
+        parsed = self._parsed
         return parsed.stem
 
     @property
@@ -156,23 +152,22 @@ class PurePathSequence:
     def is_relative_to(self, other: pathlib.PurePath) -> bool:
         return self._path.is_relative_to(other)
 
-    def match(self, path_pattern: str, *, case_sensitive: bool | None = None) -> bool:
-        raise NotImplementedError
-
     def relative_to(self, other: Segment, *, walk_up: bool = False) -> Self:
-        return self._path.relative_to(other, walk_up=walk_up)
+        # TODO: walk_up only valid in Python 3.12+
+        # TODO: Need __contains__ because it should not be possible to pass
+        # a file that's in this sequence.
+        raise NotImplementedError
 
     def with_name(self, name: str) -> Self:
         return self.with_segments(self._path.with_name(name))
 
     def with_stem(self, stem: str) -> Self:
-        return self.with_segments(self._path.with_stem(stem))
+        parsed = self._parsed.with_stem(stem)
+        raise self.with_segments(self._path.parent, str(parsed))
 
     def with_suffix(self, suffix: str) -> Self:
-        raise NotImplementedError
-
-    def joinpath(self, *other: Segment) -> Self:
-        raise NotImplementedError
+        parsed = self._parsed.with_suffix(suffix)
+        raise self.with_segments(self._path.parent, str(parsed))
 
     def with_segments(self, *pathsegments: Segment) -> Self:
         return type(self)(*pathsegments)
@@ -180,20 +175,21 @@ class PurePathSequence:
     # Sequence specific methods
     # TODO: Should we inherit from Sequence or similar?
     @overload
-    def __getitem__(self, index: int) -> pathlib.PurePath:
-        ...
+    def __getitem__(self, index: int) -> pathlib.PurePath: ...
 
     @overload
-    def __getitem__(self, index: slice) -> Self:
-        ...
+    def __getitem__(self, index: slice) -> Self: ...
 
     def __getitem__(self, index):
         pass
 
+    def __contains__(self, item) -> bool:
+        raise NotImplementedError
+
     def __iter__(self) -> Iterable[pathlib.PurePath]:
         # TODO: Note order of iteration over multi-dimension ranges
         ranges: list[FileNumSet | None] = [
-            x.file_num_set for x in self._parsed_name().ranges[::2]
+            x.file_num_set for x in self._parsed.ranges[::2]
         ]
 
         if not ranges:
@@ -216,7 +212,9 @@ class PurePathSequence:
                     pass
                 else:
                     # The earlier ranges have been exhausted, so reset them.
-                    iterators[:i] = [iter(x if x is not None else (None,)) for x in ranges[:i]]
+                    iterators[:i] = [
+                        iter(x if x is not None else (None,)) for x in ranges[:i]
+                    ]
                     result[:i] = [next(iterator) for iterator in iterators[:i]]
                     break
             else:
@@ -226,7 +224,7 @@ class PurePathSequence:
     def __len__(self) -> int:
         result = 1
 
-        for x in self._parsed_name():
+        for x in self._parsed.ranges:
             if isinstance(x, PaddedRange):
                 # TODO: Note that an unset range is considered hardcoded.
                 if x.file_num_set is not None:
@@ -234,7 +232,6 @@ class PurePathSequence:
 
         return result
 
-    # TODO: Document how 'name' is constructed (stem, padding, suffix)
     @property
     def padding(self) -> str:
         """The right-most padding of the final path component.
@@ -257,7 +254,9 @@ class PurePathSequence:
         """
 
     @classmethod
-    def from_paths(self, paths: Iterable[os.PathLike[str]]) -> Iterable[Self | pathlib.PurePath]:
+    def from_paths(
+        self, paths: Iterable[os.PathLike[str]]
+    ) -> Iterable[Self | pathlib.PurePath]:
         """Create one or more path sequences from a list of paths."""
 
     def path(self, *numbers: int | Decimal | None) -> Self | pathlib.PurePath:
