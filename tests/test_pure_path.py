@@ -139,6 +139,30 @@ class TestSuffixes:
         path = PurePathSequence(path_str)
         assert path.suffixes == expected
 
+    @pytest.mark.todo
+    def test_starts(self):
+        pass
+
+    @pytest.mark.todo
+    def test_starts_with_subsamples(self):
+        pass
+
+    @pytest.mark.todo
+    def test_in(self):
+        pass
+
+    @pytest.mark.todo
+    def test_in_with_subsamples(self):
+        pass
+
+    @pytest.mark.todo
+    def test_ends(self):
+        pass
+
+    @pytest.mark.todo
+    def test_ends_with_subsamples(self):
+        pass
+
 
 class TestStem:
     @pytest.mark.parametrize(
@@ -171,6 +195,30 @@ class TestStem:
     def test_recommended_with_subsamples(self, path_str, expected):
         path = PurePathSequence(path_str)
         assert path.stem == expected
+
+    @pytest.mark.todo
+    def test_starts(self):
+        pass
+
+    @pytest.mark.todo
+    def test_starts_with_subsamples(self):
+        pass
+
+    @pytest.mark.todo
+    def test_in(self):
+        pass
+
+    @pytest.mark.todo
+    def test_in_with_subsamples(self):
+        pass
+
+    @pytest.mark.todo
+    def test_ends(self):
+        pass
+
+    @pytest.mark.todo
+    def test_ends_with_subsamples(self):
+        pass
 
 
 class WithName:
@@ -218,10 +266,34 @@ class WithStem:
             ("file.exr1-10#", "", ".exr1-10#"),
         ],
     )
-    def test_empty(self, seq_str, new_stem, expected_seq_str):
+    def test_empty_replacement(self, seq_str, new_stem, expected_seq_str):
         seq = PurePathSequence("/directory") / seq_str
         expected = PurePathSequence("/directory") / expected_seq_str
         assert seq.with_stem(new_stem) == expected
+
+    @pytest.mark.todo
+    def test_starts(self):
+        pass
+
+    @pytest.mark.todo
+    def test_starts_with_empty_replacement(self):
+        pass
+
+    @pytest.mark.todo
+    def test_in(self):
+        pass
+
+    @pytest.mark.todo
+    def test_in_with_empty_replacement(self):
+        pass
+
+    @pytest.mark.todo
+    def test_ends(self):
+        pass
+
+    @pytest.mark.todo
+    def test_ends_with_empty_replacement(self):
+        pass
 
 
 class WithSuffix:
@@ -256,3 +328,27 @@ class WithSuffix:
         seq = PurePathSequence("/directory") / seq_str
         expected = PurePathSequence("/directory") / expected_seq_str
         assert seq.with_suffix(new_suffix) == expected
+
+    @pytest.mark.todo
+    def test_starts(self):
+        pass
+
+    @pytest.mark.todo
+    def test_starts_with_empty_replacement(self):
+        pass
+
+    @pytest.mark.todo
+    def test_in(self):
+        pass
+
+    @pytest.mark.todo
+    def test_in_with_empty_replacement(self):
+        pass
+
+    @pytest.mark.todo
+    def test_ends(self):
+        pass
+
+    @pytest.mark.todo
+    def test_ends_with_empty_replacement(self):
+        pass
