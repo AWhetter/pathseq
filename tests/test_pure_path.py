@@ -80,7 +80,6 @@ class TestSuffix:
         [
             ("file.#.exr", ".exr"),
             ("file.#.tar.gz", ".gz"),
-            ("file.#", ""),
             ("file.<UDIM>.tif", ".tif"),
         ],
     )
@@ -93,13 +92,10 @@ class TestSuffix:
         [
             ("file.#.#.exr", ".exr"),
             ("file.#.#.tar.gz", ".gz"),
-            ("file.#.#", ""),
             ("file.1-10x0.5#.exr", ".exr"),
             ("file.1-10x0.5#.#.exr", ".exr"),
             ("file.1-10x0.5#.tar.gz", ".gz"),
             ("file.1-10x0.5#.#.tar.gz", ".gz"),
-            ("file.1-10x0.5#", ""),
-            ("file.1-10x0.5#.#", ""),
         ],
     )
     def test_recommended_with_subsamples(self, path_str, expected):
@@ -113,7 +109,6 @@ class TestSuffixes:
         [
             ("file.#.exr", (".exr",)),
             ("file.#.tar.gz", (".tar", ".gz")),
-            ("file.#", ()),
             ("file.<UDIM>.tif", (".tif",)),
         ],
     )
@@ -126,13 +121,10 @@ class TestSuffixes:
         [
             ("file.#.#.exr", (".exr",)),
             ("file.#.#.tar.gz", (".tar", ".gz")),
-            ("file.#.#", ()),
             ("file.1-10x0.5#.exr", (".exr",)),
             ("file.1-10x0.5#.#.exr", (".exr",)),
             ("file.1-10x0.5#.tar.gz", (".tar", ".gz")),
             ("file.1-10x0.5#.#.tar.gz", (".tar", ".gz")),
-            ("file.1-10x0.5#", ()),
-            ("file.1-10x0.5#.#", ()),
         ],
     )
     def test_recommended_with_subsamples(self, path_str, expected):
@@ -170,7 +162,6 @@ class TestStem:
         [
             ("file.#.exr", "file"),
             ("file.#.tar.gz", "file"),
-            ("file.#", "file"),
             ("file.<UDIM>.tif", "file"),
         ],
     )
@@ -183,13 +174,10 @@ class TestStem:
         [
             ("file.#.#.exr", "file"),
             ("file.#.#.tar.gz", "file"),
-            ("file.#.#", "file"),
             ("file.1-10x0.5#.exr", "file"),
             ("file.1-10x0.5#.#.exr", "file"),
             ("file.1-10x0.5#.tar.gz", "file"),
             ("file.1-10x0.5#.#.tar.gz", "file"),
-            ("file.1-10x0.5#", "file"),
-            ("file.1-10x0.5#.#", "file"),
         ],
     )
     def test_recommended_with_subsamples(self, path_str, expected):

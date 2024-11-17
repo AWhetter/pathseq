@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Sequence, Set
 from decimal import Decimal
 import os
 import pathlib
-from typing import overload, Union
+from typing import overload, TypeVar, Union
 
 from typing_extensions import (
     Self,  # PY311
@@ -17,9 +17,10 @@ from ._parse_path_sequence import parse_path_sequence
 from ._type import PaddedRange
 
 Segment: TypeAlias = Union[str, os.PathLike[str], "PurePathSequence"]
+T = TypeVar("T", int, Decimal)
 
 
-class PurePathSequence:
+class PurePathSequence(Sequence[T], Set[T]):
     """A generic class that represents a path sequence in the system's path flavour.
 
     Instantiating this class creates either a :class:`PurePosixPathSequence`
@@ -226,9 +227,13 @@ class PurePathSequence:
 
         for x in self._parsed.ranges:
             if isinstance(x, PaddedRange):
-                # TODO: Note that an unset range is considered hardcoded.
-                if x.file_num_set is not None:
-                    result *= len(x.file_num_set)
+                if x.file_num_set is None:
+                    raise ValueError(
+                        "Cannot calculate the length of a path sequence"
+                        " with one or more unknown ranges"
+                    )
+
+                result *= len(x.file_num_set)
 
         return result
 

@@ -2,38 +2,10 @@ linerad = 10px
 $h = 0.21
 
 C0: circle radius 10%
-    arrow from C0.e
-
-// Start Range
-START_RANGE: oval "range" fit
-
-START_INTER: box "inter-range" fit at 1.5*$h below START_RANGE
-             arrow from START_RANGE.e right linerad*3 then down even with START_INTER then to START_INTER.e
-             arrow from START_INTER.w left linerad then up even with START_RANGE then to START_RANGE.w
-             arrow from START_RANGE.e right linerad*3 \
-                 then down 3*$h \
-                 then left even with START_INTER
-             line left even with START_INTER.w \
-                 then left linerad \
-                 then up even with START_RANGE then to START_RANGE.w
-
-right
-arrow right 4*linerad from START_RANGE.e then down 1.5*$h then right linerad+arrowht
-START_POSTFIX: box "postfix" fit
-               arrow from START_POSTFIX.e right linerad then up 1.5*$h then right linerad+arrowht
-START_STEM: oval "stem" fit
-            arrow from START_RANGE.e to START_STEM.w
-
-arrow right linerad from START_STEM.e then down 1.5*$h then right linerad+arrowht
-START_SUFFIXES: box "suffixes" fit
-arrow right linerad then up 1.5*$h then right 3*linerad+arrowht
-circle radius 10%
-circle radius 20% invisible "Ranges started name" ljust
-arrow from START_STEM.e to 2nd last circle.w
+    arrow
 
 // In Range
-LATER_STEM: oval "stem" fit at 4.5*$h below START_RANGE
-            arrow from C0.e right linerad then down even with LATER_STEM then to LATER_STEM.w
+LATER_STEM: oval "stem" fit
 
 arrow right linerad from LATER_STEM.e then down 1.5*$h then right linerad+arrowht
 IN_PREFIX: box "prefix" fit
@@ -50,48 +22,13 @@ IN_INTER: box "inter-range" fit at 1.5*$h below IN_RANGE
               then left linerad \
               then up even with IN_RANGE then to IN_RANGE.w
 
-arrow right 4*linerad from IN_RANGE.e then down 1.5*$h then right linerad+arrowht
-IN_POSTFIX: box "postfix" fit
-arrow right linerad then up 1.5*$h then right linerad+arrowht
-IN_SUFFIXES_ENTER: dot invisible
-arrow right linerad then down 1.5*$h then right linerad+arrowht
-IN_SUFFIXES: box "suffixes" fit
-line right linerad then up 1.5*$h then right linerad+arrowht
-circle radius 10%
-circle radius 20% invisible "Ranges inside name" ljust
-arrow from IN_RANGE.e to 2nd last circle.w
-
-line from START_RANGE.e right linerad*4 \
-    then down 3*$h \
-    then right even with IN_POSTFIX.e \
-    then right linerad \
-    then down even with IN_SUFFIXES_ENTER.w \
-    then to IN_SUFFIXES_ENTER.w
-
-// Ends Range
-arrow from LATER_STEM.e down 4.5*$h then right linerad+arrowht
-END_SUFFIXES: oval "suffixes" fit
-arrow right linerad from END_SUFFIXES.e then down 1.5*$h then right linerad+arrowht
-END_PREFIX: box "prefix" fit
-arrow right linerad then up 1.5*$h then right 3*linerad+arrowht
-END_RANGE: oval "range" fit
-arrow from END_SUFFIXES.e to END_RANGE.w
-END_INTER: box "inter-range" fit at 1.5*$h below END_RANGE
-          arrow from END_RANGE.e right linerad*3 then down even with END_INTER then to END_INTER.e
-          arrow from END_INTER.w left linerad then up even with END_RANGE then to END_RANGE.w
-          arrow from END_RANGE.e right linerad*3 \
-              then down 3*$h \
-              then left even with END_INTER
-          line left even with END_INTER.w \
-              then left linerad \
-              then up even with END_RANGE then to END_RANGE.w
-
 right
-arrow from END_RANGE.e
+arrow from IN_RANGE.e
+IN_SUFFIXES: oval "suffixes" fit
+line right linerad then right linerad+arrowht
 circle radius 10%
-circle radius 20% invisible "Ranges end name" ljust
 
-line invisible right 18*linerad
+line invisible from C0.s down then right 100%
 Legend: [
   down
   box invisible "Legend" fit

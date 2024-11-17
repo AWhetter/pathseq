@@ -3,11 +3,9 @@ import pytest
 from pathseq._parse_path_sequence import (
     parse_path_sequence,
     PaddedRange,
-    RangesEndName,
-    RangesInName,
-    RangesStartName,
+    ParsedSequence,
 )
-from pathseq import FileNumSet, NotASequenceError
+from pathseq import FileNumSet, NotASequenceError, ParseError
 
 
 class TestPathSequence:
@@ -15,138 +13,8 @@ class TestPathSequence:
         "seq,expected",
         [
             pytest.param(
-                "#_file.exr",
-                RangesStartName(
-                    "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "_",
-                    "file",
-                    (".exr",),
-                ),
-                id="#.file.exr",
-            ),
-            pytest.param(
-                "1-10#_file.exr",
-                RangesStartName(
-                    "",
-                    (
-                        PaddedRange(
-                            FileNumSet.from_str("1-10"),
-                            "#",
-                        ),
-                    ),
-                    "_",
-                    "file",
-                    (".exr",),
-                ),
-                id="1-10#_file.exr",
-            ),
-            pytest.param(
-                "1-10x2#_file.exr",
-                RangesStartName(
-                    "",
-                    (
-                        PaddedRange(
-                            FileNumSet.from_str("1-10x2"),
-                            "#",
-                        ),
-                    ),
-                    "_",
-                    "file",
-                    (".exr",),
-                ),
-                id="1-10x2#_file.exr",
-            ),
-            pytest.param(
-                "#file.exr",
-                RangesStartName(
-                    "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                    "file",
-                    (".exr",),
-                ),
-                id="#.file.exr",
-            ),
-            pytest.param(
-                "#file.tar.gz",
-                RangesStartName(
-                    "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                    "file",
-                    (".tar", ".gz"),
-                ),
-                id="#.file.exr",
-            ),
-        ],
-    )
-    def test_starts(self, seq, expected):
-        parsed = parse_path_sequence(seq)
-        assert parsed == expected
-
-    @pytest.mark.parametrize(
-        "seq,expected",
-        [
-            pytest.param(
-                "#file",
-                RangesStartName(
-                    "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                    "file",
-                    (),
-                ),
-                id="#file",
-            ),
-            pytest.param(
-                "#_file",
-                RangesStartName(
-                    "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "_",
-                    "file",
-                    (),
-                ),
-                id="#_file",
-            ),
-        ],
-    )
-    def test_starts_without_suffix(self, seq, expected):
-        parsed = parse_path_sequence(seq)
-        assert parsed == expected
-
-    @pytest.mark.parametrize(
-        "seq,expected",
-        [
-            pytest.param(
                 "file.#.exr",
-                RangesInName(
+                ParsedSequence(
                     "file",
                     ".",
                     (
@@ -155,14 +23,13 @@ class TestPathSequence:
                             "#",
                         ),
                     ),
-                    "",
                     (".exr",),
                 ),
                 id="file.#.exr",
             ),
             pytest.param(
                 "file.1-10#.exr",
-                RangesInName(
+                ParsedSequence(
                     "file",
                     ".",
                     (
@@ -171,14 +38,13 @@ class TestPathSequence:
                             "#",
                         ),
                     ),
-                    "",
                     (".exr",),
                 ),
                 id="file.1-10#.exr",
             ),
             pytest.param(
                 "file.1-10x2#.exr",
-                RangesInName(
+                ParsedSequence(
                     "file",
                     ".",
                     (
@@ -187,14 +53,22 @@ class TestPathSequence:
                             "#",
                         ),
                     ),
-                    "",
                     (".exr",),
                 ),
                 id="file.1-10x2#.exr",
             ),
+        ],
+    )
+    def test_simple(self, seq, expected):
+        parsed = parse_path_sequence(seq)
+        assert parsed == expected
+
+    @pytest.mark.parametrize(
+        "seq,expected",
+        [
             pytest.param(
                 ".#.exr",
-                RangesInName(
+                ParsedSequence(
                     ".",
                     "",
                     (
@@ -203,24 +77,14 @@ class TestPathSequence:
                             "#",
                         ),
                     ),
-                    "",
                     (".exr",),
                 ),
                 id=".#.exr",
             ),
-        ],
-    )
-    def test_in(self, seq, expected):
-        parsed = parse_path_sequence(seq)
-        assert parsed == expected
-
-    @pytest.mark.parametrize(
-        "seq,expected",
-        [
             pytest.param(
-                "#.exr",
-                RangesInName(
-                    "",
+                ".hidden#.exr",
+                ParsedSequence(
+                    ".hidden",
                     "",
                     (
                         PaddedRange(
@@ -228,244 +92,54 @@ class TestPathSequence:
                             "#",
                         ),
                     ),
-                    "",
                     (".exr",),
                 ),
-                id="#.exr",
-            ),
-            pytest.param(
-                "#.tar.gz",
-                RangesInName(
-                    "",
-                    "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                    (".tar", ".gz"),
-                ),
-                id="#.tar.gz",
+                id=".hidden#.exr",
             ),
         ],
     )
-    def test_in_without_stem(self, seq, expected):
-        parsed = parse_path_sequence(seq)
-        assert parsed == expected
-
-    @pytest.mark.parametrize(
-        "seq,expected",
-        [
-            pytest.param(
-                "file.#.",
-                RangesInName(
-                    "file",
-                    ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    ".",
-                    (),
-                ),
-                id="file.#.",
-            ),
-            pytest.param(
-                "file.#_",
-                RangesInName(
-                    "file",
-                    ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "_",
-                    (),
-                ),
-                id="file.#_",
-            ),
-            pytest.param(
-                "file.#",
-                RangesInName(
-                    "file",
-                    ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                    (),
-                ),
-                id="file.#",
-            ),
-            pytest.param(
-                "file_#",
-                RangesInName(
-                    "file",
-                    "_",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                    (),
-                ),
-                id="file_#",
-            ),
-            pytest.param(
-                "file.#.exr.",
-                RangesInName(
-                    "file",
-                    ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    ".exr.",
-                    (),
-                ),
-                id="file.#.exr",
-            ),
-        ],
-    )
-    def test_in_without_suffix(self, seq, expected):
-        parsed = parse_path_sequence(seq)
-        assert parsed == expected
-
-    @pytest.mark.parametrize(
-        "seq,expected",
-        [
-            pytest.param(
-                "#",
-                RangesInName(
-                    "",
-                    "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                    (),
-                ),
-                id="#",
-            ),
-            pytest.param(
-                "#_#",
-                RangesInName(
-                    "",
-                    "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                        "_",
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                    (),
-                ),
-                id="#_#",
-            ),
-        ],
-    )
-    def test_in_without_stem_or_suffix(self, seq, expected):
-        parsed = parse_path_sequence(seq)
-        assert parsed == expected
-
-    @pytest.mark.parametrize(
-        "seq,expected",
-        [
-            pytest.param(
-                "file.exr.#",
-                RangesEndName(
-                    "file",
-                    (".exr",),
-                    ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                ),
-                id="file.exr.#",
-            ),
-            pytest.param(
-                "file.exr.1-10#",
-                RangesEndName(
-                    "file",
-                    (".exr",),
-                    ".",
-                    (
-                        PaddedRange(
-                            FileNumSet.from_str("1-10"),
-                            "#",
-                        ),
-                    ),
-                    "",
-                ),
-                id="file.exr.1-10#",
-            ),
-            pytest.param(
-                "file.exr.1-10x2#",
-                RangesEndName(
-                    "file",
-                    (".exr",),
-                    ".",
-                    (
-                        PaddedRange(
-                            FileNumSet.from_str("1-10x2"),
-                            "#",
-                        ),
-                    ),
-                    "",
-                ),
-                id="file.exr.1-10x2#",
-            ),
-            pytest.param(
-                ".file.exr.#",
-                RangesEndName(
-                    ".file",
-                    (".exr",),
-                    ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
-                    ),
-                    "",
-                ),
-                id=".file.exr.#",
-            ),
-        ],
-    )
-    def test_ends(self, seq, expected):
+    def test_hidden_files(self, seq, expected):
         parsed = parse_path_sequence(seq)
         assert parsed == expected
 
     @pytest.mark.parametrize(
         "seq",
         [
+            "#",
+            "#.exr",
+            "#.tar.gz",
+            "#_#",
+            "#_file",
+            "#_file.exr",
+            "#file",
+            "#file.exr",
+            "#file.tar.gz",
+            ".file.exr.#",
+            "1-10#_file.exr",
+            "1-10x2#_file.exr",
+            "file.#",
+            "file.#.",
+            "file.#.#",
+            "file.#..exr",
+            "file.#.exr.",
+            "file.#.exr.",
+            "file.#_",
+            "file.1-10x0.5#",
+            "file.1-10x0.5#.#",
+            "file.exr.#",
+            "file.exr.1-10#",
+            "file.exr.1-10x2#",
+            "file_#",
+        ],
+    )
+    def test_parse_error(self, seq):
+        with pytest.raises(ParseError):
+            parse_path_sequence(seq)
+
+    @pytest.mark.parametrize(
+        "seq",
+        [
+            "",
             "file",
             "dir",
             "file.exr",

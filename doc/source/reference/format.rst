@@ -9,8 +9,8 @@ the stem, the ranges, and the suffixes.
    /directory/file.1001-1010#.tar.gz
               ^--------------------^
               |name                |
-              ^-----------------^^-^-----
-              |stem             ||suffix|
+            --^--^-----------^-----^---
+            |stem            |suffixes|
 
 There are three types of sequences:
 
