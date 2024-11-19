@@ -1,0 +1,35 @@
+<svg xmlns='http://www.w3.org/2000/svg' style='font-family:sans-serif; font-size:initial;' viewBox="0 0 566.342 222.048">
+<circle cx="5.76" cy="17.28" r="3.6"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="81.36,17.28 69.84,21.6 69.84,12.96" style="fill:rgb(0,0,0)"/>
+<path d="M9.36,17.28L75.6,17.28"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M96.48,32.4L118.426,32.4A15.12 15.12 0 0 0 133.546 17.28A15.12 15.12 0 0 0 118.426 2.16L96.48,2.16A15.12 15.12 0 0 0 81.36 17.28A15.12 15.12 0 0 0 96.48 32.4Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="107.453" y="17.28" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">stem</text>
+<polygon points="175.066,62.64 163.546,66.96 163.546,58.32" style="fill:rgb(0,0,0)"/>
+<path d="M133.546,17.28 L 141.046,17.28 Q 148.546,17.28 148.546,32.28 L 148.546,47.64 Q 148.546,62.64 158.926,62.64 L 169.306,62.64"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M175.066,77.76L235.661,77.76L235.661,47.52L175.066,47.52Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="205.363" y="62.64" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">prefix</text>
+<polygon points="307.181,17.28 295.661,21.6 295.661,12.96" style="fill:rgb(0,0,0)"/>
+<path d="M235.661,62.64 L 243.161,62.64 Q 250.661,62.64 250.661,47.64 L 250.661,32.28 Q 250.661,17.28 265.661,17.28 L 286.421,17.28 L 301.421,17.28"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M322.301,32.4L352.426,32.4A15.12 15.12 0 0 0 367.546 17.28A15.12 15.12 0 0 0 352.426 2.16L322.301,2.16A15.12 15.12 0 0 0 307.181 17.28A15.12 15.12 0 0 0 322.301 32.4Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="337.363" y="17.28" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">range</text>
+<polygon points="307.181,17.28 295.661,21.6 295.661,12.96" style="fill:rgb(0,0,0)"/>
+<path d="M133.546,17.28L301.421,17.28"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M284.198,77.76L390.528,77.76L390.528,47.52L284.198,47.52Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="337.363" y="62.64" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">inter-range</text>
+<polygon points="390.528,62.64 402.048,58.32 402.048,66.96" style="fill:rgb(0,0,0)"/>
+<path d="M367.546,17.28 L 397.546,17.28 Q 412.546,17.28 412.546,32.28 L 412.546,47.64 Q 412.546,62.64 404.417,62.64 L 396.288,62.64"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="307.181,17.28 295.661,21.6 295.661,12.96" style="fill:rgb(0,0,0)"/>
+<path d="M284.198,62.64 L 276.698,62.64 Q 269.198,62.64 269.198,47.64 L 269.198,32.28 Q 269.198,17.28 284.198,17.28 L 286.421,17.28 L 301.421,17.28"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="439.546,17.28 428.026,21.6 428.026,12.96" style="fill:rgb(0,0,0)"/>
+<path d="M367.546,17.28L433.786,17.28"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M454.666,32.4L500.342,32.4A15.12 15.12 0 0 0 515.462 17.28A15.12 15.12 0 0 0 500.342 2.16L454.666,2.16A15.12 15.12 0 0 0 439.546 17.28A15.12 15.12 0 0 0 454.666 32.4Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="477.504" y="17.28" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">suffixes</text>
+<path d="M515.462,17.28 L 522.962,17.28 Q 530.462,17.28 543.722,17.28 L 556.982,17.28"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<circle cx="560.582" cy="17.28" r="3.6"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="77.76" y="108" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">Legend</text>
+<path d="M50.7744,168.48L104.746,168.48A15.12 15.12 0 0 0 119.866 153.36L119.866,153.36A15.12 15.12 0 0 0 104.746 138.24L50.7744,138.24A15.12 15.12 0 0 0 35.6544 153.36L35.6544,153.36A15.12 15.12 0 0 0 50.7744 168.48Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="77.76" y="153.36" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">required</text>
+<path d="M37.728,213.84L117.792,213.84L117.792,183.6L37.728,183.6Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="77.76" y="198.72" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">optional</text>
+<path d="M23.0227,219.888L132.497,219.888L132.497,86.832L23.0227,86.832Z"  style="fill:none;stroke-width:1.4472;stroke:rgb(0,0,0);" />
+</svg>

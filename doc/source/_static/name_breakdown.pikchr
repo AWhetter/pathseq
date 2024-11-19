@@ -1,0 +1,40 @@
+$label_sep = 0.15cm
+
+box invisible "/directory/" monospace big fit width 65%
+STEM: box invisible "file" monospace big fit width 65%
+PREFIX: box invisible "." monospace big fit width 65%
+RANGES: box invisible "1001-1010#" monospace big fit width 75%
+SUFFIXES: box invisible ".tar.gz" monospace big fit width 65%
+
+left
+PREFIX_LABEL: box "prefix" fit with n at PREFIX.s - (0, 0.25cm)
+move $label_sep
+STEM_LABEL: box "stem" fit
+right
+RANGES_LABEL: box "ranges" fit with w at PREFIX_LABEL.e + ($label_sep, 0)
+move $label_sep
+SUFFIXES_LABEL: box "suffixes" fit
+
+line from STEM_LABEL.nw to STEM.sw
+arrow <-> to STEM.se
+line to STEM_LABEL.ne
+
+line from PREFIX_LABEL.nw to PREFIX.sw
+arrow <-> thin to PREFIX.se
+line to PREFIX_LABEL.ne
+
+line from RANGES_LABEL.nw to RANGES.sw
+arrow <-> to RANGES.se
+line to RANGES_LABEL.ne
+
+line from SUFFIXES_LABEL.nw to SUFFIXES.sw
+arrow <-> to SUFFIXES.se
+line to SUFFIXES_LABEL.ne
+
+line invisible from STEM_LABEL.sw to SUFFIXES_LABEL.se
+box invisible "name" fit with n at previous.s
+line from last line.start \
+  then down even with previous.sw \
+  then right even with last line.end \
+  then up even with previous.ne \
+  then left close

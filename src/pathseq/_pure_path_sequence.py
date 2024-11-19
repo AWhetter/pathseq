@@ -238,14 +238,6 @@ class PurePathSequence(Sequence[T], Set[T]):
         return result
 
     @property
-    def padding(self) -> str:
-        """The right-most padding of the final path component.
-
-        Returns:
-            The empty string when there is no padding.
-        """
-
-    @property
     def paddings(self) -> tuple[str]:
         """All padding strings in the final path component."""
 

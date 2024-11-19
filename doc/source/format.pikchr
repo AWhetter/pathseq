@@ -15,12 +15,6 @@ arrow from LATER_STEM.e to IN_RANGE.w
 IN_INTER: box "inter-range" fit at 1.5*$h below IN_RANGE
           arrow from IN_RANGE.e right linerad*3 then down even with IN_INTER then to IN_INTER.e
           arrow from IN_INTER.w left linerad then up even with IN_RANGE then to IN_RANGE.w
-          arrow from IN_RANGE.e right linerad*3 \
-              then down 3*$h \
-              then left even with IN_INTER
-          line left even with IN_INTER.w \
-              then left linerad \
-              then up even with IN_RANGE then to IN_RANGE.w
 
 right
 arrow from IN_RANGE.e

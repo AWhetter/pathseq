@@ -1,0 +1,6 @@
+@media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"])
+    .solid-background {
+        background-color: var(--color-foreground-primary);
+    }
+}

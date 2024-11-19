@@ -16,14 +16,16 @@ release = pathseq.__version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    'sphinx_design',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinxcontrib.kroki',
 ]
 
 templates_path = ['_templates']
-exclude_patterns = []
-
+exclude_patterns = [
+    'decisions/000-decision-record-template.rst'
+]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -33,6 +35,7 @@ html_theme = 'furo'
 html_static_path = ['_static']
 html_css_files = [
     'kroki_lists.css',
+    'solid_image_background.css',
 ]
 
 
@@ -40,4 +43,5 @@ html_css_files = [
 # https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#configuration
 
 intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
 }

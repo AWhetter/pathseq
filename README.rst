@@ -17,9 +17,10 @@ pathseq
     :target: https://pypi.org/project/pathseq/
     :alt: Supported Python Versions
 
-A pathlib-like library for working with file sequences.
+A pathlib-first library for working with file sequences.
 
 TODO: Note special features
+
 * pathlib-first API
 * Multi-dimension ranges (eg animated udim)
 * Support for UDIM tokens

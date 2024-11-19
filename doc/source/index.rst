@@ -1,7 +1,7 @@
 :mod:`pathseq`
 ==============
 
-:mod:`pathseq` is a pathlib-like library for working with file sequences.
+:mod:`pathseq` is a pathlib-first library for working with file sequences.
 
 .. code-block:: pycon
 
@@ -30,12 +30,12 @@
     >>> for path in seq:
     ...     print(path)
     ...
-    PosixPath("/path/to/images.1011_0001.exr")
-    PosixPath("/path/to/images.1011_0002.exr")
-    PosixPath("/path/to/images.1011_0003.exr")
-    PosixPath("/path/to/images.1012_0001.exr")
-    PosixPath("/path/to/images.1012_0002.exr")
-    PosixPath("/path/to/images.1012_0003.exr")
+    PosixPath("/path/to/images.1011_1.exr")
+    PosixPath("/path/to/images.1011_2.exr")
+    PosixPath("/path/to/images.1011_3.exr")
+    PosixPath("/path/to/images.1012_1.exr")
+    PosixPath("/path/to/images.1012_2.exr")
+    PosixPath("/path/to/images.1012_3.exr")
 
 
 Documentation
@@ -47,6 +47,7 @@ Documentation
     quickstart
     user/index
     reference/index
-    maintainer
+    contributor
+    decisions/index
 
 .. TODO
