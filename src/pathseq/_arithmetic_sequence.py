@@ -82,12 +82,12 @@ class ArithmeticSequence(Set[T]):
         if self.step != 1:
             result += f"x{self.step}"
         elif len(self) == 2:
-            return ",".join(self)
+            return ",".join(str(x) for x in self)
 
         return result
 
     def __repr__(self) -> str:
-        if self._step == 1:
+        if self.step == 1:
             return f"{self.__class__.__name__}({self.start}, {self.end})"
 
         return f"{self.__class__.__name__}({self.start}, {self.end}, {self.step})"

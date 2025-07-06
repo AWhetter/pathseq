@@ -212,8 +212,8 @@ Sources:
 * Read: https://learn.foundry.com/nuke/content/reference_guide/image_nodes/read.html
 * Write: https://learn.foundry.com/nuke/content/reference_guide/image_nodes/write.html
 
-# * "#" is a single character of digits.
-# * "%04d" is printf-style formatting.
+"#" is a single character of digits.
+"%04d" is printf-style formatting.
 
 USD
 ^^^
@@ -544,6 +544,8 @@ many DCCs do support this syntax.
 It will be one-indexed, as this has the most support
 and zero-indexing is unique to ZBrush (and Maya's additional syntax).
 
+TODO: Or maybe we just make classes per type, and a single function guesses the type?
+
 Support for ranges existing anywhere other than before the suffix will be supported,
 because this is essential for pathseq to be adopted.
 Although increased complexity comes from this more flexible approach,
@@ -584,3 +586,13 @@ and the formats even conflict between some software packages.
 Conversion between formats will be necessary, regardless of the format chosen.
 
 The format decided upon maximises compatibility without sacrificing simplicity.
+
+.. note::
+
+   File sequences, cannot be parsed with an unambiguous context free grammar.
+   The fact that strings of arbitrary characters can exist either side of the frame ranges
+   means that a valid file sequence can always be parsed both as
+   a list of arbitrary characters and as a set of ranges surrounded by arbitrary characters.
+
+   Considering that it takes :math:`O(n^3)` time to parse unambiguous grammars,
+   we will need to take an informal approach to parsing file sequences.

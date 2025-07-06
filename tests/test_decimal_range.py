@@ -1,69 +1,60 @@
 import decimal
 
 from hypothesis import assume, given
-from hypothesis.strategies import (
-    booleans,
-    composite,
-    decimals,
-    integers,
-    just,
-    one_of,
-    sampled_from,
-    tuples,
-)
+import hypothesis.strategies as st
 import pytest
 
 from pathseq._decimal_range import DecimalRange
 
 
-@composite
+@st.composite
 def infinite_decimals(draw):
-    values = one_of(
-        just(decimal.Decimal("NaN")),
-        just(decimal.Decimal("sNaN")),
-        just(decimal.Decimal("-Infinity")),
-        just(decimal.Decimal("Infinity")),
+    values = st.one_of(
+        st.just(decimal.Decimal("NaN")),
+        st.just(decimal.Decimal("sNaN")),
+        st.just(decimal.Decimal("-Infinity")),
+        st.just(decimal.Decimal("Infinity")),
     )
     return draw(values)
 
 
-@composite
+@st.composite
 def special_decimals(draw):
-    values = one_of(
+    values = st.one_of(
         infinite_decimals(),
-        just(decimal.Decimal("+0")),
-        just(decimal.Decimal("-0")),
-        just(decimal.Decimal("0")),
+        st.just(decimal.Decimal("+0")),
+        st.just(decimal.Decimal("-0")),
+        st.just(decimal.Decimal("0")),
     )
     return draw(values)
 
 
-@composite
+@st.composite
 def invalid_ranges(draw):
-    values = one_of(
-        tuples(infinite_decimals(), decimals(), decimals()),
-        tuples(decimals(), infinite_decimals(), decimals()),
-        tuples(decimals(), decimals(), special_decimals()),
+    values = st.one_of(
+        st.tuples(infinite_decimals(), st.decimals(), st.decimals()),
+        st.tuples(st.decimals(), infinite_decimals(), st.decimals()),
+        st.tuples(st.decimals(), st.decimals(), special_decimals()),
     )
     return draw(values)
 
 
-@composite
+@st.composite
 def valid_ranges(draw, max_len=10000):
-    places = draw(integers(0, 6))
-    valid_start = decimals(allow_nan=False, allow_infinity=False, places=places)
+    places = draw(st.integers(0, 6))
+    valid_start = st.decimals(allow_nan=False, allow_infinity=False, places=places)
     start = draw(valid_start)
 
     # Only allow ranges that we can loop over in a sensible amount of time
-    diffs = decimals(
+    diffs = st.decimals(
         max_value=1500, allow_nan=False, allow_infinity=False, places=places
     )
     diff = draw(diffs)
-    if draw(booleans()):
+    if draw(st.booleans()):
         diff = -diff
     stop = start + diff
 
-    valid_step = decimals(
+    valid_step = st.decimals(
         max_value=diff / max_len, allow_nan=False, allow_infinity=False, places=places
     ).filter(lambda x: not x.is_zero())
     step = draw(valid_step)
@@ -116,12 +107,12 @@ def test_len(values):
     assert len(range_) == len_
 
 
-@composite
+@st.composite
 def ranges_with_index(draw):
     values = draw(valid_ranges())
     range_ = DecimalRange(*values)
     assume(bool(range_))
-    index = draw(integers(min_value=0, max_value=len(range_) - 1))
+    index = draw(st.integers(min_value=0, max_value=len(range_) - 1))
     return (range_, index)
 
 
@@ -143,7 +134,7 @@ def test_contains_truthy(range_and_index):
 
 @given(
     valid_ranges(),
-    decimals(allow_nan=False, allow_infinity=False).filter(
+    st.decimals(allow_nan=False, allow_infinity=False).filter(
         lambda x: x.as_integer_ratio()[1] != 1
     ),
 )

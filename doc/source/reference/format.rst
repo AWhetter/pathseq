@@ -1,11 +1,26 @@
 Format of Sequence Strings
 ==========================
 
+PathSeq's chosen sequence format is a simple, unambiguous format that maximises
+compatibility across VFX DCCs (Digital Content Creation software).
+
+.. seealso::
+
+   See :ref:`adr-001` for more information about why this format was chosen.
+
 Path Sequences
 --------------
 
-The name of a path sequence is the final path component.
-It is what represents the file names of all files in the sequence.
+Like in :mod:`pathlib`,
+the name of a path sequence is the final component in a path.
+
+.. code-block:: text
+
+   /directory/file.1-5#.tar.gz
+              ^--------------^
+              |     name     |
+
+A sequence's name represents the file names of all files in the sequence.
 The name has four components:
 
 * The stem
@@ -63,16 +78,6 @@ Multiple ranges are separated by an inter-range separator.
 Specification
 ~~~~~~~~~~~~~
 
-.. note::
-
-   File sequences, cannot be parsed with an unambiguous context free grammar.
-   The fact that strings of arbitrary characters can exist either side of the frame ranges
-   means that a valid file sequence can always be parsed both as
-   a list of arbitrary characters and as a set of ranges surrounded by arbitrary characters.
-
-   Considering that it takes :math:`O(n^3)` time to parse unambiguous grammars,
-   we take an informal approach to parsing file sequences.
-
 File sequences are parsed by a two step process consisting of tokenisation
 and parsing those tokens with a
 `Deterministic Finite State Machine <https://en.wikipedia.org/wiki/Deterministic_finite_automaton>`_.
@@ -128,6 +133,8 @@ That state machine is as follows:
 Frame Ranges
 ------------
 
+TODO: Explain padding options
+
 Grammar
 ~~~~~~~~
 
@@ -161,6 +168,38 @@ the VFX industry.
      -
      -
 
-.. seealso::
+Loose Format
+------------
 
-   See :ref:`adr-001` for more information about why this format was chosen.
+The PathSeq API has the concept of a "loose" format.
+Whereas the normal sequence string format maximises simplicity,
+the loose format trades simplicity for
+compatibility in parsing sequence strings from unknown sources.
+
+The loose format is a flexible format that
+can parse the most sequence strings,
+but those strings may only work for one DCC.
+This format can be useful when there isn't a guarantee that the
+sequence string to be parsed is in the simple format.
+
+In `Path Sequences`_ we saw that in the strict format,
+a sequence's name has four components.
+The loose format has an additional component, the postfix.
+
+TODO: name_breakdown.svg but with the additional component
+
+Specification
+~~~~~~~~~~~~~
+
+TODO: Talk about the three types (ranges before, in, after).
+
+.. warning::
+
+   The fact that strings of arbitrary characters can exist either side of the frame ranges
+   means that a valid file sequence can always be parsed both as
+   a list of arbitrary characters and as a set of ranges surrounded by arbitrary characters.
+
+   Therefore the loose format can only make a best guess at how to interpret a 
+
+.. figure:: /_static/adrs/all_formats.svg
+   :class: solid-background

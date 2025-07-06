@@ -2,59 +2,162 @@
 Quickstart
 **********
 
+TODO: pip install
+
 First, start by importing pathseq:
 
 .. code-block:: pycon
 
     >>> import pathseq
 
-* Basic parsing of each pad string
-* Looping over paths in a sequence
+Iteration
+=========
+
+The file paths in a path sequence are looped over in order.
 
 .. code-block:: pycon
 
-    >>> seq = PathSequence("/path/to/images.1-5####.exr")
+    >>> seq = PathSequence("/path/to/image.1-5####.exr")
     >>> for path in seq:
-    ...     print(path)
+    ...     path
     ...
-    PosixPath("/path/to/images.0001.exr")
-    PosixPath("/path/to/images.0002.exr")
-    PosixPath("/path/to/images.0003.exr")
-    PosixPath("/path/to/images.0004.exr")
-    PosixPath("/path/to/images.0005.exr")
+    PosixPath('/path/to/image.0001.exr')
+    PosixPath('/path/to/image.0002.exr')
+    PosixPath('/path/to/image.0003.exr')
+    PosixPath('/path/to/image.0004.exr')
+    PosixPath('/path/to/image.0005.exr')
 
-* Multi-dimension ranges (eg animated UDIMs)
+PathSeq supports multi-dimension sequences (eg animated UDIMs).
 
 .. code-block:: pycon
 
-    >>> anim_udims = PathSequence("/path/to/textures.1011-1012<UDIM>_1-3#.tex")
+    >>> anim_udims = PathSequence("/path/to/texture.1011-1012<UDIM>_1-3#.tex")
+    >>> for path in anim_udims:
+    ...     path
+    ...
+    PosixPath('/path/to/texture.1011_1.tex')
+    PosixPath('/path/to/texture.1011_2.tex')
+    PosixPath('/path/to/texture.1011_3.tex')
+    PosixPath('/path/to/texture.1012_1.tex')
+    PosixPath('/path/to/texture.1012_2.tex')
+    PosixPath('/path/to/texture.1012_3.tex')
+
+Subframes are also supported using fixed-precision decimals.
+
+.. code-block:: pycon
+
+    >>> seq = PathSequence("/path/to/image.1.1-1.5x0.1####.exr")
     >>> for path in seq:
-    ...     print(path)
+    ...     path
     ...
-    PosixPath("/path/to/images.1011_0001.exr")
-    PosixPath("/path/to/images.1011_0002.exr")
-    PosixPath("/path/to/images.1011_0003.exr")
-    PosixPath("/path/to/images.1012_0001.exr")
-    PosixPath("/path/to/images.1012_0002.exr")
-    PosixPath("/path/to/images.1012_0003.exr")
+    PosixPath('/path/to/image.0001.1.exr')
+    PosixPath('/path/to/image.0001.2.exr')
+    PosixPath('/path/to/image.0001.3.exr')
+    PosixPath('/path/to/image.0001.4.exr')
+    PosixPath('/path/to/image.0001.5.exr')
 
-* Conversions
-* Basic hashing, and mutability
-* Joining and parenting
+
+Range Strings
+=============
+
+PathSeq supports common range syntaxes, such as steps:
 
 .. code-block:: pycon
 
-    >>> seq.parent
-    PosixPath("/path/to")
-    >>> seq3 = seq.parent / PathSequence("images.1-5####.exr")
-    >>> seq3 == seq
+    >>> seq = PathSequence("/path/to/image.1-5x2####.exr")
+    >>> for path in seq:
+    ...     path
+    ...
+    PosixPath('/path/to/image.0001.exr')
+    PosixPath('/path/to/image.0003.exr')
+    PosixPath('/path/to/image.0005.exr')
+
+commas:
+
+.. code-block:: pycon
+
+    >>> seq = PathSequence("/path/to/image.1,5,10####.exr")
+    >>> for path in seq:
+    ...     path
+    ...
+    PosixPath('/path/to/image.0001.exr')
+    PosixPath('/path/to/image.0005.exr')
+    PosixPath('/path/to/image.0010.exr')
+
+and negative numbers:
+
+.. code-block:: pycon
+
+    >>> seq = PathSequence("/path/to/image.-3--1####.exr")
+    >>> for path in seq:
+    ...     path
+    ...
+    PosixPath('/path/to/image.-0003.exr')
+    PosixPath('/path/to/image.-0002.exr')
+    PosixPath('/path/to/image.-0001.exr')
+
+
+Equality, and Hashing
+=====================
+
+Path sequences can be compared for equality.
+
+.. code-block:: pycon
+
+    >>> seq_a = PathSequence("/path/to/image.1-5####.exr")
+    >>> seq_b = PathSequence("/path/to/image.1-5####.exr")
+    >>> seq_a == seq_b
     True
+    >>> seq_c = PathSequence("image.1-5####.exr")
+    >>> seq_d = PathSequence("frame.1-5####.exr")
+    >>> seq_c == seq_d
+    False
+
+Path sequences are an ordered set of file paths.
+So two sequences with different strings that represent the same set of file paths
+are treated as equal.
+
+.. code-block:: pycon
+
+    >>> seq_a = PathSequence("/path/to/image.1-3####.exr")
+    >>> seq_b = PathSequence("/path/to/image.1,2,3####.exr")
+    >>> seq_a == seq_b
+    True
+    # Convert to a string to check for string equality
+    >>> str(seq_a) == str(seq_b)
+    False
+
+Path sequences are immutable, so can be hashed and used as dictionary keys.
+
+.. code-block:: pycon
+
+    >>> seq = PathSequence("/path/to/image.1-5####.exr")
+    >>> d = {seq: True}
+
+
+Parenting and Joining
+=====================
+
+The parent of a path sequence is always a directory,
+and is therefore always returned as a :class:`pathlib.Path`.
+
+.. code-block:: pycon
+
+    >>> seq = PathSequence("/path/to/image.1-5####.exr")
+    >>> seq.parent
+    PosixPath('/path/to')
+
+Like :class:`pathlib.Path`, path sequences can be joined with a ``/``.
+
+.. code-block:: pycon
+
+    >>> seq = PathSequence("/path/to/image.1-5####.exr")
+    >>> joined = seq.parent / PathSequence("image.1-5####.exr")
+    >>> joined == seq
+    True
+
+Type Checking
+=============
 
 * Type checking (has_subsamples)
 
-* Composition of a sequence (name, ranges + separators, suffixes)
-* Reformatting and setting new ranges
-* Complex equality and normalisation
-
-* API reference
-* Grammar

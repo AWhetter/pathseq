@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence, Set
 from decimal import Decimal
+import itertools
 import os
 import pathlib
 from typing import overload, TypeVar, Union
@@ -37,6 +38,7 @@ class PurePathSequence(Sequence[T], Set[T]):
     Raises:
         NotASequenceError: When the given path does not represent a sequence.
     """
+    _pathlib_type: type[pathlib.PurePath] = pathlib.PurePath
 
     def __new__(cls, *args, **kwargs):
         if cls is PurePathSequence:
@@ -44,7 +46,7 @@ class PurePathSequence(Sequence[T], Set[T]):
         return object.__new__(cls)
 
     def __init__(self, *pathsegments: Segment) -> None:
-        self._path = pathlib.PurePath(*pathsegments)
+        self._path = self._pathlib_type(*pathsegments)
         self._parsed = parse_path_sequence(self._path.name)
 
     # General properties
@@ -193,34 +195,14 @@ class PurePathSequence(Sequence[T], Set[T]):
             x.file_num_set for x in self._parsed.ranges[::2]
         ]
 
-        if not ranges:
+        if not ranges:  # TODO: Will this ever happen or should we be erroring?
             yield self._path
             return
 
         iterators = [iter(x if x is not None else (None,)) for x in ranges]
-        result = [next(iterator) for iterator in iterators]
-        while True:
-            # Exhaust the first iterator
-            iterator = iterators[0]
-            for x in iterator:
-                result[0] = x
-                yield self.path(*result)
-
-            for i, iterator in enumerate(iterators[1:], start=1):
-                try:
-                    result[i] = next(iterator)
-                except StopIteration:
-                    pass
-                else:
-                    # The earlier ranges have been exhausted, so reset them.
-                    iterators[:i] = [
-                        iter(x if x is not None else (None,)) for x in ranges[:i]
-                    ]
-                    result[:i] = [next(iterator) for iterator in iterators[:i]]
-                    break
-            else:
-                # All ranges have been exhausted
-                break
+        # TODO: Check that this isn't using mega amounts of memory
+        for result in itertools.product(*iterators):
+            yield self.path(*result)
 
     def __len__(self) -> int:
         result = 1
@@ -256,11 +238,19 @@ class PurePathSequence(Sequence[T], Set[T]):
     ) -> Iterable[Self | pathlib.PurePath]:
         """Create one or more path sequences from a list of paths."""
 
+    # TODO: Rename to "format"?
     def path(self, *numbers: int | Decimal | None) -> Self | pathlib.PurePath:
         """Return a path for the given file number(s) in the sequence.
 
         None means don't fill in this range.
         """
+        name = self._parsed.to_str_with_file_numbers(*numbers)
+        result = self._path.with_name(name)
+
+        if any(number is None for number in numbers):
+            return self.__class__(result)
+
+        return result
 
     # TODO: Or just via part objects?
     def file_num_sets(self) -> tuple[FileNumSet] | None:

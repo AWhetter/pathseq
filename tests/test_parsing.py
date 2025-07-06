@@ -57,6 +57,26 @@ class TestPathSequence:
                 ),
                 id="file.1-10x2#.exr",
             ),
+            pytest.param(
+                "textures.1011-1012<UDIM>_1-3#.tex",
+                ParsedSequence(
+                    "textures",
+                    ".",
+                    (
+                        PaddedRange(
+                            FileNumSet.from_str("1011-1012"),
+                            "<UDIM>",
+                        ),
+                        "_",
+                        PaddedRange(
+                            FileNumSet.from_str("1-3"),
+                            "#",
+                        ),
+                    ),
+                    (".tex",),
+                ),
+                id="textures.1011-1012<UDIM>_1-3#.tex",
+            ),
         ],
     )
     def test_simple(self, seq, expected):

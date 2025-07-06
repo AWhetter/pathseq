@@ -48,3 +48,8 @@ title_format = "pathseq v{version} ({project_date})"
 markers = [
     "todo",
 ]
+addopts = "--doctest-glob='*.rst'"
+testpaths = [
+    "tests",
+    "doc/source",
+]

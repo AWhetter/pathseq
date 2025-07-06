@@ -209,7 +209,7 @@ class TestStem:
         pass
 
 
-class WithName:
+class TestWithName:
     def test_simple(self):
         old = "file.1-10#.exr"
         new = "new.1-5#.exr"
@@ -226,7 +226,7 @@ class WithName:
         pass
 
 
-class WithStem:
+class TestWithStem:
     @pytest.mark.parametrize(
         "seq_str,new_stem,expected_seq_str",
         [
@@ -284,7 +284,7 @@ class WithStem:
         pass
 
 
-class WithSuffix:
+class TestWithSuffix:
     @pytest.mark.parametrize(
         "seq_str,new_suffix,expected_seq_str",
         [
@@ -340,3 +340,16 @@ class WithSuffix:
     @pytest.mark.todo
     def test_ends_with_empty_replacement(self):
         pass
+
+
+class TestIter:
+    @pytest.mark.parametrize(
+        "seq_str,expected",
+        [
+            pytest.param("image.1-5####.exr", [f"image.000{x}.exr" for x in range(1, 6)], id="images.1-5####.exr"),
+            pytest.param("texture.1011-1012####_1-3#.tex", [f"texture.{x}_{y}.tex" for x in range(1011, 1013) for y in range(1, 4)], id="textures.1011-1012####_1-3#.tex"),
+        ],
+    )
+    def test_simple(self, seq_str, expected):
+        seq = PurePathSequence(seq_str)
+        assert list(str(x) for x in seq) == expected

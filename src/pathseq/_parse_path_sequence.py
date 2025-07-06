@@ -271,6 +271,9 @@ class _SeqParser(StateMachine):
     def on_enter_range_in_name(self, token):
         self._ranges.append(self._parse_padded_range(token))
 
+    def on_enter_in_inter_range(self, token):
+        self._ranges.append(token.value or "")
+
     def on_enter_in_suffixes(self, token):
         self._suffixes = self._parse_suffixes(token)
 

@@ -32,11 +32,11 @@ In a path sequence, this remains the same:
 
     >>> seq = pathseq.PathSequence("/directory/file.1001-1010#.tar.gz")
     >>> seq.stem
-    "file.1001-1010#.tar"
+    'file'
     >>> seq.suffix
-    ".gz"
+    '.gz'
     >>> seq.name
-    "file.1001-1010#.tar.gz"
+    'file.1001-1010#.tar.gz'
 
 However, the complete parsing of a file sequence requires many components:
 the prefix, the padded ranges, the suffixes, and the separators between those components.

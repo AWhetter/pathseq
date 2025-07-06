@@ -18,6 +18,7 @@ class PathSequence(PurePathSequence):
     TODO: Note that path sequences are not filesystem paths and therefore
     only a subset of filesystem operations are available.
     """
+    _pathlib_type = pathlib.Path
 
     def expanduser(self) -> Self:
         pass
