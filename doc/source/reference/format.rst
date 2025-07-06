@@ -40,7 +40,8 @@ The name has four components:
       file.1001-1010#.exr
       file.1001-1010#.tar.gz
 
-Multiple ranges are separated by an inter-range separator.
+Supporting multiple ranges in a sequence required an additional component:
+an inter-range separator.
 
 .. figure:: /_static/multi_range_breakdown.svg
    :class: solid-background
@@ -72,7 +73,7 @@ Multiple ranges are separated by an inter-range separator.
       # Bad
       file.1011-1019<UDIM>.1-5#.#.tar.gz
       # In file.1011.5.tar.gz, it is unclear if there's numbers from two ranges (1001 and 5),
-      # or a single subframes (1011.5).
+      # or a single subframe (1011.5).
 
 
 Specification
@@ -174,7 +175,7 @@ Loose Format
 The PathSeq API has the concept of a "loose" format.
 Whereas the normal sequence string format maximises simplicity,
 the loose format trades simplicity for
-compatibility in parsing sequence strings from unknown sources.
+compatibility when parsing sequence strings from unknown sources.
 
 The loose format is a flexible format that
 can parse the most sequence strings,
@@ -183,8 +184,10 @@ This format can be useful when there isn't a guarantee that the
 sequence string to be parsed is in the simple format.
 
 In `Path Sequences`_ we saw that in the strict format,
-a sequence's name has four components.
-The loose format has an additional component, the postfix.
+a sequence's name has four components:
+the stem, an optional prefix, the ranges, inter-range strings, and the suffixes.
+The loose format has an additional component, the postfix,
+to support additional characters after the ranges but before the suffixes.
 
 TODO: name_breakdown.svg but with the additional component
 

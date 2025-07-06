@@ -27,11 +27,11 @@ by various VFX software.
      - Notes
    * - Blender
      - 1
-     - 1
-     - ?
+     - ✗
+     - ✔ [#]_
      - ✔
-     - ?
-     - ?
+     - ✗
+     - N
      - [#]_
    * - fileseq
      - 4 [#]_
@@ -92,6 +92,8 @@ by various VFX software.
 
 Notes:
 
+.. [#] Sequences starting with a range need to be passed as an explicit path.
+       For example, ``##_file.ext`` is not accepted, but ``./##_file.ext`` is.
 .. [#] Blender does not support sub-frame output.
 .. [#] fileseq objects can be passed an argument to treat ``#`` as a single digit of padding.
 .. [#] Houdini expressions use their own syntax (See :ref:`houdini_file_seq`).
@@ -109,6 +111,69 @@ for example when calling blender via subprocess.
 .. warning::
 
     Blender does not support subframe output.
+
+**Input**
+
+Blender does not document any use of sequence strings as input.
+
+**Output**
+
+* ``##_file.ext`` is not accepted on it own.
+
+  .. code-block:: text
+
+     $ blender -b cube_diorama.blend -o ##_render.png -F PNG -x 1 -f 1
+     ...
+     Error: you must specify a path after '-o  / --render-output'.
+
+  But ``./##_file.ext`` becomes ``01_file.ext``.
+* ``file_##.ext`` becomes ``file_01.ext``
+* ``file-####.ext`` becomes ``file-0001.ext``
+* ``file.ext##`` becomes ``file.ext##.ext``.
+  So ranges cannot end a sequence.
+* ``file##.ext`` becomes ``file##.ext``.
+
+.. list-table::
+   :header-rows: 1
+   :stub-columns: 1
+
+   * -
+     - Sequence string
+     - Output file
+   * - Ranges starts name
+     - ``./##_file.ext``
+     - ``01_file.ext``
+   * - Ranges in name
+     - ``file_##.ext``
+     - ``file_01.ext``
+   * - Ranges ends name
+     - ``file.ext##``
+     - ``file.ext##.ext``
+   * - Prefix required
+     - ``file##.ext``
+     - ``file##.ext``
+
+.. note::
+
+   ``##_file.ext`` is not accepted on its own.
+
+   .. code-block:: text
+
+      $ blender -b cube_diorama.blend -o ##_render.png -F PNG -x 1 -f 1
+      ...
+      Error: you must specify a path after '-o  / --render-output'.
+
+   So Blender does not fully support ranges at the start of the sequence.
+
+.. note::
+
+   The following command outputs files as ``file0001.png``.
+
+   .. code-block:: text
+
+      $ blender -b cube_diorama.blend -o file -F PNG -x 1 -f 1
+
+   So Blender seems to "prefer" ranges right before the extension.
 
 
 fileseq
@@ -133,7 +198,7 @@ Houdini
 
 Source: https://www.sidefx.com/docs/houdini/render/expressions.html
 
-Houdini's allows the use of powerful expressions in file path parameters
+Houdini allows the use of powerful expressions in file path parameters
 for both reading and writing files.
 
 * ``$Fd``, where ``d`` is an optional number of digits.
@@ -161,8 +226,20 @@ Sources:
 
 * https://learn.foundry.com/katana/Content/rg/2d_nodes/imagewrite.html
 * https://learn.foundry.com/katana/Content/ug/viewing_renders/catalog_tab.html
+* https://learn.foundry.com/katana/content/tg/launch_modes/batch_mode.html
 
-In input and output strings, "#" is a single character of digits.
+**Input**
+
+Katana does not document the input sequences that it supports.
+
+**Output**
+
+Katana does not clearly document the output formats that it supports.
+
+In the case of the Catalog tool, only ``file.#.ext`` is supported.
+
+In the case of batch mode rendering, "#" is a single character of digits
+and examples always show the range before the extension.
 
 
 Maya
@@ -458,6 +535,17 @@ as can be seen when using a fractional chunk size that does not divide exactly i
    >>> import fileseq
    >>> list(fileseq.FileSequence("file.1001-1003x0.3#.@.exr", allow_subframes=True))
    ['file.1001.0.exr', 'file.1001.3.exr', 'file.1001.6.exr', 'file.1001.9.exr', 'file.1002.2.exr', 'file.1002.5.exr', 'file.1002.8.exr']
+
+
+Katana
+^^^^^^
+
+.. code-block:: text
+
+   Where <frame range> can take the form of a range (such as 1-5)
+   or a comma separated list (such as 1,2,3,4,5).
+   These can be combined, for instance: 1-3,5, which would render
+   frames 1, 2, 3, and 5.
 
 
 Supporting Ranges Anywhere in a File Name

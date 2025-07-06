@@ -15,7 +15,7 @@ from typing_extensions import (
 
 from ._file_num_set import FileNumSet
 from ._parse_path_sequence import parse_path_sequence
-from ._type import PaddedRange
+from ._ast import PaddedRange
 
 Segment: TypeAlias = Union[str, os.PathLike[str], "PurePathSequence"]
 T = TypeVar("T", int, Decimal)

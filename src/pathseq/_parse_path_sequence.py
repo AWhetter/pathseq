@@ -9,9 +9,8 @@ from statemachine import StateMachine, State
 
 from ._error import NotASequenceError, ParseError
 from ._file_num_set import FileNumSet
-from ._type import (
+from ._ast import (
     PaddedRange,
-    ParsedSequence,
     ParsedSequence,
 )
 
