@@ -3,11 +3,10 @@ from __future__ import annotations
 from decimal import Decimal
 import itertools
 
-import dataclasses
 from dataclasses import dataclass
 from typing import Self
 
-from ._base import stringify_parsed_sequence, PaddedRange
+from ._base import non_recursive_asdict, stringify_parsed_sequence, PaddedRange
 
 
 @dataclass(frozen=True)
@@ -21,7 +20,7 @@ class ParsedSequence:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
-        kwargs = dataclasses.asdict(self)
+        kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         if not stem and self.stem:
             kwargs["prefix_separator"] = ""
@@ -32,13 +31,13 @@ class ParsedSequence:
             if not suffix.startswith("."):
                 raise ValueError(f"Invalid suffix '{suffix}'")
 
-            kwargs = dataclasses.asdict(self)
+            kwargs = non_recursive_asdict(self)
             add_suffixes = tuple(f".{s}" for s in suffix.split("."))
             kwargs["suffixes"] = self.suffixes[:-1] + add_suffixes
             return self.__class__(**kwargs)
 
         if self.suffixes:
-            kwargs = dataclasses.asdict(self)
+            kwargs = non_recursive_asdict(self)
             kwargs["suffixes"] = self.suffixes[:-1]
             return self.__class__(**kwargs)
 
@@ -48,7 +47,9 @@ class ParsedSequence:
         len_numbers = len(numbers)
         expected_numbers = len(self.ranges[::2])
         if len_numbers != expected_numbers:
-            raise TypeError(f"Expected {expected_numbers} file numbers. Got {len_numbers}")
+            raise TypeError(
+                f"Expected {expected_numbers} file numbers. Got {len_numbers}"
+            )
 
         to_splice = list(numbers)
         for i, (number, _range) in enumerate(zip(numbers, self.ranges[::2])):

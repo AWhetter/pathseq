@@ -84,9 +84,11 @@ class FileNumSet(Set[T]):
         if not isinstance(other, FileNumSet):
             return NotImplemented
 
-        return len(self._ranges) == len(other._ranges) and all(
-            r1 == r2 for r1, r2 in zip(self._ranges, other._ranges)
-        )
+        # TODO: Implement range normalisation so that we don't need to iterate over everything
+        try:
+            return all(r1 == r2 for r1, r2 in zip(self, other, strict=True))
+        except ValueError:
+            return False
 
     def __hash__(self) -> int:
         return hash((type(self), self._ranges))

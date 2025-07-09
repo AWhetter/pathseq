@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 
-from pathseq import PurePathSequence
+from pathseq import LoosePurePathSequence
 
 
 class TestEqAndHash:
@@ -21,8 +21,8 @@ class TestEqAndHash:
         ],
     )
     def test_simple_truthy(self, path1, path2):
-        seq1 = PurePathSequence(path1)
-        seq2 = PurePathSequence(path2)
+        seq1 = LoosePurePathSequence(path1)
+        seq2 = LoosePurePathSequence(path2)
         assert seq1 == seq2
         assert len({seq1, seq1}) == 1
 
@@ -36,8 +36,8 @@ class TestEqAndHash:
         ],
     )
     def test_simple_falsey(self, path1, path2):
-        seq1 = PurePathSequence(path1)
-        seq2 = PurePathSequence(path2)
+        seq1 = LoosePurePathSequence(path1)
+        seq2 = LoosePurePathSequence(path2)
         assert seq1 != seq2
         assert len({seq1, seq2}) == 2
 
@@ -52,8 +52,8 @@ class TestEqAndHash:
         ],
     )
     def test_normalised_ranges(self, path1, path2):
-        seq1 = PurePathSequence(path1)
-        seq2 = PurePathSequence(path2)
+        seq1 = LoosePurePathSequence(path1)
+        seq2 = LoosePurePathSequence(path2)
         assert seq1 == seq2
         assert len({seq1, seq2}) == 1
 
@@ -69,8 +69,8 @@ class TestRTrueDiv:
         ],
     )
     def test_simple(self, path_str, seq_str):
-        result = pathlib.Path(path_str) / PurePathSequence(seq_str)
-        expected = PurePathSequence(pathlib.Path(path_str) / seq_str)
+        result = pathlib.Path(path_str) / LoosePurePathSequence(seq_str)
+        expected = LoosePurePathSequence(pathlib.Path(path_str) / seq_str)
         assert result == expected
 
 
@@ -84,7 +84,7 @@ class TestSuffix:
         ],
     )
     def test_recommended_format(self, path_str, expected):
-        path = PurePathSequence(path_str)
+        path = LoosePurePathSequence(path_str)
         assert path.suffix == expected
 
     @pytest.mark.parametrize(
@@ -99,7 +99,7 @@ class TestSuffix:
         ],
     )
     def test_recommended_with_subsamples(self, path_str, expected):
-        path = PurePathSequence(path_str)
+        path = LoosePurePathSequence(path_str)
         assert path.suffix == expected
 
 
@@ -113,7 +113,7 @@ class TestSuffixes:
         ],
     )
     def test_recommended_format(self, path_str, expected):
-        path = PurePathSequence(path_str)
+        path = LoosePurePathSequence(path_str)
         assert path.suffixes == expected
 
     @pytest.mark.parametrize(
@@ -128,7 +128,7 @@ class TestSuffixes:
         ],
     )
     def test_recommended_with_subsamples(self, path_str, expected):
-        path = PurePathSequence(path_str)
+        path = LoosePurePathSequence(path_str)
         assert path.suffixes == expected
 
     @pytest.mark.todo
@@ -166,7 +166,7 @@ class TestStem:
         ],
     )
     def test_recommended_format(self, path_str, expected):
-        path = PurePathSequence(path_str)
+        path = LoosePurePathSequence(path_str)
         assert path.stem == expected
 
     @pytest.mark.parametrize(
@@ -181,7 +181,7 @@ class TestStem:
         ],
     )
     def test_recommended_with_subsamples(self, path_str, expected):
-        path = PurePathSequence(path_str)
+        path = LoosePurePathSequence(path_str)
         assert path.stem == expected
 
     @pytest.mark.todo
@@ -214,13 +214,13 @@ class TestWithName:
         old = "file.1-10#.exr"
         new = "new.1-5#.exr"
 
-        old_path = "/directory" / PurePathSequence(old)
-        new_path = "/directory" / PurePathSequence(new)
+        old_path = "/directory" / LoosePurePathSequence(old)
+        new_path = "/directory" / LoosePurePathSequence(new)
         assert old_path.with_name(new) == new_path
 
     def test_empty(self):
         with pytest.raises(ValueError):
-            PurePathSequence("/file.1-10#.exr").with_name("")
+            LoosePurePathSequence("/file.1-10#.exr").with_name("")
 
 
 class TestWithStem:
@@ -229,11 +229,15 @@ class TestWithStem:
         [
             ("file.1-10#.exr", "new", "new.1-10#.exr"),
             ("file1-10#.exr", "new", "new1-10#.exr"),
+            ("1-10#.file.exr", "new", "1-10#.new.exr"),
+            ("1-10#file.exr", "new", "1-10#new.exr"),
+            ("file.exr.1-10#", "new", "new.exr.1-10#"),
+            ("file.exr1-10#", "new", "new.exr1-10#"),
         ],
     )
     def test_simple(self, seq_str, new_stem, expected_seq_str):
-        seq = "/directory" / PurePathSequence(seq_str)
-        expected = "/directory" / PurePathSequence(expected_seq_str)
+        seq = "/directory" / LoosePurePathSequence(seq_str)
+        expected = "/directory" / LoosePurePathSequence(expected_seq_str)
         assert seq.with_stem(new_stem) == expected
 
     @pytest.mark.parametrize(
@@ -241,11 +245,15 @@ class TestWithStem:
         [
             ("file.1-10#.exr", "", "1-10#.exr"),
             ("file1-10#.exr", "", "1-10#.exr"),
+            ("1-10#.file.exr", "", "1-10#.exr"),
+            ("1-10#file.exr", "", "1-10#exr"),
+            ("file.exr.1-10#", "", ".exr.1-10#"),
+            ("file.exr1-10#", "", ".exr1-10#"),
         ],
     )
     def test_empty_replacement(self, seq_str, new_stem, expected_seq_str):
-        seq = "/directory" / PurePathSequence(seq_str)
-        expected = "/directory" / PurePathSequence(expected_seq_str)
+        seq = "/directory" / LoosePurePathSequence(seq_str)
+        expected = "/directory" / LoosePurePathSequence(expected_seq_str)
         assert seq.with_stem(new_stem) == expected
 
     @pytest.mark.todo
@@ -279,11 +287,15 @@ class TestWithSuffix:
         [
             ("file.1-10#.exr", ".new", "file.1-10#.new"),
             ("file1-10#.exr", ".new", "file1-10#.new"),
+            ("1-10#.file.exr", ".new", "1-10#.file.new"),
+            ("1-10#file.exr", ".new", "1-10#file.new"),
+            ("file.exr.1-10#", ".new", "file.new.1-10#"),
+            ("file.exr1-10#", ".new", "file.new1-10#"),
         ],
     )
     def test_simple(self, seq_str, new_suffix, expected_seq_str):
-        seq = "/directory" / PurePathSequence(seq_str)
-        expected = "/directory" / PurePathSequence(expected_seq_str)
+        seq = "/directory" / LoosePurePathSequence(seq_str)
+        expected = "/directory" / LoosePurePathSequence(expected_seq_str)
         assert seq.with_suffix(new_suffix) == expected
 
     @pytest.mark.parametrize(
@@ -291,11 +303,15 @@ class TestWithSuffix:
         [
             ("file.1-10#.exr", "", "file.1-10#"),
             ("file1-10#.exr", "", "file1-10#"),
+            ("1-10#.file.exr", "", "1-10#.file"),
+            ("1-10#file.exr", "", "1-10#file"),
+            ("file.exr.1-10#", "", "file.1-10#"),
+            ("file.exr1-10#", "", "file1-10#"),
         ],
     )
     def test_empty(self, seq_str, new_suffix, expected_seq_str):
-        seq = "/directory" / PurePathSequence(seq_str)
-        expected = "/directory" / PurePathSequence(expected_seq_str)
+        seq = "/directory" / LoosePurePathSequence(seq_str)
+        expected = "/directory" / LoosePurePathSequence(expected_seq_str)
         assert seq.with_suffix(new_suffix) == expected
 
     @pytest.mark.todo
@@ -344,5 +360,5 @@ class TestIter:
         ],
     )
     def test_simple(self, seq_str, expected):
-        seq = PurePathSequence(seq_str)
+        seq = LoosePurePathSequence(seq_str)
         assert list(str(x) for x in seq) == expected

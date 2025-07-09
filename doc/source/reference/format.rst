@@ -71,9 +71,11 @@ an inter-range separator.
       file.1011-1019<UDIM>_1-5x0.5#.#.tar.gz  # file.1011_1.5.tar.gz
 
       # Bad
-      file.1011-1019<UDIM>.1-5#.#.tar.gz
+      file.1011-1019<UDIM>.1-5#.tar.gz
       # In file.1011.5.tar.gz, it is unclear if there's numbers from two ranges (1001 and 5),
       # or a single subframe (1011.5).
+      file.1011-1019<UDIM>1-5#.tar.gz
+      # In file.10115.tar.gz, it looks like there is only a single frame number.
 
 
 Specification
@@ -136,6 +138,15 @@ Frame Ranges
 
 TODO: Explain padding options
 
+.. warning::
+
+   Some DCCs support the use of the "@" character as a single digit pad string.
+   PathSeq does not support this character because it has conflicting definitions
+   between DCCs.
+   Users are encouraged to preprocess "@" characters out of sequence strings
+   passed to PathSeq if this character may be present as a pad character.
+
+
 Grammar
 ~~~~~~~~
 
@@ -173,28 +184,45 @@ Loose Format
 ------------
 
 The PathSeq API has the concept of a "loose" format.
-Whereas the normal sequence string format maximises simplicity,
-the loose format trades simplicity for
-compatibility when parsing sequence strings from unknown sources.
+Whereas the normal sequence string format maximises simplicity
+and compatibility across VFX software,
+the loose format trades that for
+compatibility in parsing more sequence strings.
 
-The loose format is a flexible format that
-can parse the most sequence strings,
+The loose format is a flexible format that is useful
+when parsing sequence strings from unknown sources.
+It can parse the most sequence strings,
 but those strings may only work for one DCC.
 This format can be useful when there isn't a guarantee that the
-sequence string to be parsed is in the simple format.
+sequence string being parsed is in the simple format.
 
 In `Path Sequences`_ we saw that in the strict format,
 a sequence's name has four components:
 the stem, an optional prefix, the ranges, inter-range strings, and the suffixes.
 The loose format has an additional component, the postfix,
-to support additional characters after the ranges but before the suffixes.
+to support additional characters after the ranges but before the next component.
 
-TODO: name_breakdown.svg but with the additional component
+.. figure:: /_static/loose_name_breakdown.svg
+   :class: solid-background
 
-Specification
-~~~~~~~~~~~~~
+In addition, ranges can be placed anywhere in the sequence string.
+The placement of the range in the strings creates three varieties of loose sequence strings,
+based where the ranges are placed in the string.
 
-TODO: Talk about the three types (ranges before, in, after).
+The ranges can be at the start of the sequence string:
+
+.. figure:: /_static/starts_name_breakdown.svg
+   :class: solid-background
+
+Ranges can be inside the sequence string:
+
+.. figure:: /_static/loose_name_breakdown.svg
+   :class: solid-background
+
+Finally, ranges can be at the end of the sequence string:
+
+.. figure:: /_static/ends_name_breakdown.svg
+   :class: solid-background
 
 .. warning::
 
@@ -202,7 +230,79 @@ TODO: Talk about the three types (ranges before, in, after).
    means that a valid file sequence can always be parsed both as
    a list of arbitrary characters and as a set of ranges surrounded by arbitrary characters.
 
-   Therefore the loose format can only make a best guess at how to interpret a 
+   Therefore the loose format can only make a best guess at how to interpret a sequence string.
+
+.. attention:: Hidden file sequences (starting with .)
+
+   File sequences starting with a "." have unintuitive behaviour.
+   For example:
+
+   .. code:: text
+
+      .1-5#file.ext
+
+   In this case, the range is considered "in" the string, where the "." is the stem.
+   TODO: Maybe it should just be a prefix though?
+
+Specification
+~~~~~~~~~~~~~
+
+Like strict file sequences,
+loose file sequences are parsed by a two step process consisting of tokenisation
+and parsing those tokens with a
+`Deterministic Finite State Machine <https://en.wikipedia.org/wiki/Deterministic_finite_automaton>`_.
+That state machine is as follows:
 
 .. figure:: /_static/adrs/all_formats.svg
    :class: solid-background
+
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image solid-background
+
+     oval "stem" fit
+
+  Similar to :attr:`python:pathlib.PurePath.stem`.
+  This is the final path component without the ranges and all suffixes.
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image solid-background
+
+     box "prefix" fit
+
+  An optional ``.`` or ``_`` that separates the stem or suffixes from the ranges.
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image solid-background
+
+     oval "range" fit
+
+  A range, as defined in `Frame Ranges`_.
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image solid-background
+
+     box "inter-range" fit
+
+  An arbitrary string that separates the ranges.
+  Typically this is a ``_``, but may be more complex.
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image solid-background
+
+     box "postfix" fit
+
+  An optional ``.`` or ``_`` that separates the ranges from the stem or suffixes.
+* .. kroki::
+     :type: pikchr
+     :align: left
+     :class: legend-image solid-background
+
+     oval "suffixes" fit
+
+  The file suffixes, including the leading ``.``.

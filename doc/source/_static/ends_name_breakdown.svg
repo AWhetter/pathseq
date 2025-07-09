@@ -1,0 +1,53 @@
+<svg xmlns='http://www.w3.org/2000/svg' style='font-size:initial;' viewBox="0 0 566.5 109.213" data-pikchr-date="20250319161943">
+<text x="67.104" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">/directory/</text>
+<text x="132.156" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">file</text>
+<text x="173.179" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">.tif</text>
+<text x="199.855" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">.</text>
+<text x="278.177" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">1001-1002&lt;UDIM&gt;</text>
+<text x="356.499" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">_</text>
+<text x="383.175" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">1-5#</text>
+<path d="M106.063,76.8132L158.249,76.8132L158.249,46.5732L106.063,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="132.156" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">stem</text>
+<path d="M166.753,76.8132L242.67,76.8132L242.67,46.5732L166.753,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="204.711" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">suffixes</text>
+<path d="M251.173,76.8132L311.769,76.8132L311.769,46.5732L251.173,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="281.471" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">prefix</text>
+<path d="M320.273,76.8132L380.637,76.8132L380.637,46.5732L320.273,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="350.455" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">range</text>
+<path d="M389.141,76.8132L495.471,76.8132L495.471,46.5732L389.141,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="442.306" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">inter-range</text>
+<path d="M503.975,76.8132L564.34,76.8132L564.34,46.5732L503.975,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="534.157" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">range</text>
+<path d="M106.063,46.5732L113.062,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="113.062,32.4 124.582,28.08 124.582,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="151.25,32.4 139.73,36.72 139.73,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M118.822,32.4L145.49,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M151.25,32.4L158.249,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M251.173,46.5732L192.274,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="192.274,32.4 199.992,29.5056 199.992,35.2944" style="fill:rgb(0,0,0)"/>
+<polygon points="207.437,32.4 199.719,35.2944 199.719,29.5056" style="fill:rgb(0,0,0)"/>
+<path d="M196.133,32.4L203.578,32.4"  style="fill:none;stroke-width:1.4472;stroke:rgb(0,0,0);" />
+<path d="M207.437,32.4L311.769,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M320.273,46.5732L207.437,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="207.437,32.4 218.957,28.08 218.957,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="348.917,32.4 337.397,36.72 337.397,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M213.197,32.4L343.157,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M348.917,32.4L380.637,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M389.141,46.5732L348.917,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="348.917,32.4 356.635,29.5056 356.635,35.2944" style="fill:rgb(0,0,0)"/>
+<polygon points="364.08,32.4 356.362,35.2944 356.362,29.5056" style="fill:rgb(0,0,0)"/>
+<path d="M352.776,32.4L360.221,32.4"  style="fill:none;stroke-width:1.4472;stroke:rgb(0,0,0);" />
+<path d="M364.08,32.4L495.471,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M503.975,46.5732L364.08,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="364.08,32.4 375.6,28.08 375.6,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="402.269,32.4 390.749,36.72 390.749,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M369.84,32.4L396.509,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M402.269,32.4L564.34,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M166.753,46.5732L154.085,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="154.085,32.4 165.605,28.08 165.605,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="192.274,32.4 180.754,36.72 180.754,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M159.845,32.4L186.514,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M192.274,32.4L242.67,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="442.306" y="91.9332" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">ranges</text>
+<path d="M320.273,76.8132L320.273,107.053L564.34,107.053L564.34,76.8132L320.273,76.8132"  style="fill:none;stroke-width:2.16;stroke-linejoin:round;stroke:rgb(0,0,0);" />
+</svg>

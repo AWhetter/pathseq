@@ -1,0 +1,61 @@
+<svg xmlns='http://www.w3.org/2000/svg' style='font-family:sans-serif; font-size:initial;' viewBox="0 0 604.868 109.213" data-pikchr-date="20250319161943">
+<text x="67.104" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">/directory/</text>
+<text x="132.156" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">file</text>
+<text x="158.832" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">.</text>
+<text x="237.154" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">1001-1002&lt;UDIM&gt;</text>
+<text x="315.475" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">_</text>
+<text x="342.151" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">1-5#</text>
+<text x="388.015" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">_final</text>
+<text x="436.714" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">.tif</text>
+<path d="M128.534,76.8132L189.13,76.8132L189.13,46.5732L128.534,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="158.832" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">prefix</text>
+<path d="M67.8449,76.8132L120.03,76.8132L120.03,46.5732L67.8449,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="93.9377" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">stem</text>
+<path d="M197.634,76.8132L257.998,76.8132L257.998,46.5732L197.634,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="227.816" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">range</text>
+<path d="M266.502,76.8132L372.832,76.8132L372.832,46.5732L266.502,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="319.667" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">inter-range</text>
+<path d="M381.336,76.8132L441.701,76.8132L441.701,46.5732L381.336,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="411.518" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">range</text>
+<path d="M450.205,76.8132L518.288,76.8132L518.288,46.5732L450.205,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="484.246" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">postfix</text>
+<path d="M526.792,76.8132L602.708,76.8132L602.708,46.5732L526.792,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="564.75" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">suffixes</text>
+<path d="M67.8449,46.5732L113.062,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="113.062,32.4 124.582,28.08 124.582,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="151.25,32.4 139.73,36.72 139.73,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M118.822,32.4L145.49,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M151.25,32.4L120.03,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M128.534,46.5732L151.25,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="151.25,32.4 158.969,29.5056 158.969,35.2944" style="fill:rgb(0,0,0)"/>
+<polygon points="166.414,32.4 158.695,35.2944 158.695,29.5056" style="fill:rgb(0,0,0)"/>
+<path d="M155.11,32.4L162.554,32.4"  style="fill:none;stroke-width:1.4472;stroke:rgb(0,0,0);" />
+<path d="M166.414,32.4L189.13,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M197.634,46.5732L166.414,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="166.414,32.4 177.934,28.08 177.934,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="307.894,32.4 296.374,36.72 296.374,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M172.174,32.4L302.134,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M307.894,32.4L257.998,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M266.502,46.5732L307.894,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="307.894,32.4 315.612,29.5056 315.612,35.2944" style="fill:rgb(0,0,0)"/>
+<polygon points="323.057,32.4 315.338,35.2944 315.338,29.5056" style="fill:rgb(0,0,0)"/>
+<path d="M311.753,32.4L319.198,32.4"  style="fill:none;stroke-width:1.4472;stroke:rgb(0,0,0);" />
+<path d="M323.057,32.4L372.832,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M381.336,46.5732L323.057,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="323.057,32.4 334.577,28.08 334.577,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="361.246,32.4 349.726,36.72 349.726,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M328.817,32.4L355.486,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M361.246,32.4L441.701,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M450.205,46.5732L361.246,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="361.246,32.4 372.766,28.08 372.766,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="414.785,32.4 403.265,36.72 403.265,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M367.006,32.4L409.025,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M414.785,32.4L518.288,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M526.792,46.5732L417.619,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="417.619,32.4 429.139,28.08 429.139,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="455.808,32.4 444.288,36.72 444.288,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M423.379,32.4L450.048,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M455.808,32.4L602.708,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="319.667" y="91.9332" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">ranges</text>
+<path d="M197.634,76.8132L197.634,107.053L441.701,107.053L441.701,76.8132L197.634,76.8132"  style="fill:none;stroke-width:2.16;stroke-linejoin:round;stroke:rgb(0,0,0);" />
+</svg>

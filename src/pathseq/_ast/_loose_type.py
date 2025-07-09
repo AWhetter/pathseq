@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import dataclasses
 from dataclasses import dataclass
 from typing import Literal, Self
 
-from ._base import stringify_parsed_sequence, PaddedRange
+from ._base import non_recursive_asdict, stringify_parsed_sequence, PaddedRange
 
 
 @dataclass(frozen=True)
@@ -19,7 +18,7 @@ class RangesStartName:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
-        kwargs = dataclasses.asdict(self)
+        kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         if not stem and self.stem:
             kwargs["postfix"] = ""
@@ -30,13 +29,13 @@ class RangesStartName:
             if not suffix.startswith(".") or suffix == ".":
                 raise ValueError(f"Invalid suffix '{suffix}'")
 
-            kwargs = dataclasses.asdict(self)
+            kwargs = non_recursive_asdict(self)
             add_suffixes = tuple(f".{s}" for s in suffix.split("."))
             kwargs["suffixes"] = self.suffixes[:-1] + add_suffixes
             return self.__class__(**kwargs)
 
         if self.suffixes:
-            kwargs = dataclasses.asdict(self)
+            kwargs = non_recursive_asdict(self)
             kwargs["suffixes"] = self.suffixes[:-1]
             return self.__class__(**kwargs)
 
@@ -55,7 +54,7 @@ class RangesInName:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
-        kwargs = dataclasses.asdict(self)
+        kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         if not stem and self.stem:
             kwargs["prefix_separator"] = ""
@@ -66,13 +65,13 @@ class RangesInName:
             if not suffix.startswith("."):
                 raise ValueError(f"Invalid suffix '{suffix}'")
 
-            kwargs = dataclasses.asdict(self)
+            kwargs = non_recursive_asdict(self)
             add_suffixes = tuple(f".{s}" for s in suffix.split("."))
             kwargs["suffixes"] = self.suffixes[:-1] + add_suffixes
             return self.__class__(**kwargs)
 
         if self.suffixes:
-            kwargs = dataclasses.asdict(self)
+            kwargs = non_recursive_asdict(self)
             kwargs["suffixes"] = self.suffixes[:-1]
             if not kwargs["suffixes"]:
                 kwargs["postfix"] = ""
@@ -93,7 +92,7 @@ class RangesEndName:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
-        kwargs = dataclasses.asdict(self)
+        kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         return self.__class__(**kwargs)
 
@@ -102,13 +101,13 @@ class RangesEndName:
             if not suffix.startswith("."):
                 raise ValueError(f"Invalid suffix '{suffix}'")
 
-            kwargs = dataclasses.asdict(self)
+            kwargs = non_recursive_asdict(self)
             add_suffixes = tuple(f".{s}" for s in suffix.split("."))
             kwargs["suffixes"] = self.suffixes[:-1] + add_suffixes
             return self.__class__(**kwargs)
 
         if self.suffixes:
-            kwargs = dataclasses.asdict(self)
+            kwargs = non_recursive_asdict(self)
             kwargs["suffixes"] = self.suffixes[:-1]
             if not kwargs["suffixes"]:
                 kwargs["prefix_separator"] = ""

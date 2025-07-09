@@ -540,8 +540,6 @@ as can be seen when using a fractional chunk size that does not divide exactly i
 Katana
 ^^^^^^
 
-.. code-block:: text
-
    Where <frame range> can take the form of a range (such as 1-5)
    or a comma separated list (such as 1,2,3,4,5).
    These can be combined, for instance: 1-3,5, which would render
@@ -603,8 +601,8 @@ Options are categorised into three groups:
 
 * Where ranges can exist in the name.
 
-  * Anywhere: the beginning, end, or before the suffixes.
-  * The beginning, end, or before the suffixes.
+  * The beginning, the middle, or the end. In other words, anywhere.
+  * The beginning, before the suffixes, or the end.
   * Only before the suffixes.
 
 * The format of ranges.
@@ -616,7 +614,7 @@ Options are categorised into three groups:
 Decision Outcome
 ----------------
 
-The number of padding digits representing by a ``#`` will be one,
+The number of padding digits represented by a ``#`` will be one,
 as this is what is most widely used today.
 
 ``@`` will not be supported as a pad character because its support is not widespread,
@@ -627,12 +625,10 @@ because most DCCs support this syntax
 and future DCCs that adopt the MaterialX specification will as well.
 
 ``<UVTILE>`` will be supported as a token in ranges
-because, although support is not as widespread as ``<UDIM>``,
-many DCCs do support this syntax.
+because, although support is not as widespread as ``<UDIM>`` in DCCs,
+it is part of the MaterialX specification.
 It will be one-indexed, as this has the most support
 and zero-indexing is unique to ZBrush (and Maya's additional syntax).
-
-TODO: Or maybe we just make classes per type, and a single function guesses the type?
 
 Support for ranges existing anywhere other than before the suffix will be supported,
 because this is essential for pathseq to be adopted.
@@ -647,6 +643,9 @@ Therefore the loose classes can have a more complex API,
 which separates the complexity in the implementation
 and encourages users to want to use the simple format so that they can use
 the simple API.
+This separation will also allow a "best-guess" approach to the complex,
+ambiguous nature of parsing the loose format,
+whilst the simple classes can have a higher degree of correctness when parsing.
 
 Comma separated chunking with fractional frames will be used as the format of ranges
 because it maximises functionality,

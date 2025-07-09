@@ -3,6 +3,14 @@
 
 :mod:`pathseq` is a pathlib-first library for working with file sequences.
 
+Install PathSeq using pip:
+
+.. code-block:: bash
+
+    $ pip install pathseq
+
+Now, let's get started:
+
 .. code-block:: pycon
 
     >>> from pathseq import PathSequence
@@ -36,6 +44,34 @@
     PosixPath('/path/to/images.1012_1.exr')
     PosixPath('/path/to/images.1012_2.exr')
     PosixPath('/path/to/images.1012_3.exr')
+
+A wide range of sequence string formats are supported:
+
+.. code-block:: pycon
+
+    >>> from pathseq import LoosePathSequence
+    >>> seq = LoosePathSequence("/path/to/images.1-5####.exr")
+
+    >>> seq = LoosePathSequence("/path/to/1-5####.images.exr")
+    >>> seq[0]
+    PosixPath('/path/to/0001.images.exr')
+    >>> seq.suffixes
+    ['.exr']
+
+    >>> LoosePathSequence("/path/to/1-5####.archives.tar.gz").suffixes
+    ['.tar', '.gz']
+
+    >>> seq = LoosePathSequence("/path/to/images.exr.1-5####")
+    >>> seq[0]
+    PosixPath('/path/to/images.exr.0001')
+    >>> seq.suffixes
+    ['.exr']
+
+    >>> LoosePathSequence("/path/to/images.1001-1005<UDIM>.exr")[0]
+    PosixPath('/path/to/images.1001.exr')
+
+    >>> LoosePathSequence("/path/to/images.1001-1005<UVTILE>.exr")[0]
+    PosixPath('/path/to/images.u1_v1.exr')
 
 
 Documentation

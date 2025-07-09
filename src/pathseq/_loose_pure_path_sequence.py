@@ -14,14 +14,14 @@ from typing_extensions import (
 )
 
 from ._file_num_set import FileNumSet
-from ._parse_path_sequence import parse_path_sequence
-from ._ast import PaddedRange, ParsedSequence
+from ._parse_loose_path_sequence import parse_path_sequence
+from ._ast import PaddedRange, RangesEndName, RangesInName, RangesStartName
 
-Segment: TypeAlias = Union[str, os.PathLike[str], "PurePathSequence"]
+Segment: TypeAlias = Union[str, os.PathLike[str], "LoosePurePathSequence"]
 T = TypeVar("T", int, Decimal)
 
 
-class PurePathSequence(Sequence[T], Set[T]):
+class LoosePurePathSequence(Sequence[T], Set[T]):
     """A generic class that represents a path sequence in the system's path flavour.
 
     Instantiating this class creates either a :class:`PurePosixPathSequence`
@@ -42,8 +42,12 @@ class PurePathSequence(Sequence[T], Set[T]):
     _pathlib_type: type[pathlib.PurePath] = pathlib.PurePath
 
     def __new__(cls, *args, **kwargs):
-        if cls is PurePathSequence:
-            cls = PureWindowsPathSequence if os.name == "nt" else PurePosixPathSequence
+        if cls is LoosePurePathSequence:
+            cls = (
+                LoosePureWindowsPathSequence
+                if os.name == "nt"
+                else LoosePurePosixPathSequence
+            )
         return object.__new__(cls)
 
     def __init__(self, *pathsegments: Segment) -> None:
@@ -167,11 +171,11 @@ class PurePathSequence(Sequence[T], Set[T]):
 
     def with_stem(self, stem: str) -> Self:
         parsed = self._parsed.with_stem(stem)
-        raise self.with_segments(self._path.parent, str(parsed))
+        return self.with_segments(self._path.parent, str(parsed))
 
     def with_suffix(self, suffix: str) -> Self:
         parsed = self._parsed.with_suffix(suffix)
-        raise self.with_segments(self._path.parent, str(parsed))
+        return self.with_segments(self._path.parent, str(parsed))
 
     def with_segments(self, *pathsegments: Segment) -> Self:
         return type(self)(*pathsegments)
@@ -196,7 +200,9 @@ class PurePathSequence(Sequence[T], Set[T]):
             x.file_num_set for x in self._parsed.ranges[::2]
         ]
 
-        assert ranges, "Parsed a sequence string without any ranges present."
+        if not ranges:  # TODO: Will this ever happen or should we be erroring?
+            yield self._path
+            return
 
         iterators = [iter(x if x is not None else (None,)) for x in ranges]
         # TODO: Check that this isn't using mega amounts of memory
@@ -264,13 +270,13 @@ class PurePathSequence(Sequence[T], Set[T]):
         pass
 
     @property
-    def parsed(self) -> ParsedSequence:
+    def parsed(self) -> RangesStartName | RangesInName | RangesEndName:
         return self._parsed
 
 
-class PurePosixPathSequence(PurePathSequence):
+class LoosePurePosixPathSequence(LoosePurePathSequence):
     pass
 
 
-class PureWindowsPathSequence(PurePathSequence):
+class LoosePureWindowsPathSequence(LoosePurePathSequence):
     pass

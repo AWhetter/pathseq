@@ -2,6 +2,16 @@
 
 from ._error import NotASequenceError, ParseError
 from ._file_num_set import FileNumSet
+from ._loose_path_sequence import (
+    LoosePathSequence,
+    LoosePosixPathSequence,
+    LooseWindowsPathSequence,
+)
+from ._loose_pure_path_sequence import (
+    LoosePurePathSequence,
+    LoosePurePosixPathSequence,
+    LoosePureWindowsPathSequence,
+)
 from ._path_sequence import PathSequence, PosixPathSequence, WindowsPathSequence
 from ._pure_path_sequence import (
     PurePathSequence,

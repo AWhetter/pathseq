@@ -5,14 +5,14 @@ from typing_extensions import (
     Self,  # PY311+
 )
 
-from ._pure_path_sequence import (
-    PurePathSequence,
-    PurePosixPathSequence,
-    PureWindowsPathSequence,
+from ._loose_pure_path_sequence import (
+    LoosePurePathSequence,
+    LoosePurePosixPathSequence,
+    LoosePureWindowsPathSequence,
 )
 
 
-class PathSequence(PurePathSequence):
+class LoosePathSequence(LoosePurePathSequence):
     """blah
 
     TODO: Note that path sequences are not filesystem paths and therefore
@@ -40,9 +40,9 @@ class PathSequence(PurePathSequence):
         """Glob the given relative pattern, yielding all matching paths and sequences."""
 
 
-class PosixPathSequence(PurePosixPathSequence, PathSequence):
+class LoosePosixPathSequence(LoosePurePosixPathSequence, LoosePathSequence):
     pass
 
 
-class WindowsPathSequence(PureWindowsPathSequence, PathSequence):
+class LooseWindowsPathSequence(LoosePureWindowsPathSequence, LoosePathSequence):
     pass

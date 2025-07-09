@@ -2,8 +2,6 @@
 Quickstart
 **********
 
-TODO: pip install
-
 First, start by importing pathseq:
 
 .. code-block:: pycon
@@ -92,9 +90,9 @@ and negative numbers:
     >>> for path in seq:
     ...     path
     ...
-    PosixPath('/path/to/image.-0003.exr')
-    PosixPath('/path/to/image.-0002.exr')
-    PosixPath('/path/to/image.-0001.exr')
+    PosixPath('/path/to/image.-003.exr')
+    PosixPath('/path/to/image.-002.exr')
+    PosixPath('/path/to/image.-001.exr')
 
 
 Equality, and Hashing
@@ -123,7 +121,7 @@ are treated as equal.
     >>> seq_b = PathSequence("/path/to/image.1,2,3####.exr")
     >>> seq_a == seq_b
     True
-    # Convert to a string to check for string equality
+    >>> # Convert to a string to check for string equality
     >>> str(seq_a) == str(seq_b)
     False
 

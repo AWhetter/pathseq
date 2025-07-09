@@ -6,16 +6,23 @@ from decimal import Decimal
 
 import dataclasses
 from dataclasses import dataclass
-from typing import Any, Literal, Self
+from typing import Any, Literal
 
 from .._file_num_set import FileNumSet
+
+
+def non_recursive_asdict(datacls: Any) -> dict[str, Any]:
+    return {
+        field.name: getattr(datacls, field.name)
+        for field in dataclasses.fields(datacls)
+    }
 
 
 def stringify_parsed_sequence(seq: Any) -> str:
     result = ""
     for field in dataclasses.fields(seq):
         value = getattr(seq, field.name)
-        if isinstance(value, list):
+        if isinstance(value, (list, tuple)):
             for item in value:
                 result += str(item)
         else:
@@ -72,11 +79,12 @@ class PaddedRange:
 
 # TODO: Validate that this is doing what we want
 
+
 def quantize(
-        number: decimal.Decimal,
-        decimal_places: int,
-        rounding: str = decimal.ROUND_HALF_EVEN
-        ) -> decimal.Decimal:
+    number: decimal.Decimal,
+    decimal_places: int,
+    rounding: str = decimal.ROUND_HALF_EVEN,
+) -> decimal.Decimal:
     """
     Round a decimal value to given number of decimal places
 
@@ -95,7 +103,10 @@ def quantize(
         return nq.copy_abs()
     return nq
 
-def pad(number: int | Decimal, width: int | None = 0, decimal_places: int | None = None) -> str:
+
+def pad(
+    number: int | Decimal, width: int | None = 0, decimal_places: int | None = None
+) -> str:
     """
     Return the zero-padded string of a given number.
 

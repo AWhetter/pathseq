@@ -53,7 +53,8 @@ RANGES_RE = re.compile(
     flags=RANGE_RE.flags | PAD_FORMAT_RE.flags | re.VERBOSE,
 )
 
-ParsedSequence: TypeAlias = Union[RangesStartName, RangesInName, RangesEndName]
+ParsedLooseSequence: TypeAlias = Union[RangesStartName, RangesInName, RangesEndName]
+
 
 class TokenType(enum.Enum):
     RANGE = enum.auto()
@@ -321,7 +322,7 @@ class SeqParser(StateMachine):
         super().__init__()
 
         self._seq = seq
-        self._range_type: type[ParsedSequence] | None = None
+        self._range_type: type[ParsedLooseSequence] | None = None
         self._stem = ""
         self._prefix_separator = ""
         self._ranges: list[PaddedRange | str] = []
@@ -474,7 +475,7 @@ class SeqParser(StateMachine):
     def on_enter_ends_prefix_separator(self, token):
         self._prefix_separator = token.value
 
-    def on_finalise(self, source) -> ParsedSequence:
+    def on_finalise(self, source) -> ParsedLooseSequence:
         if source == self.range_starts_name:
             self._range_type = RangesInName
 
@@ -488,7 +489,7 @@ class SeqParser(StateMachine):
         return self._range_type(**kwargs)
 
     @classmethod
-    def parse(cls, seq: str) -> ParsedSequence:
+    def parse(cls, seq: str) -> ParsedLooseSequence:
         machine = cls(seq)
         tokens = collections.deque(_tokenise(seq))
         while True:
@@ -502,5 +503,5 @@ class SeqParser(StateMachine):
         return machine.finalise()
 
 
-def parse_path_sequence(seq: str) -> ParsedSequence:
+def parse_path_sequence(seq: str) -> ParsedLooseSequence:
     return SeqParser.parse(seq)
