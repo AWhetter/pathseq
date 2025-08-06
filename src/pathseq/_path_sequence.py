@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 import pathlib
+import re
 
 from typing_extensions import (
     Self,  # PY311+
@@ -12,6 +13,25 @@ from ._pure_path_sequence import (
 )
 
 
+class IncompleteDimensionError(Exception):
+    """A multi-dimension sequence does not contain a consistent number of files across a dimension.
+
+    Example:
+
+    .. code-block:: pycon
+
+        >>> for path in PathSequence("file.1001_1-3#.exr"):
+        ...     path.touch()
+        ...
+        >>> for path in PathSequence("file.1002_1-2#.exr"):
+        ...     path.touch()
+        ...
+        >>> PathSequence.from_disk("file.<UDIM>_#.exr")
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+        IncompleteDimensionError: TODO
+    """
+
 class PathSequence(PurePathSequence):
     """blah
 
@@ -22,18 +42,21 @@ class PathSequence(PurePathSequence):
     _pathlib_type = pathlib.Path
 
     def expanduser(self) -> Self:
-        pass
+        return self.__class__(self._path.expanduser())
 
     def absolute(self) -> Self:
-        pass
+        return self.__class__(self._path.absolute())
 
-    def resolve(self, strict: bool = True) -> Self:
-        pass
+    def with_exists(self) -> Self:
+        """Create a sequence using the ranges of files that exist.
 
-    @classmethod
-    def from_disk(cls, pattern: Self | str) -> Self:
-        """Create a sequence using the range of files or directories on disk."""
-        # TODO: What about when not all of the files in a dimension exist?
+        Raises:
+            IncompleteDimensionError: When one dimension in a multi-dimension sequence
+            does not have a consistent number of files in each other dimension.
+        """
+        pattern = self._parsed.as_glob()
+        paths = self._pathlib_type.parent.glob(pattern)
+        # TODO: then regex match, then parse into range sets
 
     @classmethod
     def glob(cls, pattern: str | pathlib.PurePath) -> Iterable[Self | pathlib.Path]:
