@@ -14,11 +14,10 @@ Path Sequences
 Like in :mod:`pathlib`,
 the name of a path sequence is the final component in a path.
 
-.. code-block:: text
+.. figure:: /_static/name.svg
+   :class: solid-background
+   :width: 90%
 
-   /directory/file.1-5#.tar.gz
-              ^--------------^
-              |     name     |
 
 A sequence's name represents the file names of all files in the sequence.
 The name has four components:
@@ -30,6 +29,7 @@ The name has four components:
 
 .. figure:: /_static/name_breakdown.svg
    :class: solid-background
+   :width: 90%
 
 .. tip::
 
@@ -40,11 +40,12 @@ The name has four components:
       file.1001-1010#.exr
       file.1001-1010#.tar.gz
 
-Supporting multiple ranges in a sequence required an additional component:
+Supporting multiple ranges in a sequence requires an additional component:
 an inter-range separator.
 
 .. figure:: /_static/multi_range_breakdown.svg
    :class: solid-background
+   :width: 90%
 
 .. tip::
 
@@ -88,6 +89,7 @@ That state machine is as follows:
 
 .. figure:: /_static/format.svg
    :class: solid-background
+   :width: 90%
 
 * .. kroki::
      :type: pikchr
@@ -133,10 +135,49 @@ That state machine is as follows:
   The file suffixes, including the leading ``.``.
 
 
+.. _range_string_format:
+
 Frame Ranges
 ------------
 
-TODO: Explain padding options
+Frame ranges consist of the range string, and the pad string.
+
+.. figure:: /_static/range_string_breakdown.svg
+   :class: solid-background
+   :width: 50%
+
+**Range strings**:
+
+Range string consist of comma separated ranges,
+where each range is of the format ``START-ENDxSTEP``,
+where ``END`` is inclusive and ``xSTEP`` is optional.
+
+So the range string ``1-5`` represents the numbers 1, 2, 3, 4, 5.
+The range string ``1-5x2`` represents the numbers 1, 3, 5..
+
+**Pad string**:
+
+A pad string represents how the numbers in the range should be formatted
+when putting a number from the range into a file path.
+
+The most basic form of a pad string is a string of ``#`` characters.
+The number of ``#`` represents the minimum with of the formatted number.
+If the stringified number is smaller than the width,
+then it will be zero padded.
+If the stringified number is larger than the width,
+it will exceed the given width.
+A ``-`` sign to indicate a negative number is counted in the width.
+
+.. list-table::
+
+   * - Frame range string
+     - Formats to
+   * - ``1####``
+     - ``0001``
+   * - ``1001#``
+     - ``1001``
+   * - ``-1####``
+     - ``-001``
 
 .. warning::
 
@@ -147,8 +188,44 @@ TODO: Explain padding options
    passed to PathSeq if this character may be present as a pad character.
 
 
+Pad strings can also use MaterialX tokens (https://materialx.org/Specification.html).
+The "Filename Substitutions" section of the specification
+describes two tokens for representing UDIMs in file names.
+
+* ``<UDIM>``: This is equivalent to ``####``.
+
+  Using ``<UDIM>`` can be useful to indicate which ranges in an
+  animated texture sequence are the UDIMs
+  and which are the frame numbers.
+  As an example, ``texture.1001-1010<UDIM>_1001-1010####.tex``
+  is clearer than ``texture.1001-1010####_1001-1010####.tex``.
+
+* ``<UVTILE>``: Originating from Mudbox, this token represents the string
+  ":math:`\text{u}U\text{_v}V`", where :math:`U` is :math:`1+` the integer portion of the u coordinate,
+  and :math:`V` is :math:`1+` the integer portion of the v coordinate.
+
+.. list-table::
+
+   * - Frame range string
+     - Formats to
+   * - ``1001<UDIM>``
+     - ``1001``
+   * - ``1001<UVTILE>``
+     - ``u1_v1``
+   * - ``1002<UVTILE>``
+     - ``u2_v1``
+   * - ``1010<UVTILE>``
+     - ``u1_v2``
+   * - ``1011<UVTILE>``
+     - ``u2_v2``
+
+.. tip::
+
+   Using ``<UDIM>`` is recommended over ``<UVTILE>`` for best compatibility with VFX software.
+
+
 Grammar
-~~~~~~~~
+~~~~~~~
 
 Frame ranges are simple enough to form an unambiguous
 `Context Free Grammar <https://en.wikipedia.org/wiki/Context-free_grammar>`_.
@@ -169,16 +246,100 @@ Compatibility with VFX Software
 This format was chosen for its compatibility with software commonly used in
 the VFX industry.
 
+The "File Compatible" column notes whether pathseq can represent
+a file sequence output by the DCC.
+
+DCCs often support different sequence string formats depending on whether the
+file sequence is being read or written by the DCC.
+Therefore this table separately notes
+whether a strict pathseq sequence string be passed to the DCC
+directly for the DCC to use to read a file sequence (Read Compatible),
+and whether a strict pathseq sequence string be passed to the DCC
+directly for the DCC to use to write a file sequence (Write Compatible).
 
 .. list-table::
    :header-rows: 1
 
    * - Software
-     - Compatible
+     - File Compatible
+     - Read Compatible
+     - Write Compatible
      - Notes
-   * -
+   * - Arnold
+     - N/A
+     - ✔
+     - N/A
      -
+   * - Blender
+     - ✔ [#]_
+     - N/A
+     - ✔
      -
+   * - fileseq
+     - N/A
+     - ✔ [#]_
+     - N/A
+     -
+   * - Houdini
+     - Partial
+     - ✗
+     - ✗
+     - [#]_
+   * - Katana
+     - ✔
+     - N/A
+     - ✔
+     -
+   * - Mari
+     - ✔
+     - ✗
+     - ✗
+     - [#]_
+   * - Maya (file texture node)
+     - N/A
+     - ✔
+     - N/A
+     -
+   * - Maya (fcheck)
+     - Partial [#]_
+     - ✔
+     - ✔
+     -
+   * - Mudbox
+     - ✔
+     - ✗
+     - ✗
+     -
+   * - Nuke
+     - ✔
+     - ✔
+     - ✔
+     -
+   * - USD
+     - N/A
+     - ✔
+     - N/A
+     -
+   * - ZBrush
+     - ✔
+     - ✗
+     - ✗
+     -
+
+Notes:
+
+.. [#] Blender supports writing sequences that start with a range,
+   which would not be compatible with pathseq format.
+   But, unlike other formats, such ranges need to be passed as an absolute path
+   so aren't as well supported by Blender.
+.. [#] fileseq treats ``#`` as 4 digits of padding by default.
+   It must be passed an argument to treat ``#`` as a single digit of padding.
+.. [#] Houdini expressions use their own syntax (See :ref:`houdini_file_seq`).
+   Houdini syntax is infinitely flexible,
+   but it can be used to express the same sequences as pathseq.
+.. [#] Mari supports only ``$UDIM`` but files are output as interpreted by ``<UDIM>``.
+.. [#] fcheck supports writing sequences as ``file#.ext`` and ``#file.ext``,
+   but ``file.#.ext`` format must be used for pathseq's strict format.
 
 Loose Format
 ------------
@@ -186,8 +347,9 @@ Loose Format
 The PathSeq API has the concept of a "loose" format.
 Whereas the normal sequence string format maximises simplicity
 and compatibility across VFX software,
-the loose format trades that for
-compatibility in parsing more sequence strings.
+the loose format prioritises compatibility in parsing more sequence strings.
+This compatibility comes at a cost of complexity,
+and a loose sequence string will likely be less compatible across VFX software.
 
 The loose format is a flexible format that is useful
 when parsing sequence strings from unknown sources.
@@ -204,33 +366,40 @@ to support additional characters after the ranges but before the next component.
 
 .. figure:: /_static/loose_name_breakdown.svg
    :class: solid-background
+   :width: 90%
 
 In addition, ranges can be placed anywhere in the sequence string.
 The placement of the range in the strings creates three varieties of loose sequence strings,
-based where the ranges are placed in the string.
+based on where the ranges are placed in the string.
 
 The ranges can be at the start of the sequence string:
 
 .. figure:: /_static/starts_name_breakdown.svg
    :class: solid-background
+   :width: 90%
 
-Ranges can be inside the sequence string:
+The ranges can be inside the sequence string:
 
 .. figure:: /_static/loose_name_breakdown.svg
    :class: solid-background
+   :width: 90%
 
-Finally, ranges can be at the end of the sequence string:
+Finally, the ranges can be at the end of the sequence string:
 
 .. figure:: /_static/ends_name_breakdown.svg
    :class: solid-background
+   :width: 90%
 
 .. warning::
 
-   The fact that strings of arbitrary characters can exist either side of the frame ranges
-   means that a valid file sequence can always be parsed both as
-   a list of arbitrary characters and as a set of ranges surrounded by arbitrary characters.
+   Because the stem or suffix are allowed to be empty, the loose format is ambiguous.
+   For example, ``#.tar.gz`` could be represented as a sequence where
+   the range starts the string and has a blank stem,
+   or the range starts the string and has a stem of "tar",
+   or the range is in the string and has a blank stem and prefix.
 
    Therefore the loose format can only make a best guess at how to interpret a sequence string.
+   The strict format can be parsed consistently.
 
 .. attention:: Hidden file sequences (starting with .)
 
@@ -242,7 +411,9 @@ Finally, ranges can be at the end of the sequence string:
       .1-5#file.ext
 
    In this case, the range is considered "in" the string, where the "." is the stem.
-   TODO: Maybe it should just be a prefix though?
+
+   .. TODO: Maybe it should just be a prefix though?
+
 
 Specification
 ~~~~~~~~~~~~~

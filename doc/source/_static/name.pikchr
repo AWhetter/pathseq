@@ -1,0 +1,13 @@
+box invisible "/directory/" monospace big fit width 65%
+NAME: box invisible "file.1001-1010#.tar.gz" monospace big fit width 75%
+
+box invisible "name" fit with n at previous.s - (0, 0.25cm)
+line from NAME.sw - (0, 0.25cm) \
+  then down even with previous.sw \
+  then right even with NAME.se \
+  then up even with previous.ne \
+  then left close
+
+line from NAME.sw then down even with last box.n
+arrow <-> from NAME.sw to NAME.se
+line to NAME.se then down even with last box.n

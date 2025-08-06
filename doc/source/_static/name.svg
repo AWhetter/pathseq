@@ -1,0 +1,11 @@
+<svg xmlns='http://www.w3.org/2000/svg' style='font-family:sans-serif; font-size:initial;' viewBox="0 0 346.846 78.9732" data-pikchr-date="20250319161943">
+<text x="67.104" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">/directory/</text>
+<text x="214.798" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">file.1001-1010#.tar.gz</text>
+<text x="214.798" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">name</text>
+<path d="M113.062,46.5732L113.062,76.8132L316.534,76.8132L316.534,46.5732L244.534,46.5732Z"  style="fill:none;stroke-width:2.16;stroke-linejoin:round;stroke:rgb(0,0,0);" />
+<path d="M113.062,32.4L113.062,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="113.062,32.4 124.582,28.08 124.582,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="316.534,32.4 305.014,36.72 305.014,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M118.822,32.4L310.774,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M316.534,32.4L316.534,32.4L316.534,46.5732"  style="fill:none;stroke-width:2.16;stroke-linejoin:round;stroke:rgb(0,0,0);" />
+</svg>
