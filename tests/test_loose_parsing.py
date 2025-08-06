@@ -28,7 +28,7 @@ class TestPathSequence:
                     "file",
                     (".exr",),
                 ),
-                id="#.file.exr",
+                id="#_file.exr",
             ),
             pytest.param(
                 "1-10#_file.exr",
@@ -76,7 +76,7 @@ class TestPathSequence:
                     "file",
                     (".exr",),
                 ),
-                id="#.file.exr",
+                id="#file.exr",
             ),
             pytest.param(
                 "#file.tar.gz",
@@ -92,7 +92,7 @@ class TestPathSequence:
                     "file",
                     (".tar", ".gz"),
                 ),
-                id="#.file.exr",
+                id="#file.tar.gz",
             ),
         ],
     )
@@ -208,9 +208,55 @@ class TestPathSequence:
                 ),
                 id=".#.exr",
             ),
+            pytest.param(
+                "#.tar.gz",
+                RangesInName(
+                    "",
+                    "",
+                    (
+                        PaddedRange(
+                            "",
+                            "#",
+                        ),
+                    ),
+                    "",
+                    (".tar", ".gz",),
+                ),
+                id="#.tar.gz",
+            ),
         ],
     )
     def test_in(self, seq, expected):
+        parsed = parse_path_sequence(seq)
+        assert parsed == expected
+
+    @pytest.mark.parametrize(
+        "seq,expected",
+        [
+            pytest.param(
+                "texture.1011-1012####_1-3#.tex",
+                RangesInName(
+                    "texture",
+                    ".",
+                    (
+                        PaddedRange(
+                            FileNumSet.from_str("1011-1012"),
+                            "####",
+                        ),
+                        "_",
+                        PaddedRange(
+                            FileNumSet.from_str("1-3"),
+                            "#",
+                        ),
+                    ),
+                    "",
+                    (".tex",),
+                ),
+                id="texture.1011-1012####_1-3#.tex",
+            ),
+        ],
+    )
+    def test_in_with_inter_range(self, seq, expected):
         parsed = parse_path_sequence(seq)
         assert parsed == expected
 

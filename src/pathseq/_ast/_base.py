@@ -1,14 +1,19 @@
 from __future__ import annotations
 
-import dataclasses
-import decimal
-from decimal import Decimal
-
+from collections.abc import Iterable, Sequence
 import dataclasses
 from dataclasses import dataclass
-from typing import Any, Literal
+import decimal
+from decimal import Decimal
+import itertools
+import typing
+from typing import Any, Literal, TypeAlias, TypeVar, Union
 
-from .._file_num_set import FileNumSet
+if typing.TYPE_CHECKING:
+    from .._file_num_set import FileNumSet
+
+FileNumT = TypeVar("FileNumT", int, decimal.Decimal)
+FileNum: TypeAlias = Union[int, decimal.Decimal]
 
 
 def non_recursive_asdict(datacls: Any) -> dict[str, Any]:
@@ -31,6 +36,30 @@ def stringify_parsed_sequence(seq: Any) -> str:
     return result
 
 
+def splice_numbers_onto_ranges(
+    numbers: tuple[int | Decimal | None],
+    ranges: Sequence[PaddedRange],
+    inter_ranges: Sequence[str],
+) -> Iterable[int | Decimal | str | PaddedRange]:
+    len_numbers = len(numbers)
+    expected_numbers = len(ranges)
+    if len_numbers != expected_numbers:
+        raise TypeError(f"Expected {expected_numbers} file numbers. Got {len_numbers}")
+
+    assert len(inter_ranges) == expected_numbers - 1
+
+    to_splice = list(numbers)
+    for i, (number, _range) in enumerate(zip(numbers, ranges)):
+        if number is None:
+            to_splice[i] = _range
+        else:
+            to_splice[i] = _range.format(number)
+
+    return itertools.chain.from_iterable(
+        itertools.zip_longest(to_splice, inter_ranges, fillvalue="")
+    )
+
+
 @dataclass(frozen=True)
 class PaddedRange:
     file_num_set: FileNumSet | Literal[""]
@@ -39,7 +68,7 @@ class PaddedRange:
     def __str__(self):
         return str(self.file_num_set) + self.pad_format
 
-    def to_str_with_file_number(self, number: int | Decimal) -> str:
+    def format(self, number: int | Decimal) -> str:
         if self.pad_format == "<UVTILE>":
             raise NotImplementedError
 
@@ -85,13 +114,12 @@ def quantize(
     decimal_places: int,
     rounding: str = decimal.ROUND_HALF_EVEN,
 ) -> decimal.Decimal:
-    """
-    Round a decimal value to given number of decimal places
+    """Round a decimal value to given number of decimal places
 
     Args:
-        number (decimal.Decimal): Decimal number to round
-        decimal_places (int): Number of decimal places in return value
-        rounding (str): decimal.Decimal rounding mode. See rounding argument of
+        number: Decimal number to round
+        decimal_places: Number of decimal places in return value
+        rounding: decimal.Decimal rounding mode. See rounding argument of
             https://docs.python.org/2/library/decimal.html#decimal.Context
 
     Returns:
@@ -107,16 +135,12 @@ def quantize(
 def pad(
     number: int | Decimal, width: int | None = 0, decimal_places: int | None = None
 ) -> str:
-    """
-    Return the zero-padded string of a given number.
+    """Return the zero-padded string of a given number.
 
     Args:
-        number (str, int, float, or decimal.Decimal): the number to pad
-        width (int): width for zero padding the integral component
-        decimal_places (int): number of decimal places to use in frame range
-
-    Returns:
-        str:
+        number: the number to pad
+        width: width for zero padding the integral component
+        decimal_places: number of decimal places to use in frame range
     """
 
     # Make the common case fast. Truncate to integer value as USD does.

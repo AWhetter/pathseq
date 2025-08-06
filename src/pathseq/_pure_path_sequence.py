@@ -13,27 +13,21 @@ from typing_extensions import (
     TypeGuard,  # PY310
 )
 
+from ._ast import PaddedRange, ParsedSequence
+from ._error import ParseError
 from ._file_num_set import FileNumSet
 from ._parse_path_sequence import parse_path_sequence
-from ._ast import PaddedRange, ParsedSequence
 
 Segment: TypeAlias = Union[str, os.PathLike[str], "PurePathSequence"]
 T = TypeVar("T", int, Decimal)
 
 
+# TODO: Should be a set of pathlib objects
 class PurePathSequence(Sequence[T], Set[T]):
     """A generic class that represents a path sequence in the system's path flavour.
 
     Instantiating this class creates either a :class:`PurePosixPathSequence`
     or a :class:`PureWindowsPathSequence`.
-
-    Differences:
-    * No __bytes__ because not a filesystem path.
-    * No __fspath__ because not a filesystem path.
-    * No as_uri because not a filesystem path.
-    * No __truediv__ (only __rtruediv__) or joinpath because sequences are supported only in
-      the last part of the path.
-    * No match because not a filesystem path that can be matched against.
 
     Raises:
         NotASequenceError: When the given path does not represent a sequence.
@@ -56,32 +50,6 @@ class PurePathSequence(Sequence[T], Set[T]):
             return NotImplemented
 
         return self._path.parent == other._path.parent and self._parsed == other._parsed
-
-    # TODO: Sequences with the same range should match.
-    # TODO: Ranges don't have these so maybe sequences shouldn't either
-    def __lt__(self, other: object) -> bool:
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-
-        return self._path < other._path
-
-    def __le__(self, other: object) -> bool:
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-
-        return self._path <= other._path
-
-    def __gt__(self, other: object) -> bool:
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-
-        return self._path > other._path
-
-    def __ge__(self, other: object) -> bool:
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-
-        return self._path >= other._path
 
     def __repr__(self):
         return "{}({!r})".format(self.__class__.__name__, self.as_posix())
@@ -130,14 +98,12 @@ class PurePathSequence(Sequence[T], Set[T]):
 
     @property
     def suffixes(self) -> Sequence[str]:
-        parsed = self._parsed
-        return parsed.suffixes
+        return self._parsed.suffixes
 
     # Note: Can be the empty string
     @property
     def stem(self) -> str:
-        parsed = self._parsed
-        return parsed.stem
+        return self._parsed.stem
 
     @property
     def parents(self) -> Sequence[pathlib.PurePath]:
@@ -167,17 +133,38 @@ class PurePathSequence(Sequence[T], Set[T]):
 
     def with_stem(self, stem: str) -> Self:
         parsed = self._parsed.with_stem(stem)
-        raise self.with_segments(self._path.parent, str(parsed))
+        return self.with_segments(self._path.parent, str(parsed))
 
     def with_suffix(self, suffix: str) -> Self:
+        """Return a new path sequence with the suffix changed.
+
+        If the given suffix is the empty string, the existing suffix will be removed.
+        But if the path sequence has only one suffix,
+        then a :exc:`ValueError` will be raised because removing the suffix will result in
+        and invalid path sequence.
+
+        Args:
+            The new suffix to replace the existing suffix with.
+
+        Raises:
+            ValueError: If the given suffix would result in an invalid path sequence.
+        """
+        if not suffix:
+            raise ValueError("Strict path format must have a suffix")
+
         parsed = self._parsed.with_suffix(suffix)
-        raise self.with_segments(self._path.parent, str(parsed))
+        try:
+            return self.with_segments(self._path.parent, str(parsed))
+        except ParseError:
+            raise ValueError(
+                f"Cannot use suffix '{suffix}' because"
+                " it would result in an invalid path sequence"
+            )
 
     def with_segments(self, *pathsegments: Segment) -> Self:
         return type(self)(*pathsegments)
 
-    # Sequence specific methods
-    # TODO: Should we inherit from Sequence or similar?
+    # Sequence operations
     @overload
     def __getitem__(self, index: int) -> pathlib.PurePath: ...
 
@@ -201,7 +188,7 @@ class PurePathSequence(Sequence[T], Set[T]):
         iterators = [iter(x if x is not None else (None,)) for x in ranges]
         # TODO: Check that this isn't using mega amounts of memory
         for result in itertools.product(*iterators):
-            yield self.path(*result)
+            yield self.format(*result)
 
     def __len__(self) -> int:
         result = 1
@@ -218,6 +205,8 @@ class PurePathSequence(Sequence[T], Set[T]):
 
         return result
 
+    # PathSeq specific operations
+
     @property
     def paddings(self) -> tuple[str]:
         """All padding strings in the final path component."""
@@ -232,18 +221,23 @@ class PurePathSequence(Sequence[T], Set[T]):
         """
 
     @classmethod
-    def from_paths(
-        self, paths: Iterable[os.PathLike[str]]
-    ) -> Iterable[Self | pathlib.PurePath]:
+    def from_paths(cls, paths: Iterable[os.PathLike[str]]) -> Iterable[Self]:
         """Create one or more path sequences from a list of paths."""
 
-    # TODO: Rename to "format"?
-    def path(self, *numbers: int | Decimal | None) -> Self | pathlib.PurePath:
+    @overload
+    def format(self, *numbers: int | Decimal) -> pathlib.PurePath: ...
+
+    @overload
+    def format(self, *numbers: int | Decimal | None) -> Self: ...
+
+    def format(self, *numbers):
         """Return a path for the given file number(s) in the sequence.
 
-        None means don't fill in this range.
+        Args:
+            The number to use in place of each range in the string.
+            A ``None`` means don't fill in this range.
         """
-        name = self._parsed.to_str_with_file_numbers(*numbers)
+        name = self._parsed.format(*numbers)
         result = self._path.with_name(name)
 
         if any(number is None for number in numbers):
@@ -251,7 +245,6 @@ class PurePathSequence(Sequence[T], Set[T]):
 
         return result
 
-    # TODO: Or just via part objects?
     def file_num_sets(self) -> tuple[FileNumSet] | None:
         """All file number sets in the final path component."""
 

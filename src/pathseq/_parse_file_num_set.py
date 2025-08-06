@@ -5,7 +5,7 @@ import decimal
 import lark
 
 from ._error import ParseError
-from ._arithmetic_sequence import ArithmeticSequence, T
+from ._arithmetic_sequence import ArithmeticSequence, FileNumT
 
 _GRAMMAR = r"""
     start: ranges
@@ -50,7 +50,7 @@ class _RangeReducer(lark.Transformer):
         return ArithmeticSequence(*(type_(arg) for arg in args))
 
 
-def parse_file_num_set(set_: str) -> list[ArithmeticSequence[T]]:
+def parse_file_num_set(set_: str) -> list[ArithmeticSequence[FileNumT]]:
     try:
         ranges = _PARSER.parse(set_)
     except lark.UnexpectedInput as exc:

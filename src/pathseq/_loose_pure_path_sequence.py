@@ -61,32 +61,6 @@ class LoosePurePathSequence(Sequence[T], Set[T]):
 
         return self._path.parent == other._path.parent and self._parsed == other._parsed
 
-    # TODO: Sequences with the same range should match.
-    # TODO: Ranges don't have these so maybe sequences shouldn't either
-    def __lt__(self, other: object) -> bool:
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-
-        return self._path < other._path
-
-    def __le__(self, other: object) -> bool:
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-
-        return self._path <= other._path
-
-    def __gt__(self, other: object) -> bool:
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-
-        return self._path > other._path
-
-    def __ge__(self, other: object) -> bool:
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-
-        return self._path >= other._path
-
     def __repr__(self):
         return "{}({!r})".format(self.__class__.__name__, self.as_posix())
 
@@ -249,7 +223,7 @@ class LoosePurePathSequence(Sequence[T], Set[T]):
 
         None means don't fill in this range.
         """
-        name = self._parsed.to_str_with_file_numbers(*numbers)
+        name = self._parsed.format(*numbers)
         result = self._path.with_name(name)
 
         if any(number is None for number in numbers):

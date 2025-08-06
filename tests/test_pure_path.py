@@ -237,16 +237,16 @@ class TestWithStem:
         assert seq.with_stem(new_stem) == expected
 
     @pytest.mark.parametrize(
-        "seq_str,new_stem,expected_seq_str",
+        "seq_str",
         [
-            ("file.1-10#.exr", "", "1-10#.exr"),
-            ("file1-10#.exr", "", "1-10#.exr"),
+            "file.1-10#.exr",
+            "file1-10#.exr",
         ],
     )
-    def test_empty_replacement(self, seq_str, new_stem, expected_seq_str):
+    def test_empty_replacement(self, seq_str):
         seq = "/directory" / PurePathSequence(seq_str)
-        expected = "/directory" / PurePathSequence(expected_seq_str)
-        assert seq.with_stem(new_stem) == expected
+        with pytest.raises(ValueError):
+            seq.with_stem("")
 
     @pytest.mark.todo
     def test_starts(self):
@@ -287,16 +287,16 @@ class TestWithSuffix:
         assert seq.with_suffix(new_suffix) == expected
 
     @pytest.mark.parametrize(
-        "seq_str,new_suffix,expected_seq_str",
+        "seq_str",
         [
-            ("file.1-10#.exr", "", "file.1-10#"),
-            ("file1-10#.exr", "", "file1-10#"),
+            "file.1-10#.exr",
+            "file1-10#.exr",
         ],
     )
-    def test_empty(self, seq_str, new_suffix, expected_seq_str):
+    def test_empty(self, seq_str):
         seq = "/directory" / PurePathSequence(seq_str)
-        expected = "/directory" / PurePathSequence(expected_seq_str)
-        assert seq.with_suffix(new_suffix) == expected
+        with pytest.raises(ValueError):
+            seq.with_suffix("")
 
     @pytest.mark.todo
     def test_starts(self):

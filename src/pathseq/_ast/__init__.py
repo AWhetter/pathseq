@@ -1,4 +1,4 @@
-from ._base import PaddedRange
+from ._base import FileNum, FileNumT, PaddedRange
 from ._loose_type import RangesStartName, RangesInName, RangesEndName
 from ._type import ParsedSequence
 

@@ -1,14 +1,20 @@
-from collections.abc import Iterable, Set
+from collections.abc import Iterable, Sequence, Set
 import decimal
-from typing import TypeVar
+from typing import overload, Self
 
+from ._ast import FileNumT
 from ._decimal_range import DecimalRange
 
-T = TypeVar("T", int, decimal.Decimal)
+
+def remove_exponent(d: decimal.Decimal) -> decimal.Decimal:
+    """Remove the exponent and trailing zeros from the given decimal."""
+    return d.quantize(decimal.Decimal(1)) if d == d.to_integral() else d.normalize()
 
 
-class ArithmeticSequence(Set[T]):
-    def __init__(self, start: T, end: T | None = None, step: T | None = None) -> None:
+class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
+    def __init__(
+        self, start: FileNumT, end: FileNumT | None = None, step: FileNumT | None = None
+    ) -> None:
         end = end if end is not None else start
         step = step if step is not None else start.__class__(1)
 
@@ -17,7 +23,7 @@ class ArithmeticSequence(Set[T]):
             start, end = (end, start)
             step = -step
 
-        stop: T
+        stop: FileNumT
         if start < end:
             # Normalise the end value to match the step
             remainder = divmod(end - start, step)[1]
@@ -34,21 +40,21 @@ class ArithmeticSequence(Set[T]):
 
         if isinstance(start, int):
             self._range = range(start, stop, step)
+            self._end = end
         else:
-            self._range = DecimalRange(start, stop, step)
-
-        self._end = end
+            self._range = DecimalRange(remove_exponent(start), remove_exponent(stop), remove_exponent(step))
+            self._end = remove_exponent(end)
 
     @property
-    def start(self) -> T:
+    def start(self) -> FileNumT:
         return self._range.start
 
     @property
-    def end(self) -> T:
+    def end(self) -> FileNumT:
         return self._end
 
     @property
-    def step(self) -> T:
+    def step(self) -> FileNumT:
         return self._range.step
 
     def __eq__(self, other):
@@ -65,10 +71,10 @@ class ArithmeticSequence(Set[T]):
     def __hash__(self) -> int:
         return hash((type(self), self.start, self.end, self.step))
 
-    def __contains__(self, item: T) -> bool:
+    def __contains__(self, item: FileNumT) -> bool:
         return item in self._range
 
-    def __iter__(self) -> Iterable[T]:
+    def __iter__(self) -> Iterable[FileNumT]:
         return iter(self._range)
 
     def __len__(self) -> int:
@@ -91,3 +97,16 @@ class ArithmeticSequence(Set[T]):
             return f"{self.__class__.__name__}({self.start}, {self.end})"
 
         return f"{self.__class__.__name__}({self.start}, {self.end}, {self.step})"
+
+    @overload
+    def __getitem__(self, index: int) -> FileNumT: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> Self: ...
+
+    # TODO: Implement slice
+    def __getitem__(self, index):
+        if index > len(self):
+            raise IndexError(index)
+
+        return self._range.start + index * self._range.step

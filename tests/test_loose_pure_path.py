@@ -229,7 +229,7 @@ class TestWithStem:
         [
             ("file.1-10#.exr", "new", "new.1-10#.exr"),
             ("file1-10#.exr", "new", "new1-10#.exr"),
-            ("1-10#.file.exr", "new", "1-10#.new.exr"),
+            ("1-10#.tar.gz", "new", "new1-10#.tar.gz"),
             ("1-10#file.exr", "new", "1-10#new.exr"),
             ("file.exr.1-10#", "new", "new.exr.1-10#"),
             ("file.exr1-10#", "new", "new.exr1-10#"),
@@ -245,8 +245,8 @@ class TestWithStem:
         [
             ("file.1-10#.exr", "", "1-10#.exr"),
             ("file1-10#.exr", "", "1-10#.exr"),
-            ("1-10#.file.exr", "", "1-10#.exr"),
-            ("1-10#file.exr", "", "1-10#exr"),
+            ("1-10#.tar.gz", "", "1-10#.tar.gz"),
+            ("1-10#file.exr", "", "1-10#.exr"),
             ("file.exr.1-10#", "", ".exr.1-10#"),
             ("file.exr1-10#", "", ".exr1-10#"),
         ],
