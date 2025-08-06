@@ -1,0 +1,18 @@
+<svg xmlns='http://www.w3.org/2000/svg' style='font-family:sans-serif; font-size:initial;' viewBox="0 0 186.2 78.9732" data-pikchr-date="20250319161943">
+<text x="61.2" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">1-10,21-30</text>
+<text x="131.832" y="14.76" text-anchor="middle" font-family="monospace" fill="rgb(0,0,0)" font-size="125%" dominant-baseline="central">####</text>
+<path d="M26.6976,76.8132L95.7024,76.8132L95.7024,46.5732L26.6976,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="61.2" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">ranges</text>
+<path d="M104.206,76.8132L184.04,76.8132L184.04,46.5732L104.206,46.5732Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="144.123" y="61.6932" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">padding</text>
+<path d="M26.6976,46.5732L12.6,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="12.6,32.4 24.12,28.08 24.12,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="109.8,32.4 98.28,36.72 98.28,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M18.36,32.4L104.04,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M109.8,32.4L95.7024,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M104.206,46.5732L109.8,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="109.8,32.4 121.32,28.08 121.32,36.72" style="fill:rgb(0,0,0)"/>
+<polygon points="153.864,32.4 142.344,36.72 142.344,28.08" style="fill:rgb(0,0,0)"/>
+<path d="M115.56,32.4L148.104,32.4"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M153.864,32.4L184.04,46.5732"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+</svg>

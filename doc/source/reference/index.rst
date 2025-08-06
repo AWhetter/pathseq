@@ -1,7 +1,0 @@
-***************
-Reference Guide
-***************
-
-.. toctree::
-
-    format

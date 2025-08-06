@@ -94,9 +94,13 @@ and negative numbers:
     PosixPath('/path/to/image.-002.exr')
     PosixPath('/path/to/image.-001.exr')
 
+.. seealso::
 
-Equality, and Hashing
-=====================
+    :doc:`/format`
+
+
+Equality and Hashing
+====================
 
 Path sequences can be compared for equality.
 
@@ -121,7 +125,13 @@ are treated as equal.
     >>> seq_b = PathSequence("/path/to/image.1,2,3####.exr")
     >>> seq_a == seq_b
     True
-    >>> # Convert to a string to check for string equality
+
+Convert to a string to check for string equality
+
+.. code-block:: pycon
+
+    >>> seq_a = PathSequence("/path/to/image.1-3####.exr")
+    >>> seq_b = PathSequence("/path/to/image.1,2,3####.exr")
     >>> str(seq_a) == str(seq_b)
     False
 

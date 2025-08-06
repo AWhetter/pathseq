@@ -81,9 +81,7 @@ Documentation
     :hidden:
 
     quickstart
+    format
     user/index
-    reference/index
     contributor
     decisions/index
-
-.. TODO

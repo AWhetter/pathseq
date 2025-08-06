@@ -37,7 +37,7 @@ class DecimalRange:
         return bool(len(self))
 
     def __contains__(self, key: object) -> bool:
-        if type(key) != decimal.Decimal:
+        if type(key) is not decimal.Decimal:
             return key in iter(self)
 
         if self._step > 0:

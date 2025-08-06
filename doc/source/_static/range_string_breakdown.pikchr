@@ -1,0 +1,16 @@
+$label_sep = 0.15cm
+
+RANGES: box invisible "1-10,21-30" monospace big fit width 75%
+PADDING: box invisible "####" monospace big fit width 75%
+
+RANGES_LABEL: box "ranges" fit with n at RANGES.s - (0, 0.25cm)
+move $label_sep
+PADDING_LABEL: box "padding" fit
+
+line from RANGES_LABEL.nw to RANGES.sw
+arrow <-> to RANGES.se
+line to RANGES_LABEL.ne
+
+line from PADDING_LABEL.nw to PADDING.sw
+arrow <-> to PADDING.se
+line to PADDING_LABEL.ne

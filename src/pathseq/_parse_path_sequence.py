@@ -138,7 +138,7 @@ def _tokenise(seq: str) -> list[str | Token]:
                     seq,
                     column + 1,
                     column + 2,
-                    f"Expected a '.' to begin file suffixes",
+                    "Expected a '.' to begin file suffixes",
                 )
         else:
             assert False, "Found a token that should be impossible"

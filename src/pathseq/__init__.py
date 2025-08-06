@@ -23,6 +23,12 @@ __version__ = "0.1.0"
 
 __all__ = (
     "FileNumSet",
+    "LoosePathSequence",
+    "LoosePosixPathSequence",
+    "LoosePurePathSequence",
+    "LoosePurePosixPathSequence",
+    "LoosePureWindowsPathSequence",
+    "LooseWindowsPathSequence",
     "NotASequenceError",
     "ParseError",
     "PathSequence",
