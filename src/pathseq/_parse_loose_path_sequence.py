@@ -76,7 +76,7 @@ class Token:
         return self.column + len(self.value)
 
 
-def _tokenise(seq: str) -> list[str | Token]:
+def _tokenise(seq: str) -> list[Token]:
     raw_tokens = re.split(RANGES_RE, seq)
 
     starts_with_range = not bool(raw_tokens[0])
@@ -431,13 +431,20 @@ class SeqParser(StateMachine):
 
     def _parse_padded_range(self, token) -> PaddedRange:
         match = PAD_FORMAT_RE.search(token.value)
+        if not match:
+            raise ParseError(
+                self._seq,
+                token.column,
+                token.end_column,
+                reason=f"Tokenised an invalid range: {token.value}",
+            )
         pad_format = match.group(0)
         file_num_set = token.value[: -len(pad_format)]
         if file_num_set:
             file_num_set = FileNumSet.from_str(file_num_set)
         return PaddedRange(file_num_set, pad_format)
 
-    def _parse_suffixes(self, token) -> tuple[str]:
+    def _parse_suffixes(self, token) -> tuple[str, ...]:
         if not token.value:
             return ()
 
@@ -479,14 +486,17 @@ class SeqParser(StateMachine):
         if source == self.range_starts_name:
             self._range_type = RangesInName
 
-        kwargs = {
-            "stem": self._stem,
-            "prefix_separator": self._prefix_separator,
-            "ranges": tuple(self._ranges),
-            "postfix": self._postfix,
-            "suffixes": self._suffixes,
-        }
-        return self._range_type(**kwargs)
+        assert self._range_type is not None, "Failed to establish a range type"
+        assert self._range_type is not RangesStartName or self._prefix_separator == ""
+        assert self._range_type is not RangesEndName or self._postfix == ""
+
+        return self._range_type(
+            stem=self._stem,
+            prefix_separator=self._prefix_separator,  # type: ignore[arg-type]
+            ranges=tuple(self._ranges),
+            postfix=self._postfix,  # type: ignore[arg-type]
+            suffixes=self._suffixes,
+        )
 
     @classmethod
     def parse(cls, seq: str) -> ParsedLooseSequence:

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence, Set
+from collections.abc import Iterable, Iterator, Sequence, Set
 import decimal
-from typing import overload, Self
+from typing import Generic, overload, Self
 
 from typing_extensions import (
     TypeGuard,  # PY310
@@ -12,17 +12,26 @@ from ._arithmetic_sequence import ArithmeticSequence, FileNumT
 from ._parse_file_num_set import parse_file_num_set
 
 
-@overload
+class FileNumSetIterator(Generic[FileNumT]):
+    def __init__(self, ranges: tuple[ArithmeticSequence[FileNumT], ...]):
+        self._ranges_iter: Iterator[ArithmeticSequence[FileNumT]] = iter(ranges)
+        self._range_iter: Iterator[FileNumT] = iter(())
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> FileNumT:
+        try:
+            return next(self._range_iter)
+        except StopIteration:
+            range_ = next(self._ranges_iter)
+            self._range_iter = iter(range_)
+            return next(self._range_iter)
+
+
 def _seqs_from_nums(
-    numbers: Iterable[int | decimal.Decimal],
-) -> Iterable[ArithmeticSequence[decimal.Decimal]]: ...
-
-
-@overload
-def _seqs_from_nums(numbers: Iterable[int]) -> Iterable[ArithmeticSequence[int]]: ...
-
-
-def _seqs_from_nums(numbers):
+    numbers: Iterable[int | FileNumT],
+) -> Iterable[ArithmeticSequence[FileNumT]]:
     numbers = sorted(set(numbers))
     if not numbers:
         return []
@@ -56,19 +65,20 @@ def _seqs_from_nums(numbers):
     if step is not None:
         seqs.append((start, previous, step))
 
+    result: list[ArithmeticSequence[FileNumT]]
     if any(isinstance(x, decimal.Decimal) for x in numbers):
-        seqs = [
+        result = [
             ArithmeticSequence(
-                decimal.Decimal(start),
-                decimal.Decimal(stop),
-                decimal.Decimal(step) if step is not None else None,
+                decimal.Decimal(start),  # type: ignore[arg-type]
+                decimal.Decimal(stop),  # type: ignore[arg-type]
+                decimal.Decimal(step) if step is not None else None,  # type: ignore[arg-type]
             )
             for (start, stop, step) in seqs
         ]
     else:
-        seqs = [ArithmeticSequence(*seq) for seq in seqs]
+        result = [ArithmeticSequence(*seq) for seq in seqs]  # type: ignore[arg-type]
 
-    return seqs
+    return result
 
 
 # TODO: Are there other inherited methods that we could override for speed?
@@ -76,7 +86,7 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
     # TODO: For now, only accept arithmetic sequences
     # TODO: Order and consolidate the ranges
     def __init__(self, ranges: Iterable[ArithmeticSequence[FileNumT]]) -> None:
-        self._ranges: tuple[ArithmeticSequence[FileNumT]] = tuple(ranges)
+        self._ranges: tuple[ArithmeticSequence[FileNumT], ...] = tuple(ranges)
 
     @classmethod
     def from_str(cls, set_str: str) -> Self:
@@ -90,18 +100,10 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
         """
         return cls(parse_file_num_set(set_str))
 
-    @overload
     @classmethod
     def from_file_nums(
-        cls, file_nums: Iterable[int | decimal.Decimal]
-    ) -> FileNumSet[decimal.Decimal]: ...
-
-    @overload
-    @classmethod
-    def from_file_nums(cls, file_nums: Iterable[int]) -> FileNumSet[int]: ...
-
-    @classmethod
-    def from_file_nums(cls, file_nums):
+        cls, file_nums: Iterable[int | FileNumT]
+    ) -> FileNumSet[FileNumT]:
         """Create a file number set from an iterable from file numbers.
 
         The given numbers are deduplicated and sorted before being put into a set.
@@ -121,15 +123,14 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
 
         return any(item in rng for rng in self._ranges)
 
-    def __iter__(self) -> Iterable[FileNumT]:
+    def __iter__(self) -> Iterator[FileNumT]:
         """Iterate over the file numbers in the set.
 
         Yields:
             Each file number in the set.
         """
         # TODO: What about overlapping ranges?
-        for rng in self._ranges:
-            yield from rng
+        return FileNumSetIterator(self._ranges)
 
     def __len__(self) -> int:
         """Get the number of file numbers in this set."""

@@ -1,9 +1,23 @@
-from collections.abc import Iterable, Sequence, Set
+from collections.abc import Iterator, Sequence, Set
 import decimal
-from typing import overload, Self
+from typing import overload, Protocol, Self, TypeVar
 
 from ._ast import FileNumT
 from ._decimal_range import DecimalRange
+
+
+FileNumT_cov = TypeVar("FileNumT_cov", covariant=True)
+
+
+class RangeProtocol(Protocol[FileNumT_cov]):
+    @property
+    def start(self) -> FileNumT_cov: ...
+    @property
+    def step(self) -> FileNumT_cov: ...
+
+    def __iter__(self) -> Iterator[FileNumT_cov]: ...
+
+    def __len__(self) -> int: ...
 
 
 def remove_exponent(d: decimal.Decimal) -> decimal.Decimal:
@@ -38,8 +52,8 @@ class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
         else:
             stop = end
 
-        self._range: range | DecimalRange
-        self._end: int | decimal.Decimal
+        self._range: RangeProtocol[FileNumT]
+        self._end: FileNumT
         if isinstance(start, int):
             self._range = range(start, stop, step)
             self._end = end
@@ -76,9 +90,9 @@ class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
         return hash((type(self), self.start, self.end, self.step))
 
     def __contains__(self, item: object) -> bool:
-        return item in self._range
+        return any(item == x for x in self._range)
 
-    def __iter__(self) -> Iterable[FileNumT]:
+    def __iter__(self) -> Iterator[FileNumT]:
         return iter(self._range)
 
     def __len__(self) -> int:

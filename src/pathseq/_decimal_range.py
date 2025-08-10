@@ -1,6 +1,32 @@
-from collections.abc import Iterable
+from __future__ import annotations
+
+from collections.abc import Iterator
 import decimal
 import math
+
+
+class DecimalRangeIterator:
+    def __init__(
+        self, start: decimal.Decimal, stop: decimal.Decimal, step: decimal.Decimal
+    ) -> None:
+        self._current = start
+        self._stop = stop
+        self._step = step
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> decimal.Decimal:
+        if self._step > 0:
+            if self._current >= self._stop:
+                raise StopIteration
+        else:
+            if self._current <= self._stop:
+                raise StopIteration
+
+        next_ = self._current
+        self._current += self._step
+        return next_
 
 
 class DecimalRange:
@@ -83,16 +109,8 @@ class DecimalRange:
             to_hash = (length, None, None)
         return hash(to_hash)
 
-    def __iter__(self) -> Iterable[decimal.Decimal]:
-        current = self._start
-        if self._step > 0:
-            while current < self._stop:
-                yield current
-                current += self._step
-        else:
-            while current > self._stop:
-                yield current
-                current += self._step
+    def __iter__(self) -> Iterator[decimal.Decimal]:
+        return DecimalRangeIterator(self.start, self.stop, self.step)
 
     def __len__(self) -> int:
         # x_n = a + d(n-1)
@@ -127,13 +145,13 @@ class DecimalRange:
 
         return f"{self.__class__.__name__}({self._start}, {self._stop}, {self._step})"
 
-    def __reversed__(self) -> Iterable[decimal.Decimal]:
+    def __reversed__(self) -> Iterator[decimal.Decimal]:
         if not len(self):
             return iter(())
 
         new_stop = self._start - self._step
         new_start = new_stop + self._step * len(self)
-        return iter(self.__class__(new_start, new_stop, -self._step))
+        return DecimalRangeIterator(new_start, new_stop, -self._step)
 
     def count(self, value: decimal.Decimal) -> int:
         return 1 if value in self else 0

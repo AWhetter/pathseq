@@ -65,6 +65,8 @@ class ParsedSequence:
         )
 
         return (
-            self.stem + self.prefix_separator + "".join(spliced),
-            +"".join(self.suffixes),
+            self.stem
+            + self.prefix_separator
+            + "".join(spliced)
+            + "".join(self.suffixes)
         )

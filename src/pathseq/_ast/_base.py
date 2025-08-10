@@ -133,7 +133,7 @@ def quantize(
 
 
 def pad(
-    number: int | Decimal, width: int | None = 0, decimal_places: int | None = None
+    number: int | Decimal, width: int = 0, decimal_places: int | None = None
 ) -> str:
     """Return the zero-padded string of a given number.
 
@@ -152,7 +152,7 @@ def pad(
             number = round(number) or 0
         except TypeError:
             pass
-        return str(number).partition(".")[0].zfill(width)  # type:ignore[arg-type]
+        return str(number).partition(".")[0].zfill(width)
 
     # USD ultimately uses vsnprintf to format floats for templateAssetPath:
     # _DeriveClipTimeString -> TfStringPrintf -> ArchVStringPrintf -> ArchVsnprintf -> vsnprintf

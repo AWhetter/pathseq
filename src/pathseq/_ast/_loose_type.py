@@ -9,10 +9,10 @@ from ._base import non_recursive_asdict, stringify_parsed_sequence, PaddedRange
 @dataclass(frozen=True)
 class RangesStartName:
     prefix_separator: Literal[""]
-    ranges: tuple[PaddedRange | str]
+    ranges: tuple[PaddedRange | str, ...]
     postfix: str
     stem: str
-    suffixes: tuple[str]
+    suffixes: tuple[str, ...]
 
     def __str__(self):
         return stringify_parsed_sequence(self)
@@ -46,9 +46,9 @@ class RangesStartName:
 class RangesInName:
     stem: str
     prefix_separator: str
-    ranges: tuple[PaddedRange | str]
+    ranges: tuple[PaddedRange | str, ...]
     postfix: str
-    suffixes: tuple[str]
+    suffixes: tuple[str, ...]
 
     def __str__(self):
         return stringify_parsed_sequence(self)
@@ -83,9 +83,9 @@ class RangesInName:
 @dataclass(frozen=True)
 class RangesEndName:
     stem: str
-    suffixes: tuple[str]
+    suffixes: tuple[str, ...]
     prefix_separator: str
-    ranges: tuple[PaddedRange | str]
+    ranges: tuple[PaddedRange | str, ...]
     postfix: Literal[""]
 
     def __str__(self):
