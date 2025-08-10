@@ -48,12 +48,12 @@ def splice_numbers_onto_ranges(
 
     assert len(inter_ranges) == expected_numbers - 1
 
-    to_splice = list(numbers)
-    for i, (number, _range) in enumerate(zip(numbers, ranges)):
+    to_splice: list[PaddedRange | str] = []
+    for number, _range in zip(numbers, ranges):
         if number is None:
-            to_splice[i] = _range
+            to_splice.append(_range)
         else:
-            to_splice[i] = _range.format(number)
+            to_splice.append(_range.format(number))
 
     return itertools.chain.from_iterable(
         itertools.zip_longest(to_splice, inter_ranges, fillvalue="")
@@ -165,8 +165,6 @@ def pad(
             number = decimal.Decimal(number)
         number = quantize(number, decimal_places, decimal.ROUND_HALF_EVEN)
 
-    number = str(number)
-
-    parts = number.split(".", 1)
+    parts = str(number).split(".", 1)
     parts[0] = parts[0].zfill(width)
     return ".".join(parts)

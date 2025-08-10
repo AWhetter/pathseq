@@ -31,6 +31,7 @@ class IncompleteDimensionError(Exception):
         IncompleteDimensionError: TODO
     """
 
+
 class PathSequence(PurePathSequence):
     """blah
 
@@ -53,8 +54,8 @@ class PathSequence(PurePathSequence):
             IncompleteDimensionError: When one dimension in a multi-dimension sequence
             does not have a consistent number of files in each other dimension.
         """
-        #pattern = self._parsed.as_glob()
-        #paths = self._pathlib_type.parent.glob(pattern)
+        # pattern = self._parsed.as_glob()
+        # paths = self._pathlib_type.parent.glob(pattern)
         # TODO: then regex match, then parse into range sets
 
     @classmethod

@@ -38,7 +38,7 @@ class DecimalRange:
 
     def __contains__(self, key: object) -> bool:
         if type(key) is not decimal.Decimal:
-            return key in iter(self)
+            return any(key == v for v in self)
 
         if self._step > 0:
             if not (self._start <= key < self._stop):
@@ -75,11 +75,12 @@ class DecimalRange:
         return self.step == value.step
 
     def __hash__(self) -> int:
-        to_hash = [len(self), None, None]
-
-        if to_hash[0]:
-            to_hash[1] = self.start
-
+        length = len(self)
+        to_hash: tuple[int, decimal.Decimal | None, None]
+        if length:
+            to_hash = (length, self.start, None)
+        else:
+            to_hash = (length, None, None)
         return hash(to_hash)
 
     def __iter__(self) -> Iterable[decimal.Decimal]:
@@ -128,7 +129,7 @@ class DecimalRange:
 
     def __reversed__(self) -> Iterable[decimal.Decimal]:
         if not len(self):
-            return
+            return iter(())
 
         new_stop = self._start - self._step
         new_start = new_stop + self._step * len(self)

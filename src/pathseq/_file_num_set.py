@@ -76,7 +76,7 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
     # TODO: For now, only accept arithmetic sequences
     # TODO: Order and consolidate the ranges
     def __init__(self, ranges: Iterable[ArithmeticSequence[FileNumT]]) -> None:
-        self._ranges = tuple(ranges)
+        self._ranges: tuple[ArithmeticSequence[FileNumT]] = tuple(ranges)
 
     @classmethod
     def from_str(cls, set_str: str) -> Self:
@@ -146,7 +146,7 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
             return NotImplemented
 
         # TODO: Implement range normalisation so that we don't need to iterate over everything
-        #return str(self) == str(other)
+        # return str(self) == str(other)
         try:
             return all(r1 == r2 for r1, r2 in zip(self, other, strict=True))
         except ValueError:

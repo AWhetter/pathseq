@@ -17,8 +17,8 @@ from ._base import (
 class ParsedSequence:
     stem: str
     prefix_separator: str
-    ranges: tuple[PaddedRange | str]
-    suffixes: tuple[str]
+    ranges: tuple[PaddedRange | str, ...]
+    suffixes: tuple[str, ...]
 
     def __str__(self):
         return stringify_parsed_sequence(self)
@@ -65,8 +65,6 @@ class ParsedSequence:
         )
 
         return (
-            self.stem
-            + self.prefix_separator
-            + "".join(spliced),
-            + "".join(self.suffixes)
+            self.stem + self.prefix_separator + "".join(spliced),
+            +"".join(self.suffixes),
         )

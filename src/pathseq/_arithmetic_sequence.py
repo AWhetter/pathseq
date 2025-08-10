@@ -38,11 +38,15 @@ class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
         else:
             stop = end
 
+        self._range: range | DecimalRange
+        self._end: int | decimal.Decimal
         if isinstance(start, int):
             self._range = range(start, stop, step)
             self._end = end
         else:
-            self._range = DecimalRange(remove_exponent(start), remove_exponent(stop), remove_exponent(step))
+            self._range = DecimalRange(
+                remove_exponent(start), remove_exponent(stop), remove_exponent(step)
+            )
             self._end = remove_exponent(end)
 
     @property
@@ -71,7 +75,7 @@ class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
     def __hash__(self) -> int:
         return hash((type(self), self.start, self.end, self.step))
 
-    def __contains__(self, item: FileNumT) -> bool:
+    def __contains__(self, item: object) -> bool:
         return item in self._range
 
     def __iter__(self) -> Iterable[FileNumT]:

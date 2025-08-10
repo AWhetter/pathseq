@@ -69,7 +69,7 @@ class Token:
         return self.column + len(self.value)
 
 
-def _tokenise(seq: str) -> list[str | Token]:
+def _tokenise(seq: str) -> list[Token]:
     if seq.endswith("."):
         raise ParseError(seq, len(seq) - 1, reason="Suffixes cannot end with a '.'")
 
@@ -88,7 +88,7 @@ def _tokenise(seq: str) -> list[str | Token]:
         )
 
     column = 0
-    tokens = []
+    tokens: list[Token] = []
     for i, raw_token in enumerate(raw_tokens):
         if i == 0:
             separator = None
@@ -189,7 +189,7 @@ class _SeqParser(StateMachine):
         super().__init__()
 
         self._seq = seq
-        self._stem = ""
+        self._stem: str = ""
         self._prefix_separator = ""
         self._ranges: list[PaddedRange | str] = []
         self._suffixes = ()
@@ -237,13 +237,20 @@ class _SeqParser(StateMachine):
 
     def _parse_padded_range(self, token) -> PaddedRange:
         match = PAD_FORMAT_RE.search(token.value)
+        if not match:
+            raise ParseError(
+                self._seq,
+                token.column,
+                token.end_column,
+                reason=f"Tokenised an invalid range: {token.value}",
+            )
         pad_format = match.group(0)
         file_num_set = token.value[: -len(pad_format)]
         if file_num_set:
             file_num_set = FileNumSet.from_str(file_num_set)
         return PaddedRange(file_num_set, pad_format)
 
-    def _parse_suffixes(self, token) -> tuple[str]:
+    def _parse_suffixes(self, token) -> tuple[str, ...]:
         if not token.value:
             return ()
 

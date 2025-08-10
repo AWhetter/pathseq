@@ -33,6 +33,13 @@ Source = "https://github.com/AWhetter/pathseq"
 Documentation = "https://pathseq.readthedocs.org"
 
 [dependency-groups]
+dev = [
+  {include-group = "test"},
+  {include-group = "format"},
+  {include-group = "lint"},
+  {include-group = "typecheck"},
+  {include-group = "doc"},
+]
 test = [
     "fileseq",
     "hypothesis",
