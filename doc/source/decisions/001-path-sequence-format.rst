@@ -556,12 +556,12 @@ and support for the ranges starting or ending the name varies.
 A format that supports the range only in the file name would look like the following:
 
 .. figure:: /_static/format.svg
-   :class: solid-background
+   :figclass: solid-background
 
 In contrast, a format that supports the range anywhere in the name would look like the following:
 
 .. figure:: /_static/adrs/all_formats.svg
-   :class: solid-background
+   :figclass: solid-background
 
 This visual representation highlights the additional complexity that will be required
 to support parsing such a flexible format.

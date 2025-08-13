@@ -1,6 +1,6 @@
 @media (prefers-color-scheme: dark) {
     body:not([data-theme="light"])
-    .solid-background {
+    figure.solid-background img {
         background-color: var(--color-foreground-primary);
     }
 }

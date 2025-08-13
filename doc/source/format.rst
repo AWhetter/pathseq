@@ -15,7 +15,7 @@ Like in :mod:`pathlib`,
 the name of a path sequence is the final component in a path.
 
 .. figure:: /_static/name.svg
-   :class: solid-background
+   :figclass: solid-background
    :width: 90%
 
 
@@ -28,7 +28,7 @@ The name has four components:
 * The suffixes
 
 .. figure:: /_static/name_breakdown.svg
-   :class: solid-background
+   :figclass: solid-background
    :width: 90%
 
 .. tip::
@@ -44,7 +44,7 @@ Supporting multiple ranges in a sequence requires an additional component:
 an inter-range separator.
 
 .. figure:: /_static/multi_range_breakdown.svg
-   :class: solid-background
+   :figclass: solid-background
    :width: 90%
 
 .. tip::
@@ -88,7 +88,7 @@ and parsing those tokens with a
 That state machine is as follows:
 
 .. figure:: /_static/format.svg
-   :class: solid-background
+   :figclass: solid-background
    :width: 90%
 
 * .. kroki::
@@ -143,7 +143,7 @@ Frame Ranges
 Frame ranges consist of the range string, and the pad string.
 
 .. figure:: /_static/range_string_breakdown.svg
-   :class: solid-background
+   :figclass: solid-background
    :width: 50%
 
 **Range strings**:
@@ -365,7 +365,7 @@ The loose format has an additional component, the postfix,
 to support additional characters after the ranges but before the next component.
 
 .. figure:: /_static/loose_name_breakdown.svg
-   :class: solid-background
+   :figclass: solid-background
    :width: 90%
 
 In addition, ranges can be placed anywhere in the sequence string.
@@ -375,19 +375,19 @@ based on where the ranges are placed in the string.
 The ranges can be at the start of the sequence string:
 
 .. figure:: /_static/starts_name_breakdown.svg
-   :class: solid-background
+   :figclass: solid-background
    :width: 90%
 
 The ranges can be inside the sequence string:
 
 .. figure:: /_static/loose_name_breakdown.svg
-   :class: solid-background
+   :figclass: solid-background
    :width: 90%
 
 Finally, the ranges can be at the end of the sequence string:
 
 .. figure:: /_static/ends_name_breakdown.svg
-   :class: solid-background
+   :figclass: solid-background
    :width: 90%
 
 .. warning::
@@ -425,7 +425,7 @@ and parsing those tokens with a
 That state machine is as follows:
 
 .. figure:: /_static/adrs/all_formats.svg
-   :class: solid-background
+   :figclass: solid-background
 
 * .. kroki::
      :type: pikchr
