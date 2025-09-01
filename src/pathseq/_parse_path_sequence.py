@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import collections
 from dataclasses import dataclass
+import decimal
 import enum
 import re
+from typing import Literal
 
 from statemachine import StateMachine, State
 
@@ -191,8 +193,9 @@ class _SeqParser(StateMachine):
         self._seq = seq
         self._stem: str = ""
         self._prefix_separator = ""
-        self._ranges: list[PaddedRange | str] = []
-        self._suffixes = ()
+        self._ranges: list[PaddedRange[int] | PaddedRange[decimal.Decimal]] = []
+        self._inter_ranges: list[str] = []
+        self._suffixes: tuple[str, ...] = ()
 
     def is_inter_range(self, token: Token) -> bool:
         return token.type == TokenType.INTER_RANGE
@@ -229,13 +232,13 @@ class _SeqParser(StateMachine):
             raise ParseError(self._seq, token.column, token.end_column, reason=reason)
         return True
 
-    def on_enter_stem(self, token):
+    def on_enter_stem(self, token: Token) -> None:
         self._stem = token.value
 
-    def on_enter_in_prefix_separator(self, token):
+    def on_enter_in_prefix_separator(self, token: Token) -> None:
         self._prefix_separator = token.value
 
-    def _parse_padded_range(self, token) -> PaddedRange:
+    def _parse_padded_range(self, token: Token) -> PaddedRange:
         match = PAD_FORMAT_RE.search(token.value)
         if not match:
             raise ParseError(
@@ -245,12 +248,13 @@ class _SeqParser(StateMachine):
                 reason=f"Tokenised an invalid range: {token.value}",
             )
         pad_format = match.group(0)
-        file_num_set = token.value[: -len(pad_format)]
-        if file_num_set:
-            file_num_set = FileNumSet.from_str(file_num_set)
+        set_str = token.value[: -len(pad_format)]
+        file_num_set: FileNumSet | Literal[""] = ""
+        if set_str:
+            file_num_set = FileNumSet.from_str(set_str)
         return PaddedRange(file_num_set, pad_format)
 
-    def _parse_suffixes(self, token) -> tuple[str, ...]:
+    def _parse_suffixes(self, token: Token) -> tuple[str, ...]:
         if not token.value:
             return ()
 
@@ -274,13 +278,13 @@ class _SeqParser(StateMachine):
         suffixes.append(buffer)
         return tuple(suffixes)
 
-    def on_enter_range_in_name(self, token):
+    def on_enter_range_in_name(self, token: Token) -> None:
         self._ranges.append(self._parse_padded_range(token))
 
-    def on_enter_in_inter_range(self, token):
-        self._ranges.append(token.value or "")
+    def on_enter_in_inter_range(self, token: Token) -> None:
+        self._inter_ranges.append(token.value or "")
 
-    def on_enter_in_suffixes(self, token):
+    def on_enter_in_suffixes(self, token: Token) -> None:
         self._suffixes = self._parse_suffixes(token)
 
     def on_finalise(self) -> ParsedSequence:
@@ -288,6 +292,7 @@ class _SeqParser(StateMachine):
             stem=self._stem,
             prefix_separator=self._prefix_separator,
             ranges=tuple(self._ranges),
+            inter_ranges=tuple(self._inter_ranges),
             suffixes=self._suffixes,
         )
 

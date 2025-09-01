@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 import decimal
 import math
+from typing import Self
 
 
 class DecimalRangeIterator:
@@ -13,7 +14,7 @@ class DecimalRangeIterator:
         self._stop = stop
         self._step = step
 
-    def __iter__(self):
+    def __iter__(self) -> Self:
         return self
 
     def __next__(self) -> decimal.Decimal:

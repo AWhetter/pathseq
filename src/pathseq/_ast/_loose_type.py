@@ -1,20 +1,26 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Self
+from typing import Generic, Literal, Self
 
-from ._base import non_recursive_asdict, stringify_parsed_sequence, PaddedRange
+from ._base import (
+    FileNumT,
+    non_recursive_asdict,
+    stringify_parsed_sequence,
+    PaddedRange,
+)
 
 
 @dataclass(frozen=True)
-class RangesStartName:
+class RangesStartName(Generic[FileNumT]):
     prefix_separator: Literal[""]
-    ranges: tuple[PaddedRange | str, ...]
+    ranges: tuple[PaddedRange[FileNumT], ...]
+    inter_ranges: tuple[str, ...]
     postfix: str
     stem: str
     suffixes: tuple[str, ...]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
@@ -43,14 +49,15 @@ class RangesStartName:
 
 
 @dataclass(frozen=True)
-class RangesInName:
+class RangesInName(Generic[FileNumT]):
     stem: str
     prefix_separator: str
-    ranges: tuple[PaddedRange | str, ...]
+    ranges: tuple[PaddedRange[FileNumT], ...]
+    inter_ranges: tuple[str, ...]
     postfix: str
     suffixes: tuple[str, ...]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
@@ -81,14 +88,15 @@ class RangesInName:
 
 
 @dataclass(frozen=True)
-class RangesEndName:
+class RangesEndName(Generic[FileNumT]):
     stem: str
     suffixes: tuple[str, ...]
     prefix_separator: str
-    ranges: tuple[PaddedRange | str, ...]
+    ranges: tuple[PaddedRange[FileNumT], ...]
+    inter_ranges: tuple[str, ...]
     postfix: Literal[""]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:

@@ -8,7 +8,8 @@ from typing_extensions import (
     TypeGuard,  # PY310
 )
 
-from ._arithmetic_sequence import ArithmeticSequence, FileNumT
+from ._arithmetic_sequence import ArithmeticSequence
+from ._ast import FileNumT
 from ._parse_file_num_set import parse_file_num_set
 
 

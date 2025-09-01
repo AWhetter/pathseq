@@ -75,7 +75,7 @@ class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
     def step(self) -> FileNumT:
         return self._range.step
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, ArithmeticSequence):
             return NotImplemented
 
@@ -122,8 +122,22 @@ class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
     @overload
     def __getitem__(self, index: slice) -> Self: ...
 
-    # TODO: Implement slice
-    def __getitem__(self, index):
+    def __getitem__(self, index: int | slice) -> FileNumT | Self:
+        if isinstance(index, slice):
+            try:
+                start = self[index.start]
+            except IndexError:
+                # We don't allow empty ArithmeticSequence objects.
+                # Maybe we need a better exception type here.
+                raise
+
+            try:
+                end = self[index.stop - 1]
+            except IndexError:
+                end = self.end
+
+            return self.__class__(start, end, self.step * index.step)
+
         if index > len(self):
             raise IndexError(index)
 

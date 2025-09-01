@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 import itertools
-from typing import Self
+from typing import Generic, Self
 
 from ._base import (
+    FileNumT,
     non_recursive_asdict,
     splice_numbers_onto_ranges,
     stringify_parsed_sequence,
@@ -14,13 +15,14 @@ from ._base import (
 
 
 @dataclass(frozen=True)
-class ParsedSequence:
+class ParsedSequence(Generic[FileNumT]):
     stem: str
     prefix_separator: str
-    ranges: tuple[PaddedRange | str, ...]
+    ranges: tuple[PaddedRange[FileNumT], ...]
+    inter_ranges: tuple[str, ...]
     suffixes: tuple[str, ...]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
@@ -46,8 +48,8 @@ class ParsedSequence:
     def format(self, *numbers: int | Decimal | None) -> str:
         spliced = splice_numbers_onto_ranges(
             numbers,
-            self.ranges[::2],
-            self.ranges[1::2],
+            self.ranges,
+            self.inter_ranges,
         )
 
         return (
@@ -58,10 +60,9 @@ class ParsedSequence:
         )
 
     def as_glob(self) -> str:
-        to_splice = "*" * len(self.ranges[::2])
-        inter_ranges = self.ranges[1::2]
+        to_splice = "*" * len(self.ranges)
         spliced = itertools.chain.from_iterable(
-            itertools.zip_longest(to_splice, inter_ranges, fillvalue="")
+            itertools.zip_longest(to_splice, self.inter_ranges, fillvalue="")
         )
 
         return (

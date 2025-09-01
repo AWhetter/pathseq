@@ -220,7 +220,10 @@ class TestPathSequence:
                         ),
                     ),
                     "",
-                    (".tar", ".gz",),
+                    (
+                        ".tar",
+                        ".gz",
+                    ),
                 ),
                 id="#.tar.gz",
             ),

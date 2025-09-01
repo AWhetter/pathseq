@@ -4,7 +4,7 @@ import collections
 from dataclasses import dataclass
 import enum
 import re
-from typing import TypeAlias, Union
+from typing import Literal, TypeAlias, Union
 
 from statemachine import StateMachine, State
 
@@ -325,7 +325,8 @@ class SeqParser(StateMachine):
         self._range_type: type[ParsedLooseSequence] | None = None
         self._stem = ""
         self._prefix_separator = ""
-        self._ranges: list[PaddedRange | str] = []
+        self._ranges: list[PaddedRange] = []
+        self._inter_ranges: list[str] = []
         self._postfix = ""
         self._suffixes = ()
 
@@ -400,36 +401,36 @@ class SeqParser(StateMachine):
             raise ParseError(self._seq, token.column, token.end_column, reason=reason)
         return True
 
-    def switch_to_in_range(self):
+    def switch_to_in_range(self) -> None:
         self._range_type = RangesInName
 
-    def on_enter_range_starts_name(self, token):
+    def on_enter_range_starts_name(self, token: Token) -> None:
         self._range_type = RangesStartName
 
         self._ranges.append(self._parse_padded_range(token))
 
-    def on_enter_starts_inter_range(self, token):
-        self._ranges.append(token.value)
+    def on_enter_starts_inter_range(self, token: Token) -> None:
+        self._inter_ranges.append(token.value)
 
-    def on_blank_inter_range(self):
-        self._ranges.append("")
+    def on_blank_inter_range(self) -> None:
+        self._inter_ranges.append("")
 
-    def on_enter_starts_postfix(self, token):
+    def on_enter_starts_postfix(self, token: Token) -> None:
         self._postfix = token.value
 
-    def on_enter_starts_stem(self, token):
+    def on_enter_starts_stem(self, token: Token) -> None:
         self._stem = token.value
 
-    def on_enter_starts_suffixes(self, token):
+    def on_enter_starts_suffixes(self, token: Token) -> None:
         self._suffixes = self._parse_suffixes(token)
 
-    def on_enter_range_later(self, token):
+    def on_enter_range_later(self, token: Token) -> None:
         self._stem = token.value
 
-    def on_enter_in_prefix_separator(self, token):
+    def on_enter_in_prefix_separator(self, token: Token) -> None:
         self._prefix_separator = token.value
 
-    def _parse_padded_range(self, token) -> PaddedRange:
+    def _parse_padded_range(self, token: Token) -> PaddedRange:
         match = PAD_FORMAT_RE.search(token.value)
         if not match:
             raise ParseError(
@@ -439,12 +440,13 @@ class SeqParser(StateMachine):
                 reason=f"Tokenised an invalid range: {token.value}",
             )
         pad_format = match.group(0)
-        file_num_set = token.value[: -len(pad_format)]
-        if file_num_set:
-            file_num_set = FileNumSet.from_str(file_num_set)
+        set_str = token.value[: -len(pad_format)]
+        file_num_set: FileNumSet | Literal[""] = ""
+        if set_str:
+            file_num_set = FileNumSet.from_str(set_str)
         return PaddedRange(file_num_set, pad_format)
 
-    def _parse_suffixes(self, token) -> tuple[str, ...]:
+    def _parse_suffixes(self, token: Token) -> tuple[str, ...]:
         if not token.value:
             return ()
 
@@ -460,26 +462,26 @@ class SeqParser(StateMachine):
         suffixes.append(buffer)
         return tuple(suffixes)
 
-    def on_enter_range_in_name(self, token):
+    def on_enter_range_in_name(self, token: Token) -> None:
         self._range_type = RangesInName
 
         self._ranges.append(self._parse_padded_range(token))
 
-    def on_enter_in_postfix(self, token):
+    def on_enter_in_postfix(self, token: Token) -> None:
         self._postfix = token.value
 
-    def on_enter_in_suffixes(self, token):
+    def on_enter_in_suffixes(self, token: Token) -> None:
         self._suffixes = self._parse_suffixes(token)
 
-    def on_enter_range_ends_name(self, token):
+    def on_enter_range_ends_name(self, token: Token) -> None:
         self._range_type = RangesEndName
 
         self._suffixes = self._parse_suffixes(token)
 
-    def on_enter_ends_range(self, token):
+    def on_enter_ends_range(self, token: Token) -> None:
         self._ranges.append(self._parse_padded_range(token))
 
-    def on_enter_ends_prefix_separator(self, token):
+    def on_enter_ends_prefix_separator(self, token: Token) -> None:
         self._prefix_separator = token.value
 
     def on_finalise(self, source) -> ParsedLooseSequence:
@@ -494,6 +496,7 @@ class SeqParser(StateMachine):
             stem=self._stem,
             prefix_separator=self._prefix_separator,  # type: ignore[arg-type]
             ranges=tuple(self._ranges),
+            inter_ranges=tuple(self._inter_ranges),
             postfix=self._postfix,  # type: ignore[arg-type]
             suffixes=self._suffixes,
         )

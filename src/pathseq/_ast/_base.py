@@ -7,7 +7,7 @@ import decimal
 from decimal import Decimal
 import itertools
 import typing
-from typing import Any, Literal, TypeAlias, TypeVar, Union
+from typing import Any, Generic, Literal, TypeAlias, TypeVar, Union
 
 if typing.TYPE_CHECKING:
     from .._file_num_set import FileNumSet
@@ -26,6 +26,15 @@ def non_recursive_asdict(datacls: Any) -> dict[str, Any]:
 def stringify_parsed_sequence(seq: Any) -> str:
     result = ""
     for field in dataclasses.fields(seq):
+        if field.name == "ranges":
+            ranges = (str(x) for x in seq.ranges)
+            result += "".join(
+                itertools.chain.from_iterable(zip(ranges, seq.inter_ranges))
+            )
+            continue
+        elif field.name == "inter_ranges":
+            continue
+
         value = getattr(seq, field.name)
         if isinstance(value, (list, tuple)):
             for item in value:
@@ -37,10 +46,10 @@ def stringify_parsed_sequence(seq: Any) -> str:
 
 
 def splice_numbers_onto_ranges(
-    numbers: tuple[int | Decimal | None],
-    ranges: Sequence[PaddedRange],
+    numbers: tuple[int | Decimal | None, ...],
+    ranges: Sequence[PaddedRange[FileNumT]],
     inter_ranges: Sequence[str],
-) -> Iterable[int | Decimal | str | PaddedRange]:
+) -> Iterable[int | Decimal | str | PaddedRange[FileNumT]]:
     len_numbers = len(numbers)
     expected_numbers = len(ranges)
     if len_numbers != expected_numbers:
@@ -48,7 +57,7 @@ def splice_numbers_onto_ranges(
 
     assert len(inter_ranges) == expected_numbers - 1
 
-    to_splice: list[PaddedRange | str] = []
+    to_splice: list[PaddedRange[FileNumT] | str] = []
     for number, _range in zip(numbers, ranges):
         if number is None:
             to_splice.append(_range)
@@ -61,11 +70,11 @@ def splice_numbers_onto_ranges(
 
 
 @dataclass(frozen=True)
-class PaddedRange:
-    file_num_set: FileNumSet | Literal[""]
+class PaddedRange(Generic[FileNumT]):
+    file_num_set: FileNumSet[FileNumT] | Literal[""]
     pad_format: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.file_num_set) + self.pad_format
 
     def format(self, number: int | Decimal) -> str:

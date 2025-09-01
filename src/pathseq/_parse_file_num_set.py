@@ -4,8 +4,9 @@ import decimal
 
 import lark
 
+from ._arithmetic_sequence import ArithmeticSequence
+from ._ast import FileNumT
 from ._error import ParseError
-from ._arithmetic_sequence import ArithmeticSequence, FileNumT
 
 _GRAMMAR = r"""
     start: ranges
@@ -24,11 +25,13 @@ _PARSER = lark.Lark(_GRAMMAR, parser="lalr")
 
 
 @lark.v_args(inline=True)
-class _RangeReducer(lark.Transformer):
-    def start(self, seq):
+class _RangeReducer(lark.Transformer[lark.Token, list[ArithmeticSequence]]):
+    def start(self, seq: list[ArithmeticSequence]) -> list[ArithmeticSequence]:
         return seq
 
-    def ranges(self, range_, *ranges):
+    def ranges(
+        self, range_: ArithmeticSequence, *ranges: ArithmeticSequence
+    ) -> list[ArithmeticSequence]:
         # TODO: Normalise the type of all ranges
         result = [range_]
         if ranges:
@@ -36,14 +39,14 @@ class _RangeReducer(lark.Transformer):
 
         return result
 
-    def range(self, start, end, step):
+    def range(self, start: str, end: str | None, step: str | None):
         args = [start]
         if end is not None:
             args.append(end)
             if step is not None:
                 args.append(step)
 
-        type_ = int
+        type_: type[int] | type[decimal.Decimal] = int
         if any("." in arg for arg in args):
             type_ = decimal.Decimal
 
