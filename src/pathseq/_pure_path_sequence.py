@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence, Set
+from collections.abc import Iterable, Iterator, Sequence, Set
 from decimal import Decimal
 import itertools
 import os
 import pathlib
-from typing import overload, TypeVar, Union
+from typing import ClassVar, overload, TypeVar, Union
 
 from typing_extensions import (
     Self,  # PY311
     TypeAlias,  # PY310
-    TypeGuard,  # PY310
 )
 
 from ._ast import PaddedRange, ParsedSequence
@@ -18,30 +17,33 @@ from ._error import ParseError
 from ._file_num_set import FileNumSet
 from ._parse_path_sequence import parse_path_sequence
 
-Segment: TypeAlias = Union[str, os.PathLike[str], "PurePathSequence"]
-T = TypeVar("T", int, Decimal)
+Segment: TypeAlias = Union[str, os.PathLike[str]]
+PathT_co = TypeVar(
+    "PathT_co", covariant=True, bound=pathlib.PurePath, default=pathlib.PurePath
+)
 
 
-# TODO: Should be a set of pathlib objects
-class PurePathSequence(Sequence[T], Set[T]):
-    """A generic class that represents a path sequence in the system's path flavour.
-
-    Instantiating this class creates either a :class:`PurePosixPathSequence`
-    or a :class:`PureWindowsPathSequence`.
+class PurePathSequence(Sequence[PathT_co], Set[PathT_co]):
+    """A generic class that represents a path sequence.
 
     Raises:
         NotASequenceError: When the given path does not represent a sequence.
     """
 
-    _pathlib_type: type[pathlib.PurePath] = pathlib.PurePath
+    _pathlib_type: ClassVar[type[pathlib.PurePath]] = pathlib.PurePath
+    _path: PathT_co
 
-    def __new__(cls, *args, **kwargs):
-        if cls is PurePathSequence:
-            cls = PureWindowsPathSequence if os.name == "nt" else PurePosixPathSequence
-        return object.__new__(cls)
+    @overload
+    def __init__(self: PurePathSequence[pathlib.PurePath], path: str) -> None: ...
 
-    def __init__(self, *pathsegments: Segment) -> None:
-        self._path = self._pathlib_type(*pathsegments)
+    @overload
+    def __init__(self: PurePathSequence[PathT_co], path: PathT_co) -> None: ...
+
+    def __init__(self, path: PathT_co | str) -> None:
+        if isinstance(path, str):
+            self._path = self._pathlib_type(path)  # type: ignore[assignment]
+        else:
+            self._path = path
         self._parsed = parse_path_sequence(self._path.name)
 
     # General properties
@@ -51,24 +53,24 @@ class PurePathSequence(Sequence[T], Set[T]):
 
         return self._path.parent == other._path.parent and self._parsed == other._parsed
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "{}({!r})".format(self.__class__.__name__, self.as_posix())
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self._path)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((type(self), self._path.parent, self._parsed))
 
     # Path operations
-    def __rtruediv__(self, key):
+    def __rtruediv__(self, key: Segment) -> Self:
         try:
             return self.with_segments(key, self._path)
         except TypeError:
             return NotImplemented
 
     @property
-    def parts(self) -> tuple[str]:
+    def parts(self) -> tuple[str, ...]:
         return self._path.parts
 
     @property
@@ -162,33 +164,27 @@ class PurePathSequence(Sequence[T], Set[T]):
             )
 
     def with_segments(self, *pathsegments: Segment) -> Self:
-        return type(self)(*pathsegments)
+        return type(self)(self._path.__class__(*pathsegments))
 
     # Sequence operations
     @overload
-    def __getitem__(self, index: int) -> pathlib.PurePath: ...
+    def __getitem__(self, index: int) -> PathT_co: ...
 
     @overload
     def __getitem__(self, index: slice) -> Self: ...
 
-    def __getitem__(self, index):
-        pass
-
-    def __contains__(self, item) -> bool:
+    def __getitem__(self, index: int | slice) -> PathT_co | Self:
         raise NotImplementedError
 
-    def __iter__(self) -> Iterable[pathlib.PurePath]:
-        # TODO: Note order of iteration over multi-dimension ranges
-        ranges: list[FileNumSet | None] = [
-            x.file_num_set for x in self._parsed.ranges[::2]
-        ]
+    def __contains__(self, item: object) -> bool:
+        raise NotImplementedError
 
-        assert ranges, "Parsed a sequence string without any ranges present."
-
-        iterators = [iter(x if x is not None else (None,)) for x in ranges]
+    def __iter__(self) -> Iterator[PathT_co]:
+        iterators = (iter(x) for x in self.file_num_sets)
         # TODO: Check that this isn't using mega amounts of memory
         for result in itertools.product(*iterators):
-            yield self.format(*result)
+            # https://github.com/python/typeshed/issues/13490
+            yield self.format(*result)  # type: ignore[arg-type]
 
     def __len__(self) -> int:
         result = 1
@@ -210,6 +206,7 @@ class PurePathSequence(Sequence[T], Set[T]):
     @property
     def paddings(self) -> tuple[str]:
         """All padding strings in the final path component."""
+        raise NotImplementedError
 
     # TODO: Or maybe set via part objects?
     def with_paddings(self, *paddings: str) -> Self:
@@ -219,51 +216,45 @@ class PurePathSequence(Sequence[T], Set[T]):
             ValueError: When the number of provided padding strings does not match
                 the number of padding strings in the final path component.
         """
+        raise NotImplementedError
 
     @classmethod
     def from_paths(cls, paths: Iterable[os.PathLike[str]]) -> Iterable[Self]:
         """Create one or more path sequences from a list of paths."""
+        raise NotImplementedError
 
-    @overload
-    def format(self, *numbers: int | Decimal) -> pathlib.PurePath: ...
-
-    @overload
-    def format(self, *numbers: int | Decimal | None) -> Self: ...
-
-    def format(self, *numbers):
+    def format(self, *numbers: int | Decimal) -> PathT_co:
         """Return a path for the given file number(s) in the sequence.
 
         Args:
             The number to use in place of each range in the string.
-            A ``None`` means don't fill in this range.
         """
         name = self._parsed.format(*numbers)
-        result = self._path.with_name(name)
+        return self._path.with_name(name)
 
-        if any(number is None for number in numbers):
-            return self.__class__(result)
-
-        return result
-
-    def file_num_sets(self) -> tuple[FileNumSet] | None:
+    @property
+    def file_num_sets(self) -> tuple[FileNumSet[int] | FileNumSet[Decimal], ...]:
         """All file number sets in the final path component."""
+        ranges = tuple(
+            x.file_num_set
+            for x in self._parsed.ranges
+            if not isinstance(x.file_num_set, str)
+        )
+        if len(ranges) != len(self._parsed.ranges):
+            raise TypeError(
+                "Cannot get the file number sets of a path sequence with incomplete ranges."
+            )
 
-    def with_file_num_sets(self, sets: Iterable[FileNumSet]) -> Self:
-        pass
+        return ranges
 
-    # TODO: Make these classes generic
-    @staticmethod
-    def has_subsamples(seq: Self) -> TypeGuard[Self[Decimal]]:
-        pass
+    def with_file_num_sets(
+        self, sets: Iterable[FileNumSet[int] | FileNumSet[Decimal]]
+    ) -> Self:
+        raise NotImplementedError
+
+    def has_subsamples(self) -> bool:
+        raise NotImplementedError
 
     @property
     def parsed(self) -> ParsedSequence:
         return self._parsed
-
-
-class PurePosixPathSequence(PurePathSequence):
-    pass
-
-
-class PureWindowsPathSequence(PurePathSequence):
-    pass

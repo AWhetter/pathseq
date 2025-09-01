@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import decimal
+from decimal import Decimal as D
+from typing import TypeAlias, TypeVar, Union
 
 import lark
 
 from ._arithmetic_sequence import ArithmeticSequence
-from ._ast import FileNumT
 from ._error import ParseError
 
 _GRAMMAR = r"""
@@ -22,38 +22,50 @@ _GRAMMAR = r"""
     /x
 """
 _PARSER = lark.Lark(_GRAMMAR, parser="lalr")
+_SeqArgsT: TypeAlias = Union[tuple[str], tuple[str, str], tuple[str, str, str]]
+T = TypeVar("T")
 
 
 @lark.v_args(inline=True)
-class _RangeReducer(lark.Transformer[lark.Token, list[ArithmeticSequence]]):
-    def start(self, seq: list[ArithmeticSequence]) -> list[ArithmeticSequence]:
+class _RangeReducer(
+    lark.Transformer[
+        lark.Token, list[ArithmeticSequence[int]] | list[ArithmeticSequence[D]]
+    ]
+):
+    def start(self, seq: T) -> T:
         return seq
 
     def ranges(
-        self, range_: ArithmeticSequence, *ranges: ArithmeticSequence
-    ) -> list[ArithmeticSequence]:
-        # TODO: Normalise the type of all ranges
-        result = [range_]
-        if ranges:
-            result.extend(ranges)
+        self, range_: _SeqArgsT, *ranges: _SeqArgsT
+    ) -> list[ArithmeticSequence[int]] | list[ArithmeticSequence[D]]:
+        if any("." in arg for arg in range_) or any(
+            "." in arg for r in ranges for arg in r
+        ):
+            return [
+                ArithmeticSequence(*tuple(D(arg) for arg in range_)),
+                *(ArithmeticSequence(*tuple(D(arg) for arg in r)) for r in ranges),
+            ]
 
-        return result
+        return [
+            ArithmeticSequence(*tuple(int(arg) for arg in range_)),
+            *(ArithmeticSequence(*tuple(int(arg) for arg in r)) for r in ranges),
+        ]
 
-    def range(self, start: str, end: str | None, step: str | None):
-        args = [start]
+    def range(self, start: str, end: str | None, step: str | None) -> _SeqArgsT:
+        assert step is None or end is not None, "Parsed an end but no step"
+
+        args: _SeqArgsT = (start,)
         if end is not None:
-            args.append(end)
+            args = (start, end)
             if step is not None:
-                args.append(step)
+                args = (start, end, step)
 
-        type_: type[int] | type[decimal.Decimal] = int
-        if any("." in arg for arg in args):
-            type_ = decimal.Decimal
-
-        return ArithmeticSequence(*(type_(arg) for arg in args))
+        return args
 
 
-def parse_file_num_set(set_: str) -> list[ArithmeticSequence[FileNumT]]:
+def parse_file_num_set(
+    set_: str,
+) -> list[ArithmeticSequence[int]] | list[ArithmeticSequence[D]]:
     try:
         ranges = _PARSER.parse(set_)
     except lark.UnexpectedInput as exc:

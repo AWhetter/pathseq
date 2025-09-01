@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import collections
 from dataclasses import dataclass
+from decimal import Decimal
 import enum
 import re
 from typing import Literal, TypeAlias, Union
@@ -280,7 +281,7 @@ class SeqParser(StateMachine):
         | init.to(range_later, validators="expect_range_or_stem")
         | range_starts_name.to(starts_inter_range, cond="is_inter_range")
         | starts_inter_range.to(range_starts_name, cond="expect_range")
-        | range_starts_name.to.itself(on="on_blank_inter_range", cond="is_range")
+        | range_starts_name.to.itself(on="on_blank_inter_range", cond="is_range")  # type: ignore[no-untyped-call]
         | range_starts_name.to(in_suffixes, cond="is_suffixes", on="switch_to_in_range")
         | range_starts_name.to(starts_postfix, cond="is_postfix")
         | range_starts_name.to(
@@ -325,10 +326,10 @@ class SeqParser(StateMachine):
         self._range_type: type[ParsedLooseSequence] | None = None
         self._stem = ""
         self._prefix_separator = ""
-        self._ranges: list[PaddedRange] = []
+        self._ranges: list[PaddedRange[int] | PaddedRange[Decimal]] = []
         self._inter_ranges: list[str] = []
         self._postfix = ""
-        self._suffixes = ()
+        self._suffixes: tuple[str, ...] = ()
 
     def is_range(self, token: Token) -> bool:
         return token.type == TokenType.RANGE
@@ -412,6 +413,12 @@ class SeqParser(StateMachine):
     def on_enter_starts_inter_range(self, token: Token) -> None:
         self._inter_ranges.append(token.value)
 
+    def on_enter_in_inter_range(self, token: Token) -> None:
+        self._inter_ranges.append(token.value)
+
+    def on_enter_ends_inter_range(self, token: Token) -> None:
+        self._inter_ranges.append(token.value)
+
     def on_blank_inter_range(self) -> None:
         self._inter_ranges.append("")
 
@@ -430,7 +437,9 @@ class SeqParser(StateMachine):
     def on_enter_in_prefix_separator(self, token: Token) -> None:
         self._prefix_separator = token.value
 
-    def _parse_padded_range(self, token: Token) -> PaddedRange:
+    def _parse_padded_range(
+        self, token: Token
+    ) -> PaddedRange[int] | PaddedRange[Decimal]:
         match = PAD_FORMAT_RE.search(token.value)
         if not match:
             raise ParseError(
@@ -441,10 +450,10 @@ class SeqParser(StateMachine):
             )
         pad_format = match.group(0)
         set_str = token.value[: -len(pad_format)]
-        file_num_set: FileNumSet | Literal[""] = ""
+        file_num_set: FileNumSet[int] | FileNumSet[Decimal] | Literal[""] = ""
         if set_str:
             file_num_set = FileNumSet.from_str(set_str)
-        return PaddedRange(file_num_set, pad_format)
+        return PaddedRange(file_num_set, pad_format)  # type: ignore[misc]
 
     def _parse_suffixes(self, token: Token) -> tuple[str, ...]:
         if not token.value:
@@ -484,7 +493,7 @@ class SeqParser(StateMachine):
     def on_enter_ends_prefix_separator(self, token: Token) -> None:
         self._prefix_separator = token.value
 
-    def on_finalise(self, source) -> ParsedLooseSequence:
+    def on_finalise(self, source: State) -> ParsedLooseSequence:
         if source == self.range_starts_name:
             self._range_type = RangesInName
 
@@ -513,7 +522,7 @@ class SeqParser(StateMachine):
             else:
                 machine.pump(token)
 
-        return machine.finalise()
+        return machine.finalise()  # type: ignore[no-any-return]
 
 
 def parse_path_sequence(seq: str) -> ParsedLooseSequence:

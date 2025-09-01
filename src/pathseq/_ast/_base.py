@@ -28,9 +28,9 @@ def stringify_parsed_sequence(seq: Any) -> str:
     for field in dataclasses.fields(seq):
         if field.name == "ranges":
             ranges = (str(x) for x in seq.ranges)
-            result += "".join(
-                itertools.chain.from_iterable(zip(ranges, seq.inter_ranges))
-            )
+            # There's one more range than inter-range strings, so add an extra.
+            inter_ranges = itertools.chain(seq.inter_ranges, ("",))
+            result += "".join(itertools.chain.from_iterable(zip(ranges, inter_ranges)))
             continue
         elif field.name == "inter_ranges":
             continue
@@ -47,9 +47,9 @@ def stringify_parsed_sequence(seq: Any) -> str:
 
 def splice_numbers_onto_ranges(
     numbers: tuple[int | Decimal | None, ...],
-    ranges: Sequence[PaddedRange[FileNumT]],
+    ranges: Sequence[PaddedRange[int] | PaddedRange[Decimal]],
     inter_ranges: Sequence[str],
-) -> Iterable[int | Decimal | str | PaddedRange[FileNumT]]:
+) -> Iterable[int | Decimal | str | PaddedRange[int] | PaddedRange[Decimal]]:
     len_numbers = len(numbers)
     expected_numbers = len(ranges)
     if len_numbers != expected_numbers:
@@ -57,7 +57,7 @@ def splice_numbers_onto_ranges(
 
     assert len(inter_ranges) == expected_numbers - 1
 
-    to_splice: list[PaddedRange[FileNumT] | str] = []
+    to_splice: list[PaddedRange[int] | PaddedRange[Decimal] | str] = []
     for number, _range in zip(numbers, ranges):
         if number is None:
             to_splice.append(_range)

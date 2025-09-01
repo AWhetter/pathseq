@@ -3,10 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 import itertools
-from typing import Generic, Self
+from typing import Self
 
 from ._base import (
-    FileNumT,
     non_recursive_asdict,
     splice_numbers_onto_ranges,
     stringify_parsed_sequence,
@@ -15,10 +14,10 @@ from ._base import (
 
 
 @dataclass(frozen=True)
-class ParsedSequence(Generic[FileNumT]):
+class ParsedSequence:
     stem: str
     prefix_separator: str
-    ranges: tuple[PaddedRange[FileNumT], ...]
+    ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
     inter_ranges: tuple[str, ...]
     suffixes: tuple[str, ...]
 

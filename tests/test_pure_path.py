@@ -345,4 +345,4 @@ class TestIter:
     )
     def test_simple(self, seq_str, expected):
         seq = PurePathSequence(seq_str)
-        assert list(str(x) for x in seq) == expected
+        assert [str(x) for x in seq] == expected

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import collections
 from dataclasses import dataclass
-import decimal
+from decimal import Decimal
 import enum
 import re
 from typing import Literal
@@ -193,7 +193,7 @@ class _SeqParser(StateMachine):
         self._seq = seq
         self._stem: str = ""
         self._prefix_separator = ""
-        self._ranges: list[PaddedRange[int] | PaddedRange[decimal.Decimal]] = []
+        self._ranges: list[PaddedRange[int] | PaddedRange[Decimal]] = []
         self._inter_ranges: list[str] = []
         self._suffixes: tuple[str, ...] = ()
 
@@ -238,7 +238,9 @@ class _SeqParser(StateMachine):
     def on_enter_in_prefix_separator(self, token: Token) -> None:
         self._prefix_separator = token.value
 
-    def _parse_padded_range(self, token: Token) -> PaddedRange:
+    def _parse_padded_range(
+        self, token: Token
+    ) -> PaddedRange[int] | PaddedRange[Decimal]:
         match = PAD_FORMAT_RE.search(token.value)
         if not match:
             raise ParseError(
@@ -249,10 +251,10 @@ class _SeqParser(StateMachine):
             )
         pad_format = match.group(0)
         set_str = token.value[: -len(pad_format)]
-        file_num_set: FileNumSet | Literal[""] = ""
+        file_num_set: FileNumSet[int] | FileNumSet[Decimal] | Literal[""] = ""
         if set_str:
             file_num_set = FileNumSet.from_str(set_str)
-        return PaddedRange(file_num_set, pad_format)
+        return PaddedRange(file_num_set, pad_format)  # type: ignore[misc]
 
     def _parse_suffixes(self, token: Token) -> tuple[str, ...]:
         if not token.value:
@@ -303,7 +305,7 @@ class _SeqParser(StateMachine):
         for token in tokens:
             machine.pump(token)
 
-        return machine.finalise()
+        return machine.finalise()  # type: ignore[no-any-return]
 
 
 def parse_path_sequence(seq: str) -> ParsedSequence:

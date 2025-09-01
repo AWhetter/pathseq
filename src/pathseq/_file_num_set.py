@@ -90,7 +90,7 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
         self._ranges: tuple[ArithmeticSequence[FileNumT], ...] = tuple(ranges)
 
     @classmethod
-    def from_str(cls, set_str: str) -> Self:
+    def from_str(cls, set_str: str) -> FileNumSet[int] | FileNumSet[decimal.Decimal]:
         """Parse a range string in a file number set.
 
         Args:
@@ -99,7 +99,7 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
         Returns:
             The resulting file number set.
         """
-        return cls(parse_file_num_set(set_str))
+        return cls(parse_file_num_set(set_str))  # type: ignore[arg-type]
 
     @classmethod
     def from_file_nums(
@@ -137,7 +137,7 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
         """Get the number of file numbers in this set."""
         return sum(len(rng) for rng in self._ranges)
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Check for equality with another object.
 
         File number sets are considered equal when they contain
@@ -163,7 +163,7 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
     @overload
     def __getitem__(self, index: slice) -> Self: ...
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int | slice) -> FileNumT | Self:
         if isinstance(index, int):
             for rng in self._ranges:
                 if index < len(rng):
