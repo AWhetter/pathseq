@@ -143,7 +143,6 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
         File number sets are considered equal when they contain
         the same items in the same order.
         """
-        # TODO: Do we want to be equal to other sets and/or sequences?
         if not isinstance(other, FileNumSet):
             return NotImplemented
 
@@ -174,8 +173,7 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
         raise NotImplementedError
 
     def __str__(self) -> str:
-        ranges = [str(rng) for rng in self._ranges if rng]
-        return ",".join(ranges)
+        return ",".join(str(rng) for rng in self._ranges if rng)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self})"

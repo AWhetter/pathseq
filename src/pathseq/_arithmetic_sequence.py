@@ -1,6 +1,7 @@
-from collections.abc import Iterator, Sequence, Set
+from collections.abc import Iterable, Iterator, Sequence, Set
 import decimal
-from typing import overload, Protocol, Self, TypeVar
+import math
+from typing import Any, overload, Protocol, Self, TypeVar
 
 from ._ast import FileNumT
 from ._decimal_range import DecimalRange
@@ -142,3 +143,75 @@ class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
             raise IndexError(index)
 
         return self._range.start + index * self._range.step
+
+    def isdisjoint(self, other: Iterable[Any]) -> bool:
+        if isinstance(other, ArithmeticSequence):
+            return self._quick_isdisjoint(other)
+
+        # Resort to a slow check
+        return super().isdisjoint(other)
+
+    def _quick_isdisjoint(self, other: Self) -> bool:
+        # For
+        # a_n = a_1 + d_1(n-1)
+        # b_m = b_1 + d_2(m-1)
+        a = self
+        b = other
+        a1 = a.start
+        b1 = b.start
+        d1 = a.step
+        d2 = b.step
+        # the following condition must be met:
+        # a_1 + d_1(n-1) = b_1 + d_2(m-1)
+        # d_1 * n - d_2 * m = b_1 - a_1
+
+        # Calculate the difference between the first terms
+        difference = b1 - a1
+
+        # Convert differences to integers for GCD calculation
+        d1_int = int(d1) if d1 % 1 == 0 else None
+        d2_int = int(d2) if d2 % 1 == 0 else None
+
+        # Check if the GCD of the common differences divides the difference
+        if d1_int is not None and d2_int is not None:
+            gcd = math.gcd(d1_int, d2_int)
+            if gcd == 0:
+                return False
+            if difference % gcd != 0:
+                return False
+        else:
+            # Handle the case where differences are not integers
+            # Convert the equation to integer coefficients
+            assert isinstance(d1, decimal.Decimal)
+            assert isinstance(d2, decimal.Decimal)
+            a_exp = remove_exponent(d1).as_tuple().exponent
+            assert isinstance(a_exp, int)
+            b_exp = remove_exponent(d2).as_tuple().exponent
+            assert isinstance(b_exp, int)
+            scale_factor = 10 ** max(a_exp, b_exp)
+            d1_scaled = int(d1 * scale_factor)
+            d2_scaled = int(d2 * scale_factor)
+            difference_scaled = int(difference * scale_factor)
+
+            # Calculate the GCD of the scaled differences
+            gcd_scaled = math.gcd(d1_scaled, d2_scaled)
+            if gcd_scaled == 0:
+                return False
+
+            # Check if the scaled difference is divisible by the scaled GCD
+            if difference_scaled % gcd_scaled != 0:
+                return False
+
+            # Find the smallest common term
+            common_term_scaled = (
+                a1 * scale_factor + (difference_scaled // gcd_scaled) * d1_scaled
+            )
+            common_term = decimal.Decimal(common_term_scaled) / decimal.Decimal(
+                scale_factor
+            )
+
+            # Check if the common term is within the bounds of both sequences
+            if common_term <= a.end and common_term <= b.end:
+                return True
+
+        return False
