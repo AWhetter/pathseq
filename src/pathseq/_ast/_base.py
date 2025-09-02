@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 import dataclasses
 from dataclasses import dataclass
 import decimal
@@ -49,7 +49,7 @@ def splice_numbers_onto_ranges(
     numbers: tuple[int | Decimal | None, ...],
     ranges: Sequence[PaddedRange[int] | PaddedRange[Decimal]],
     inter_ranges: Sequence[str],
-) -> Iterable[int | Decimal | str | PaddedRange[int] | PaddedRange[Decimal]]:
+) -> str:
     len_numbers = len(numbers)
     expected_numbers = len(ranges)
     if len_numbers != expected_numbers:
@@ -57,16 +57,25 @@ def splice_numbers_onto_ranges(
 
     assert len(inter_ranges) == expected_numbers - 1
 
-    to_splice: list[PaddedRange[int] | PaddedRange[Decimal] | str] = []
+    to_splice: list[str] = []
     for number, _range in zip(numbers, ranges):
         if number is None:
-            to_splice.append(_range)
+            to_splice.append(str(_range))
         else:
             to_splice.append(_range.format(number))
 
-    return itertools.chain.from_iterable(
-        itertools.zip_longest(to_splice, inter_ranges, fillvalue="")
+    return splice_strings_onto_ranges(to_splice, inter_ranges)
+
+
+def splice_strings_onto_ranges(
+    strings: Sequence[str], inter_ranges: Sequence[str]
+) -> str:
+    assert len(strings) == len(inter_ranges) + 1
+
+    spliced = itertools.chain.from_iterable(
+        itertools.zip_longest(strings, inter_ranges, fillvalue="")
     )
+    return "".join(spliced)
 
 
 @dataclass(frozen=True)

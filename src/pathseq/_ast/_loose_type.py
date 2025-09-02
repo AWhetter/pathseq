@@ -55,12 +55,7 @@ class RangesStartName:
             self.inter_ranges,
         )
 
-        return (
-            "".join(str(x) for x in spliced)
-            + self.postfix
-            + self.stem
-            + "".join(self.suffixes)
-        )
+        return spliced + self.postfix + self.stem + "".join(self.suffixes)
 
 
 @dataclass(frozen=True)
@@ -111,7 +106,7 @@ class RangesInName:
         return (
             self.stem
             + self.prefix_separator
-            + "".join(str(x) for x in spliced)
+            + spliced
             + self.postfix
             + "".join(self.suffixes)
         )
@@ -158,9 +153,4 @@ class RangesEndName:
             self.inter_ranges,
         )
 
-        return (
-            self.stem
-            + "".join(self.suffixes)
-            + self.prefix_separator
-            + "".join(str(x) for x in spliced)
-        )
+        return self.stem + "".join(self.suffixes) + self.prefix_separator + spliced

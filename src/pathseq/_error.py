@@ -43,5 +43,5 @@ class IncompleteDimensionError(Exception):
         >>> PathSequence.from_disk("file.<UDIM>_#.exr")
         Traceback (most recent call last):
           File "<stdin>", line 1, in <module>
-        IncompleteDimensionError: TODO
+        IncompleteDimensionError: Sequence 'file.<UDIM>_#.exr' contains an inconsistent number of files across one or more dimensions.
     """

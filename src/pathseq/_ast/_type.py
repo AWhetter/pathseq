@@ -3,11 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 import itertools
+import re
 from typing import Self
 
 from ._base import (
     non_recursive_asdict,
     splice_numbers_onto_ranges,
+    splice_strings_onto_ranges,
     stringify_parsed_sequence,
     PaddedRange,
 )
@@ -51,22 +53,20 @@ class ParsedSequence:
             self.inter_ranges,
         )
 
-        return (
-            self.stem
-            + self.prefix_separator
-            + "".join(str(x) for x in spliced)
-            + "".join(self.suffixes)
-        )
+        return self.stem + self.prefix_separator + spliced + "".join(self.suffixes)
 
     def as_glob(self) -> str:
         to_splice = "*" * len(self.ranges)
-        spliced = itertools.chain.from_iterable(
-            itertools.zip_longest(to_splice, self.inter_ranges, fillvalue="")
-        )
+        spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
+
+        return self.stem + self.prefix_separator + spliced + "".join(self.suffixes)
+
+    def as_regex(self) -> str:
+        to_splice = [r"-?\d+(?:\.\d+)?"] * len(self.ranges)
+        spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
 
         return (
-            self.stem
-            + self.prefix_separator
+            re.escape(self.stem + self.prefix_separator)
             + "".join(spliced)
-            + "".join(self.suffixes)
+            + re.escape("".join(self.suffixes))
         )

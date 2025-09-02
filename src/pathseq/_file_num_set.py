@@ -31,7 +31,7 @@ class FileNumSetIterator(Generic[FileNumT]):
 
 
 def _seqs_from_nums(
-    numbers: Iterable[int | FileNumT],
+    numbers: Iterable[FileNumT],
 ) -> Iterable[ArithmeticSequence[FileNumT]]:
     numbers = sorted(set(numbers))
     if not numbers:
@@ -66,20 +66,7 @@ def _seqs_from_nums(
     if step is not None:
         seqs.append((start, previous, step))
 
-    result: list[ArithmeticSequence[FileNumT]]
-    if any(isinstance(x, decimal.Decimal) for x in numbers):
-        result = [
-            ArithmeticSequence(
-                decimal.Decimal(start),  # type: ignore[arg-type]
-                decimal.Decimal(stop),  # type: ignore[arg-type]
-                decimal.Decimal(step) if step is not None else None,  # type: ignore[arg-type]
-            )
-            for (start, stop, step) in seqs
-        ]
-    else:
-        result = [ArithmeticSequence(*seq) for seq in seqs]  # type: ignore[arg-type]
-
-    return result
+    return [ArithmeticSequence(*seq) for seq in seqs]
 
 
 # TODO: Are there other inherited methods that we could override for speed?
@@ -102,9 +89,7 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
         return cls(parse_file_num_set(set_str))  # type: ignore[arg-type]
 
     @classmethod
-    def from_file_nums(
-        cls, file_nums: Iterable[int | FileNumT]
-    ) -> FileNumSet[FileNumT]:
+    def from_file_nums(cls, file_nums: Iterable[FileNumT]) -> FileNumSet[FileNumT]:
         """Create a file number set from an iterable from file numbers.
 
         The given numbers are deduplicated and sorted before being put into a set.
