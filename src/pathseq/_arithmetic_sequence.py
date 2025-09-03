@@ -1,7 +1,6 @@
-from collections.abc import Iterable, Iterator, Sequence, Set
+from collections.abc import Iterator, Sequence
 import decimal
-import math
-from typing import Any, overload, Protocol, Self, TypeVar
+from typing import overload, Protocol, Self, TypeVar
 
 from ._ast import FileNumT
 from ._decimal_range import DecimalRange
@@ -26,7 +25,7 @@ def remove_exponent(d: decimal.Decimal) -> decimal.Decimal:
     return d.quantize(decimal.Decimal(1)) if d == d.to_integral() else d.normalize()
 
 
-class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
+class ArithmeticSequence(Sequence[FileNumT]):
     def __init__(
         self, start: FileNumT, end: FileNumT | None = None, step: FileNumT | None = None
     ) -> None:
@@ -50,6 +49,8 @@ class ArithmeticSequence(Set[FileNumT], Sequence[FileNumT]):
         elif start == end:
             # We treat the end as inclusive, ranges don't.
             stop = end + step
+            # Normalise to a step of 1
+            step = start.__class__(1)
         else:
             stop = end
 

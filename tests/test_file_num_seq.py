@@ -37,8 +37,8 @@ def valid_int_ranges(request):
 
 class TestFromStr:
     def test_valid_int(self, valid_int_ranges):
-        set_str, expected, _ = valid_int_ranges
-        file_num_seq = FileNumSequence.from_str(set_str)
+        seq_str, expected, _ = valid_int_ranges
+        file_num_seq = FileNumSequence.from_str(seq_str)
         assert set(file_num_seq) == set(expected)
 
 
@@ -52,3 +52,16 @@ class TestFromFileNums:
         _, file_nums, expected = valid_int_ranges
         file_num_seq = FileNumSequence.from_file_nums(chain(file_nums, file_nums))
         assert str(file_num_seq) == f"{expected},{expected}"
+
+    @pytest.mark.parametrize(
+        "str_a,str_b",
+        [
+            ("1,2,3", "1-3"),
+            ("2,4,6", "2-6x2"),
+            ("-3,-2,-1", "-3--1"),
+        ],
+    )
+    def test_consolidation(self, str_a, str_b):
+        nums_a = FileNumSequence.from_str(str_a)
+        nums_b = FileNumSequence.from_str(str_b)
+        assert nums_a == nums_b

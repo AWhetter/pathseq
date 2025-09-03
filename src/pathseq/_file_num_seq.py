@@ -72,11 +72,52 @@ def _seqs_from_nums(
     return [ArithmeticSequence(*seq) for seq in seqs]
 
 
-# TODO: Are there other inherited methods that we could override for speed?
+def _consolidate_ranges(
+    ranges: Iterable[ArithmeticSequence[FileNumT]],
+) -> tuple[ArithmeticSequence[FileNumT], ...]:
+    filtered = (r for r in ranges if len(r))
+    try:
+        new_ranges = [next(filtered)]
+    except StopIteration:
+        return ()
+
+    for range_b in filtered:
+        range_a = new_ranges[-1]
+        difference = range_b.start - range_a.end
+        if difference == range_a.step:
+            # Can we merge this entire range into the previous range?
+            if range_a.step == range_b.step:
+                new_ranges[-1] = range_a.__class__(
+                    range_a.start, range_b.end, range_a.step
+                )
+                continue
+
+            # Otherwise we can move at most one item to the previous range
+            # without changing the order of file numbers.
+            new_ranges[-1] = range_a.__class__(
+                range_a.start, range_b.start, range_a.step
+            )
+            range_b = range_b.__class__(
+                range_b.start + range_b.step, range_b.end, range_b.step
+            )
+            if not range_b:
+                continue
+        # Consolidate neighbouring numbers into a range in the hope that
+        # another lone number is next and can be consolidated into the range as well.
+        elif len(range_a) == 1 and len(range_b) == 1:
+            new_ranges[-1] = range_a.__class__(range_a.start, range_b.start, difference)
+            continue
+
+        new_ranges.append(range_b)
+
+    return tuple(new_ranges)
+
+
 class FileNumSequence(Sequence[FileNumT]):
-    # TODO: Consolidate the ranges
     def __init__(self, ranges: Iterable[ArithmeticSequence[FileNumT]]) -> None:
-        self._ranges: tuple[ArithmeticSequence[FileNumT], ...] = tuple(ranges)
+        self._ranges: tuple[ArithmeticSequence[FileNumT], ...] = _consolidate_ranges(
+            ranges
+        )
 
     @classmethod
     def from_str(
@@ -134,12 +175,7 @@ class FileNumSequence(Sequence[FileNumT]):
         if not isinstance(other, FileNumSequence):
             return NotImplemented
 
-        # TODO: Implement range consolidation so that we don't need to iterate over everything
-        # return str(self) == str(other)
-        try:
-            return all(r1 == r2 for r1, r2 in zip(self, other, strict=True))
-        except ValueError:
-            return False
+        return self._ranges == other._ranges
 
     def __hash__(self) -> int:
         return hash((type(self), self._ranges))
@@ -153,15 +189,17 @@ class FileNumSequence(Sequence[FileNumT]):
     def __getitem__(self, index: int | slice) -> FileNumT | Self:
         if isinstance(index, int):
             for rng in self._ranges:
-                if index < len(rng):
+                range_len = len(rng)
+                if index < range_len:
                     return rng[index]
+                index -= range_len
             else:
                 raise IndexError(index)
 
         raise NotImplementedError
 
     def __str__(self) -> str:
-        return ",".join(str(rng) for rng in self._ranges if rng)
+        return ",".join(str(rng) for rng in self._ranges)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self})"
