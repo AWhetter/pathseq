@@ -115,9 +115,9 @@ Path sequences can be compared for equality.
     >>> seq_c == seq_d
     False
 
-Path sequences are an ordered set of file paths.
-So two sequences with different strings that represent the same set of file paths
-are treated as equal.
+Path sequences are an ordered sequence of file paths.
+So two sequences with different strings that represent the same sequence of file paths,
+in the same order, are treated as equal.
 
 .. code-block:: pycon
 

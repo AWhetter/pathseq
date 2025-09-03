@@ -7,7 +7,7 @@ from pathseq._parse_loose_path_sequence import (
     RangesInName,
     RangesStartName,
 )
-from pathseq import FileNumSet, NotASequenceError
+from pathseq import FileNumSequence, NotASequenceError
 
 
 class TestPathSequence:
@@ -37,7 +37,7 @@ class TestPathSequence:
                     "",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1-10"),
+                            FileNumSequence.from_str("1-10"),
                             "#",
                         ),
                     ),
@@ -54,7 +54,7 @@ class TestPathSequence:
                     "",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1-10x2"),
+                            FileNumSequence.from_str("1-10x2"),
                             "#",
                         ),
                     ),
@@ -175,7 +175,7 @@ class TestPathSequence:
                     ".",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1-10"),
+                            FileNumSequence.from_str("1-10"),
                             "#",
                         ),
                     ),
@@ -192,7 +192,7 @@ class TestPathSequence:
                     ".",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1-10x2"),
+                            FileNumSequence.from_str("1-10x2"),
                             "#",
                         ),
                     ),
@@ -255,11 +255,11 @@ class TestPathSequence:
                     ".",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1011-1012"),
+                            FileNumSequence.from_str("1011-1012"),
                             "####",
                         ),
                         PaddedRange(
-                            FileNumSet.from_str("1-3"),
+                            FileNumSequence.from_str("1-3"),
                             "#",
                         ),
                     ),
@@ -487,7 +487,7 @@ class TestPathSequence:
                     ".",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1-10"),
+                            FileNumSequence.from_str("1-10"),
                             "#",
                         ),
                     ),
@@ -504,7 +504,7 @@ class TestPathSequence:
                     ".",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1-10x2"),
+                            FileNumSequence.from_str("1-10x2"),
                             "#",
                         ),
                     ),

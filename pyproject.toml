@@ -82,7 +82,7 @@ title_format = "pathseq v{version} ({project_date})"
 markers = [
     "todo",
 ]
-addopts = "--doctest-glob='*.rst'"
+addopts = "--doctest-glob='[!0]*.rst'"
 testpaths = [
     "tests",
     "doc/source",

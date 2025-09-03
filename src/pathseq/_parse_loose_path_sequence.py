@@ -10,7 +10,7 @@ from typing import Literal, TypeAlias, Union
 from statemachine import StateMachine, State
 
 from ._error import NotASequenceError, ParseError
-from ._file_num_set import FileNumSet
+from ._file_num_seq import FileNumSequence
 from ._ast import (
     PaddedRange,
     RangesEndName,
@@ -449,11 +449,11 @@ class SeqParser(StateMachine):
                 reason=f"Tokenised an invalid range: {token.value}",
             )
         pad_format = match.group(0)
-        set_str = token.value[: -len(pad_format)]
-        file_num_set: FileNumSet[int] | FileNumSet[Decimal] | Literal[""] = ""
-        if set_str:
-            file_num_set = FileNumSet.from_str(set_str)
-        return PaddedRange(file_num_set, pad_format)  # type: ignore[misc]
+        seq_str = token.value[: -len(pad_format)]
+        file_nums: FileNumSequence[int] | FileNumSequence[Decimal] | Literal[""] = ""
+        if seq_str:
+            file_nums = FileNumSequence.from_str(seq_str)
+        return PaddedRange(file_nums, pad_format)  # type: ignore[misc]
 
     def _parse_suffixes(self, token: Token) -> tuple[str, ...]:
         if not token.value:

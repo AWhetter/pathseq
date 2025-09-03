@@ -14,7 +14,7 @@ from typing_extensions import (
 
 from ._ast import PaddedRange
 from ._error import IncompleteDimensionError
-from ._file_num_set import FileNumSet
+from ._file_num_seq import FileNumSequence
 from ._parse_path_sequence import parse_path_sequence
 from ._pure_path_sequence import PurePathSequence
 
@@ -65,6 +65,8 @@ class PathSequence(PurePathSequence[PathT_co]):
     ) -> PurePathSequence[pathlib.PurePath] | PurePathSequence[PathT]:
         """Create a sequence using the ranges of files that exist.
 
+        Each file number sequence in the path sequence will be ordered.
+
         Raises:
             IncompleteDimensionError: When one dimension in a multi-dimension sequence
             does not have a consistent number of files in each other dimension.
@@ -100,26 +102,26 @@ class PathSequence(PurePathSequence[PathT_co]):
                 f"Sequence '{path}' contains an inconsistent number of files across one or more dimensions."
             )
 
-        file_num_sets = []
+        file_num_seqs = []
         for file_str_set in file_str_sets:
-            file_num_set: FileNumSet[int] | FileNumSet[Decimal]
+            file_num_seq: FileNumSequence[int] | FileNumSequence[Decimal]
             if any("." in file_str for file_str in file_str_set):
-                file_num_set = FileNumSet.from_file_nums(
-                    Decimal(file_str) for file_str in file_str_set
+                file_num_seq = FileNumSequence.from_file_nums(
+                    sorted(Decimal(file_str) for file_str in file_str_set)
                 )
             else:
-                file_num_set = FileNumSet.from_file_nums(
-                    int(file_str) for file_str in file_str_set
+                file_num_seq = FileNumSequence.from_file_nums(
+                    sorted(int(file_str) for file_str in file_str_set)
                 )
 
-            file_num_sets.append(file_num_set)
+            file_num_seqs.append(file_num_seq)
 
         new = parsed.__class__(
             parsed.stem,
             parsed.prefix_separator,
             tuple(
-                PaddedRange(file_num_set, range_.pad_format)  # type: ignore[misc]
-                for file_num_set, range_ in zip(file_num_sets, parsed.ranges)
+                PaddedRange(file_num_seq, range_.pad_format)  # type: ignore[misc]
+                for file_num_seq, range_ in zip(file_num_seqs, parsed.ranges)
             ),
             parsed.inter_ranges,
             parsed.suffixes,

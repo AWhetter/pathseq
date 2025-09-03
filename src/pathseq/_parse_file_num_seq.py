@@ -63,12 +63,12 @@ class _RangeReducer(
         return args
 
 
-def parse_file_num_set(
-    set_: str,
+def parse_file_num_seq(
+    seq: str,
 ) -> list[ArithmeticSequence[int]] | list[ArithmeticSequence[D]]:
     try:
-        ranges = _PARSER.parse(set_)
+        ranges = _PARSER.parse(seq)
     except lark.UnexpectedInput as exc:
-        raise ParseError(set_, exc.column)
+        raise ParseError(seq, exc.column)
 
     return _RangeReducer().transform(ranges)

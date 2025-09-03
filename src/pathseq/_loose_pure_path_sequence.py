@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Sequence, Set
+from collections.abc import Iterable, Iterator, Sequence
 from decimal import Decimal
 import itertools
 import os
@@ -13,7 +13,7 @@ from typing_extensions import (
 )
 
 from ._ast import PaddedRange, RangesEndName, RangesInName, RangesStartName
-from ._file_num_set import FileNumSet
+from ._file_num_seq import FileNumSequence
 from ._parse_loose_path_sequence import parse_path_sequence
 
 Segment: TypeAlias = Union[str, os.PathLike[str]]
@@ -22,7 +22,7 @@ PathT_co = TypeVar(
 )
 
 
-class LoosePurePathSequence(Sequence[PathT_co], Set[PathT_co]):
+class LoosePurePathSequence(Sequence[PathT_co]):
     """A generic class that represents a path sequence in the system's path flavour.
 
     Instantiating this class creates either a :class:`PurePosixPathSequence`
@@ -170,7 +170,7 @@ class LoosePurePathSequence(Sequence[PathT_co], Set[PathT_co]):
         raise NotImplementedError
 
     def __iter__(self) -> Iterator[PathT_co]:
-        ranges = [x.file_num_set for x in self._parsed.ranges]
+        ranges = [x.file_nums for x in self._parsed.ranges]
 
         assert ranges, "Parsed a sequence string without any ranges present."
 
@@ -185,13 +185,13 @@ class LoosePurePathSequence(Sequence[PathT_co], Set[PathT_co]):
 
         for x in self._parsed.ranges:
             if isinstance(x, PaddedRange):
-                if x.file_num_set is None:
+                if x.file_nums is None:
                     raise ValueError(
                         "Cannot calculate the length of a path sequence"
                         " with one or more unknown ranges"
                     )
 
-                result *= len(x.file_num_set)
+                result *= len(x.file_nums)
 
         return result
 
@@ -226,22 +226,22 @@ class LoosePurePathSequence(Sequence[PathT_co], Set[PathT_co]):
         name = self._parsed.format(*numbers)
         return self._path.with_name(name)
 
-    def file_num_sets(self) -> tuple[FileNumSet[int] | FileNumSet[Decimal], ...]:
-        """All file number sets in the final path component."""
+    def file_num_seqs(
+        self,
+    ) -> tuple[FileNumSequence[int] | FileNumSequence[Decimal], ...]:
+        """All file number sequences in the final path component."""
         ranges = tuple(
-            x.file_num_set
-            for x in self._parsed.ranges
-            if not isinstance(x.file_num_set, str)
+            x.file_nums for x in self._parsed.ranges if not isinstance(x.file_nums, str)
         )
         if len(ranges) != len(self._parsed.ranges):
             raise TypeError(
-                "Cannot get the file number sets of a path sequence with incomplete ranges."
+                "Cannot get the file number sequences of a path sequence with incomplete ranges."
             )
 
         return ranges
 
-    def with_file_num_sets(
-        self, sets: Iterable[FileNumSet[int] | FileNumSet[Decimal]]
+    def with_file_num_seqs(
+        self, seqs: Iterable[FileNumSequence[int] | FileNumSequence[Decimal]]
     ) -> Self:
         raise NotImplementedError
 

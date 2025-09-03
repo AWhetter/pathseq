@@ -1,7 +1,7 @@
 Compared to :mod:`pathlib`
 ==========================
 
-* Not a filesystem path. Sequences are a set of filesystem paths.
+* Not a filesystem path. Sequences are an ordered sequence of filesystem paths.
   * No __bytes__ because not a filesystem path.
   * No __fspath__ because not a filesystem path.
   * No as_uri because not a filesystem path.

@@ -10,7 +10,7 @@ import typing
 from typing import Any, Generic, Literal, TypeAlias, TypeVar, Union
 
 if typing.TYPE_CHECKING:
-    from .._file_num_set import FileNumSet
+    from .._file_num_seq import FileNumSequence
 
 FileNumT = TypeVar("FileNumT", int, decimal.Decimal)
 FileNum: TypeAlias = Union[int, decimal.Decimal]
@@ -80,11 +80,11 @@ def splice_strings_onto_ranges(
 
 @dataclass(frozen=True)
 class PaddedRange(Generic[FileNumT]):
-    file_num_set: FileNumSet[FileNumT] | Literal[""]
+    file_nums: FileNumSequence[FileNumT] | Literal[""]
     pad_format: str
 
     def __str__(self) -> str:
-        return str(self.file_num_set) + self.pad_format
+        return str(self.file_nums) + self.pad_format
 
     def format(self, number: int | Decimal) -> str:
         if self.pad_format == "<UVTILE>":

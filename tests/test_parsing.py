@@ -5,7 +5,7 @@ from pathseq._parse_path_sequence import (
     PaddedRange,
     ParsedSequence,
 )
-from pathseq import FileNumSet, NotASequenceError, ParseError
+from pathseq import FileNumSequence, NotASequenceError, ParseError
 
 
 class TestPathSequence:
@@ -35,7 +35,7 @@ class TestPathSequence:
                     ".",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1-10"),
+                            FileNumSequence.from_str("1-10"),
                             "#",
                         ),
                     ),
@@ -51,7 +51,7 @@ class TestPathSequence:
                     ".",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1-10x2"),
+                            FileNumSequence.from_str("1-10x2"),
                             "#",
                         ),
                     ),
@@ -67,11 +67,11 @@ class TestPathSequence:
                     ".",
                     (
                         PaddedRange(
-                            FileNumSet.from_str("1011-1012"),
+                            FileNumSequence.from_str("1011-1012"),
                             "<UDIM>",
                         ),
                         PaddedRange(
-                            FileNumSet.from_str("1-3"),
+                            FileNumSequence.from_str("1-3"),
                             "#",
                         ),
                     ),

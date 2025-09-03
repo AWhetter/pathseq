@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Sequence, Set
+from collections.abc import Iterable, Iterator, Sequence
 import decimal
 from typing import Generic, overload, Self
 
@@ -10,10 +10,10 @@ from typing_extensions import (
 
 from ._arithmetic_sequence import ArithmeticSequence
 from ._ast import FileNumT
-from ._parse_file_num_set import parse_file_num_set
+from ._parse_file_num_seq import parse_file_num_seq
 
 
-class FileNumSetIterator(Generic[FileNumT]):
+class FileNumSequenceIterator(Generic[FileNumT]):
     def __init__(self, ranges: tuple[ArithmeticSequence[FileNumT], ...]):
         self._ranges_iter: Iterator[ArithmeticSequence[FileNumT]] = iter(ranges)
         self._range_iter: Iterator[FileNumT] = iter(())
@@ -33,16 +33,19 @@ class FileNumSetIterator(Generic[FileNumT]):
 def _seqs_from_nums(
     numbers: Iterable[FileNumT],
 ) -> Iterable[ArithmeticSequence[FileNumT]]:
-    numbers = sorted(set(numbers))
     if not numbers:
         return []
 
+    numbers = iter(numbers)
     seqs = []
-    start = numbers[0]
-    previous = numbers[0]
+    start = next(numbers)
+    previous = start
     step = None
 
-    for current in numbers[1:]:
+    for current in numbers:
+        if current == previous:
+            continue
+
         current_step = current - previous
 
         if step is None:
@@ -70,68 +73,68 @@ def _seqs_from_nums(
 
 
 # TODO: Are there other inherited methods that we could override for speed?
-class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
-    # TODO: For now, only accept arithmetic sequences
-    # TODO: Order and consolidate the ranges
+class FileNumSequence(Sequence[FileNumT]):
+    # TODO: Consolidate the ranges
     def __init__(self, ranges: Iterable[ArithmeticSequence[FileNumT]]) -> None:
         self._ranges: tuple[ArithmeticSequence[FileNumT], ...] = tuple(ranges)
 
     @classmethod
-    def from_str(cls, set_str: str) -> FileNumSet[int] | FileNumSet[decimal.Decimal]:
-        """Parse a range string in a file number set.
+    def from_str(
+        cls, seq: str
+    ) -> FileNumSequence[int] | FileNumSequence[decimal.Decimal]:
+        """Parse a range string in a file number sequence.
 
         Args:
-            set_str: The range string to parse (eg '1001-1005,1010-1015').
+            seq_str: The range string to parse (eg '1001-1005,1010-1015').
 
         Returns:
-            The resulting file number set.
+            The resulting file number sequence.
         """
-        return cls(parse_file_num_set(set_str))  # type: ignore[arg-type]
+        return cls(parse_file_num_seq(seq))  # type: ignore[arg-type]
 
     @classmethod
-    def from_file_nums(cls, file_nums: Iterable[FileNumT]) -> FileNumSet[FileNumT]:
-        """Create a file number set from an iterable from file numbers.
+    def from_file_nums(cls, file_nums: Iterable[FileNumT]) -> FileNumSequence[FileNumT]:
+        """Create a file number sequence from an iterable of file numbers.
 
-        The given numbers are deduplicated and sorted before being put into a set.
+        The given numbers are put into the sequence in the order they are given.
 
         Args:
-            file_nums: The file numbers to turn into a set.
+            file_nums: The file numbers to turn into a sequence.
 
         Returns:
-            The resulting file number set.
+            The resulting file number sequence.
         """
         return cls(_seqs_from_nums(file_nums))
 
     def __contains__(self, item: object) -> bool:
-        """Return True if the given item is a file number in this set."""
+        """Return True if the given item is a file number in this sequence."""
         if not self._ranges:
             return False
 
         return any(item in rng for rng in self._ranges)
 
     def __iter__(self) -> Iterator[FileNumT]:
-        """Iterate over the file numbers in the set.
+        """Iterate over the file numbers in the sequence.
 
         Yields:
-            Each file number in the set.
+            Each file number in the sequence.
         """
-        # TODO: What about overlapping ranges?
-        return FileNumSetIterator(self._ranges)
+        return FileNumSequenceIterator(self._ranges)
 
     def __len__(self) -> int:
-        """Get the number of file numbers in this set."""
+        """Get the number of file numbers in this sequence."""
         return sum(len(rng) for rng in self._ranges)
 
     def __eq__(self, other: object) -> bool:
         """Check for equality with another object.
 
-        File number sets are considered equal when they contain
+        File number sequences are considered equal when they contain
         the same items in the same order.
         """
-        if not isinstance(other, FileNumSet):
+        if not isinstance(other, FileNumSequence):
             return NotImplemented
 
-        # TODO: Implement range normalisation so that we don't need to iterate over everything
+        # TODO: Implement range consolidation so that we don't need to iterate over everything
         # return str(self) == str(other)
         try:
             return all(r1 == r2 for r1, r2 in zip(self, other, strict=True))
@@ -165,10 +168,10 @@ class FileNumSet(Set[FileNumT], Sequence[FileNumT]):
 
     @staticmethod
     def has_subsamples(
-        file_num_set: FileNumSet[FileNumT],
-    ) -> TypeGuard[FileNumSet[decimal.Decimal]]:
-        """Check whether this file number set contains any decimal numbers."""
-        if not file_num_set:
+        file_num_seq: FileNumSequence[FileNumT],
+    ) -> TypeGuard[FileNumSequence[decimal.Decimal]]:
+        """Check whether this file number sequence contains any decimal numbers."""
+        if not file_num_seq:
             return False
 
-        return isinstance(next(iter(file_num_set)), decimal.Decimal)
+        return isinstance(next(iter(file_num_seq)), decimal.Decimal)
