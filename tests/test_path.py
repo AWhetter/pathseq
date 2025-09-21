@@ -16,4 +16,6 @@ class TestFromDisk:
 
     def test_incomplete_multi(self):
         with pytest.raises(IncompleteDimensionError):
-            PathSequence.from_disk("tests/fixtures/incomplete_multi/textures.<UDIM>_#.tex")
+            PathSequence.from_disk(
+                "tests/fixtures/incomplete_multi/textures.<UDIM>_#.tex"
+            )

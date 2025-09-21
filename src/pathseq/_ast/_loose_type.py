@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
+import re
 from typing import Literal, Self
 
 from ._base import (
     non_recursive_asdict,
     splice_numbers_onto_ranges,
+    splice_strings_onto_ranges,
     stringify_parsed_sequence,
     PaddedRange,
 )
@@ -56,6 +58,22 @@ class RangesStartName:
         )
 
         return spliced + self.postfix + self.stem + "".join(self.suffixes)
+
+    def as_glob(self) -> str:
+        to_splice = "*" * len(self.ranges)
+        spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
+
+        return spliced + self.postfix + self.stem + "".join(self.suffixes)
+
+    def as_regex(self) -> str:
+        to_splice = [
+            f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
+        ]
+        spliced = splice_strings_onto_ranges(
+            to_splice, [re.escape(x) for x in self.inter_ranges]
+        )
+
+        return spliced + re.escape(self.postfix + self.stem + "".join(self.suffixes))
 
 
 @dataclass(frozen=True)
@@ -111,6 +129,32 @@ class RangesInName:
             + "".join(self.suffixes)
         )
 
+    def as_glob(self) -> str:
+        to_splice = "*" * len(self.ranges)
+        spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
+
+        return (
+            self.stem
+            + self.prefix_separator
+            + spliced
+            + self.postfix
+            + "".join(self.suffixes)
+        )
+
+    def as_regex(self) -> str:
+        to_splice = [
+            f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
+        ]
+        spliced = splice_strings_onto_ranges(
+            to_splice, [re.escape(x) for x in self.inter_ranges]
+        )
+
+        return (
+            re.escape(self.stem + self.prefix_separator)
+            + spliced
+            + re.escape(self.postfix + "".join(self.suffixes))
+        )
+
 
 @dataclass(frozen=True)
 class RangesEndName:
@@ -154,3 +198,22 @@ class RangesEndName:
         )
 
         return self.stem + "".join(self.suffixes) + self.prefix_separator + spliced
+
+    def as_glob(self) -> str:
+        to_splice = "*" * len(self.ranges)
+        spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
+
+        return self.stem + "".join(self.suffixes) + self.prefix_separator + spliced
+
+    def as_regex(self) -> str:
+        to_splice = [
+            f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
+        ]
+        spliced = splice_strings_onto_ranges(
+            to_splice, [re.escape(x) for x in self.inter_ranges]
+        )
+
+        return (
+            re.escape(self.stem + "".join(self.suffixes) + self.prefix_separator)
+            + spliced
+        )

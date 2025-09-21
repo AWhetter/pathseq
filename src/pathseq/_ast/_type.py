@@ -55,6 +55,8 @@ class ParsedSequence:
 
         return self.stem + self.prefix_separator + spliced + "".join(self.suffixes)
 
+    # TODO: Replace the need for the following two methods
+    # with some kind of formatting functionality.
     def as_glob(self) -> str:
         to_splice = "*" * len(self.ranges)
         spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
@@ -62,11 +64,15 @@ class ParsedSequence:
         return self.stem + self.prefix_separator + spliced + "".join(self.suffixes)
 
     def as_regex(self) -> str:
-        to_splice = [f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)]
-        spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
+        to_splice = [
+            f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
+        ]
+        spliced = splice_strings_onto_ranges(
+            to_splice, [re.escape(x) for x in self.inter_ranges]
+        )
 
         return (
             re.escape(self.stem + self.prefix_separator)
-            + "".join(spliced)
+            + spliced
             + re.escape("".join(self.suffixes))
         )

@@ -1,20 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
-from decimal import Decimal
-import functools
-import operator
 import pathlib
-import re
 from typing import ClassVar, overload, TypeVar
 
 from typing_extensions import (
     Self,  # PY311+
 )
 
-from ._ast import PaddedRange
-from ._error import IncompleteDimensionError
-from ._file_num_seq import FileNumSequence
+from ._from_disk import find_on_disk
 from ._parse_path_sequence import parse_path_sequence
 from ._pure_path_sequence import PurePathSequence
 
@@ -50,22 +43,22 @@ class PathSequence(PurePathSequence[PathT_co]):
     @overload
     @classmethod
     def from_disk(
-        cls: type[PurePathSequence[pathlib.PurePath]], path: str
-    ) -> PurePathSequence[pathlib.PurePath]: ...
+        cls: type[PathSequence[pathlib.Path]], path: str
+    ) -> PathSequence[pathlib.Path]: ...
 
     @overload
     @classmethod
     def from_disk(
-        cls: type[PurePathSequence[PathT]], path: PathT
-    ) -> PurePathSequence[PathT]: ...
+        cls: type[PathSequence[PathT]], path: PathT
+    ) -> PathSequence[PathT]: ...
 
     @classmethod
     def from_disk(
         cls, path: str | PathT
-    ) -> PurePathSequence[pathlib.PurePath] | PurePathSequence[PathT]:
-        """Create a sequence using the ranges of files that exist.
+    ) -> PathSequence[pathlib.Path] | PathSequence[PathT]:
+        """Create a sequence using the ranges of files that exist on disk.
 
-        Each file number sequence in the path sequence will be ordered.
+        Each file number sequence in the path sequence will be ordered numerically.
 
         Raises:
             IncompleteDimensionError: When one or more dimensions in
@@ -78,58 +71,11 @@ class PathSequence(PurePathSequence[PathT_co]):
             _path = path
 
         parsed = parse_path_sequence(_path.name)
-        num_ranges = len(parsed.ranges)
-        file_str_sets: list[set[str]] = [set() for _ in range(num_ranges)]
-        paths = _path.parent.glob(parsed.as_glob())
-        pattern = re.compile(parsed.as_regex())
-        num_paths = 0
-        for found in paths:
-            match = pattern.fullmatch(str(found.name))
-            if not match:
-                continue
-
-            file_nums = []
-            for i in range(num_ranges):
-                group_name = f"range{i}"
-                group = match.group(group_name)
-                file_nums.append(group)
-
-            if len(file_nums) != num_ranges:
-                continue
-
-            num_paths += 1
-            for file_num, file_str_set in zip(file_nums, file_str_sets):
-                file_str_set.add(file_num)
-
-        expected = functools.reduce(
-            operator.mul, (len(nums) for nums in file_str_sets), 1
-        )
-        if num_paths != expected:
-            raise IncompleteDimensionError(
-                f"Sequence '{path}' contains an inconsistent number of files across one or more dimensions."
-            )
-
-        file_num_seqs = []
-        for file_str_set in file_str_sets:
-            file_num_seq: FileNumSequence[int] | FileNumSequence[Decimal]
-            if any("." in file_str for file_str in file_str_set):
-                file_num_seq = FileNumSequence.from_file_nums(
-                    sorted(Decimal(file_str) for file_str in file_str_set)
-                )
-            else:
-                file_num_seq = FileNumSequence.from_file_nums(
-                    sorted(int(file_str) for file_str in file_str_set)
-                )
-
-            file_num_seqs.append(file_num_seq)
-
+        ranges = find_on_disk(_path, parsed)
         new = parsed.__class__(
             parsed.stem,
             parsed.prefix_separator,
-            tuple(
-                PaddedRange(file_num_seq, range_.pad_format)  # type: ignore[misc]
-                for file_num_seq, range_ in zip(file_num_seqs, parsed.ranges)
-            ),
+            ranges,
             parsed.inter_ranges,
             parsed.suffixes,
         )
