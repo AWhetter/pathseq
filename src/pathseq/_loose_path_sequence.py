@@ -42,8 +42,3 @@ class LoosePathSequence(LoosePurePathSequence[PathT_co]):
     def from_disk(cls, pattern: Self | str) -> Self:
         """Create a sequence using the range of files or directories on disk."""
         raise NotImplementedError
-
-    @classmethod
-    def glob(cls, pattern: str | pathlib.PurePath) -> Iterable[Self | pathlib.Path]:
-        """Glob the given relative pattern, yielding all matching paths and sequences."""
-        raise NotImplementedError

@@ -134,8 +134,3 @@ class PathSequence(PurePathSequence[PathT_co]):
             parsed.suffixes,
         )
         return cls(_path.with_name(str(new)))
-
-    @classmethod
-    def glob(cls, pattern: str | pathlib.PurePath) -> Iterable[Self | pathlib.Path]:
-        """Glob the given relative pattern, yielding all matching paths and sequences."""
-        raise NotImplementedError
