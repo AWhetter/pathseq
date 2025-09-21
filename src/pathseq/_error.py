@@ -21,10 +21,9 @@ class ParseError(ValueError):
         super().__init__(message)
 
 
-class NotASequenceError(ValueError):
+class NotASequenceError(ParseError):
     def __init__(self, seq: str) -> None:
-        message = f"{seq} is not a file sequence"
-        super().__init__(message)
+        super().__init__(seq, 0, len(seq) - 1, reason="No range string is present")
 
 
 class IncompleteDimensionError(Exception):

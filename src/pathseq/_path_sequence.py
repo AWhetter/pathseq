@@ -68,8 +68,9 @@ class PathSequence(PurePathSequence[PathT_co]):
         Each file number sequence in the path sequence will be ordered.
 
         Raises:
-            IncompleteDimensionError: When one dimension in a multi-dimension sequence
-            does not have a consistent number of files in each other dimension.
+            IncompleteDimensionError: When one or more dimensions in
+            a multi-dimension sequence does not have a consistent number of
+            files in each other dimension.
         """
         if isinstance(path, str):
             _path = cls._pathlib_type(path)
@@ -77,22 +78,28 @@ class PathSequence(PurePathSequence[PathT_co]):
             _path = path
 
         parsed = parse_path_sequence(_path.name)
-        file_str_sets: list[set[str]] = [set() for _ in range(len(parsed.ranges))]
+        num_ranges = len(parsed.ranges)
+        file_str_sets: list[set[str]] = [set() for _ in range(num_ranges)]
         paths = _path.parent.glob(parsed.as_glob())
         pattern = re.compile(parsed.as_regex())
         num_paths = 0
         for found in paths:
-            raw_tokens = pattern.split(found.name)
-            if not raw_tokens:
+            match = pattern.fullmatch(str(found.name))
+            if not match:
+                continue
+
+            file_nums = []
+            for i in range(num_ranges):
+                group_name = f"range{i}"
+                group = match.group(group_name)
+                file_nums.append(group)
+
+            if len(file_nums) != num_ranges:
                 continue
 
             num_paths += 1
-            assert raw_tokens[0], "Expected a stem but got a range"
-            assert raw_tokens[-1], "Expected file suffixes but path ends with a range"
-
-            for i, raw_token in enumerate(raw_tokens[1:]):
-                if i % 2 == 1:
-                    file_str_sets[i // 2].add(raw_token)
+            for file_num, file_str_set in zip(file_nums, file_str_sets):
+                file_str_set.add(file_num)
 
         expected = functools.reduce(
             operator.mul, (len(nums) for nums in file_str_sets), 1

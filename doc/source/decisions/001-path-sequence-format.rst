@@ -132,6 +132,7 @@ Blender does not document any use of sequence strings as input.
 * ``file.ext##`` becomes ``file.ext##.ext``.
   So ranges cannot end a sequence.
 * ``file##.ext`` becomes ``file##.ext``.
+* Multi-dimension output is not explicitly supported.
 
 .. list-table::
    :header-rows: 1
@@ -190,6 +191,7 @@ to represent a single digit of padding.
 These file sequences can of course be used programatically
 because fileseq is a Python library.
 
+fileseq does not support multi-dimension sequences.
 
 .. _houdini_file_seq:
 
@@ -236,10 +238,10 @@ Katana does not document the input sequences that it supports.
 
 Katana does not clearly document the output formats that it supports.
 
-In the case of the Catalog tool, only ``file.#.ext`` is supported.
-
-In the case of batch mode rendering, "#" is a single character of digits
-and examples always show the range before the extension.
+* In the case of the Catalog tool, only ``file.#.ext`` is supported.
+* In the case of batch mode rendering, "#" is a single character of digits
+  and examples always show the range before the extension.
+* Multi-dimension output is not explicitly supported.
 
 
 Maya

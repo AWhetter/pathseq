@@ -62,7 +62,7 @@ class ParsedSequence:
         return self.stem + self.prefix_separator + spliced + "".join(self.suffixes)
 
     def as_regex(self) -> str:
-        to_splice = [r"-?\d+(?:\.\d+)?"] * len(self.ranges)
+        to_splice = [f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)]
         spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
 
         return (

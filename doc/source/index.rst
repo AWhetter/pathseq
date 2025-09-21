@@ -14,17 +14,17 @@ Now, let's get started:
 .. code-block:: pycon
 
     >>> from pathseq import PathSequence
-    >>> seq = PathSequence("/path/to/images.1-5####.exr")
+    >>> seq = PathSequence("tests/fixtures/simple/images.1-5####.exr")
     >>> for path in seq:
     ...     path
     ...
-    PosixPath('/path/to/images.0001.exr')
-    PosixPath('/path/to/images.0002.exr')
-    PosixPath('/path/to/images.0003.exr')
-    PosixPath('/path/to/images.0004.exr')
-    PosixPath('/path/to/images.0005.exr')
+    PosixPath('tests/fixtures/simple/images.0001.exr')
+    PosixPath('tests/fixtures/simple/images.0002.exr')
+    PosixPath('tests/fixtures/simple/images.0003.exr')
+    PosixPath('tests/fixtures/simple/images.0004.exr')
+    PosixPath('tests/fixtures/simple/images.0005.exr')
 
-    >>> seq2 = PathSequence.from_disk("/path/to/images.####.exr")
+    >>> seq2 = PathSequence.from_disk("tests/fixtures/simple/images.####.exr")
     >>> seq2 == seq
     True
 

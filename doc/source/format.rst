@@ -43,6 +43,8 @@ The name has four components:
 Supporting multiple ranges in a sequence requires an additional component:
 an inter-range separator.
 
+.. TODO: Add more detail about what's valid as an inter-range string.
+
 .. figure:: /_static/multi_range_breakdown.svg
    :figclass: solid-background
    :width: 90%

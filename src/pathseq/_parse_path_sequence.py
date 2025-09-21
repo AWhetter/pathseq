@@ -71,13 +71,17 @@ class Token:
         return self.column + len(self.value)
 
 
-def _tokenise(seq: str) -> list[Token]:
-    if seq.endswith("."):
-        raise ParseError(seq, len(seq) - 1, reason="Suffixes cannot end with a '.'")
-
+def _tokenise_seq(seq: str) -> list[Token]:
     raw_tokens = re.split(RANGES_RE, seq)
     if len(raw_tokens) == 1:
         raise NotASequenceError(seq)
+
+    return process_tokens(seq, raw_tokens)
+
+
+def process_tokens(seq: str, raw_tokens: list[str]) -> list[Token]:
+    if seq.endswith("."):
+        raise ParseError(seq, len(seq) - 1, reason="Suffixes cannot end with a '.'")
 
     starts_with_range = not bool(raw_tokens[0])
     if starts_with_range:
@@ -301,7 +305,7 @@ class _SeqParser(StateMachine):
     @classmethod
     def parse(cls, seq: str) -> ParsedSequence:
         machine = cls(seq)
-        tokens = _tokenise(seq)
+        tokens = _tokenise_seq(seq)
         for token in tokens:
             machine.pump(token)
 

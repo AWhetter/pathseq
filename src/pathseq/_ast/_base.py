@@ -7,7 +7,7 @@ import decimal
 from decimal import Decimal
 import itertools
 import typing
-from typing import Any, Generic, Literal, TypeAlias, TypeVar, Union
+from typing import Any, Generic, Literal, TypeAlias, TypeGuard, TypeVar, Union
 
 if typing.TYPE_CHECKING:
     from .._file_num_seq import FileNumSequence
@@ -99,6 +99,38 @@ class PaddedRange(Generic[FileNumT]):
             return pad(number, len(head), len(tail))
 
         return pad(number, len(pad_format))
+
+    def as_regex(self) -> str:
+        if self.pad_format == "<UVTILE>":
+            return r"u\d+_v\d+"
+
+        pad_format = self.pad_format
+        if self.pad_format == "<UDIM>":
+            pad_format = "####"
+
+        if "." in pad_format:
+            head, tail = pad_format.split(".", 1)
+            tail_re = r"\.[0-9]*" + r"[0-9]" * len(tail)
+        else:
+            head = pad_format
+            tail_re = ""
+            if self.has_subsamples(self):
+                tail_re = r"(\.[0-9]+)?"
+
+        positive_re = r"([1-9][0-9]*)?" + r"[0-9]" * len(head)
+        negative_re = r"-([1-9][0-9]*)?" + r"[0-9]" * (len(head) - 1)
+
+        return f"({positive_re}|{negative_re}){tail_re}"
+
+    @staticmethod
+    def has_subsamples(
+        range_: PaddedRange[FileNumT],
+    ) -> TypeGuard[PaddedRange[decimal.Decimal]]:
+        """Check whether this file number sequence contains any decimal numbers."""
+        if isinstance(range_.file_nums, str):
+            return False
+
+        return range_.file_nums.has_subsamples(range_.file_nums)
 
 
 # The MIT License (MIT)
