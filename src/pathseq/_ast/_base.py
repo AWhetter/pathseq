@@ -80,7 +80,7 @@ def splice_strings_onto_ranges(
 
 @dataclass(frozen=True)
 class PaddedRange(Generic[FileNumT]):
-    file_nums: FileNumSequence[FileNumT] | Literal[""]
+    file_nums: FileNumSequence[FileNumT]
     pad_format: str
 
     def __str__(self) -> str:
@@ -124,13 +124,10 @@ class PaddedRange(Generic[FileNumT]):
 
     @staticmethod
     def has_subsamples(
-        range_: PaddedRange,
+        range_: PaddedRange[int] | PaddedRange[decimal.Decimal],
     ) -> TypeGuard[PaddedRange[decimal.Decimal]]:
         """Check whether this file number sequence contains any decimal numbers."""
-        if isinstance(range_.file_nums, str):
-            return False
-
-        return range_.file_nums.has_subsamples(range_.file_nums)
+        return FileNumSequence[Any].has_subsamples(range_.file_nums)
 
 
 # The MIT License (MIT)

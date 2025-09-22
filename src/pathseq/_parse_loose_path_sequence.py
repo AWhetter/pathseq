@@ -450,9 +450,7 @@ class SeqParser(StateMachine):
             )
         pad_format = match.group(0)
         seq_str = token.value[: -len(pad_format)]
-        file_nums: FileNumSequence[int] | FileNumSequence[Decimal] | Literal[""] = ""
-        if seq_str:
-            file_nums = FileNumSequence.from_str(seq_str)
+        file_nums = FileNumSequence.from_str(seq_str)
         return PaddedRange(file_nums, pad_format)  # type: ignore[misc]
 
     def _parse_suffixes(self, token: Token) -> tuple[str, ...]:

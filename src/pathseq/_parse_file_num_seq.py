@@ -66,6 +66,9 @@ class _RangeReducer(
 def parse_file_num_seq(
     seq: str,
 ) -> list[ArithmeticSequence[int]] | list[ArithmeticSequence[D]]:
+    if not seq:
+        return []
+
     try:
         ranges = _PARSER.parse(seq)
     except lark.UnexpectedInput as exc:

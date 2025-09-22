@@ -203,26 +203,6 @@ class PurePathSequence(Sequence[PathT_co]):
 
     # PathSeq specific operations
 
-    @property
-    def paddings(self) -> tuple[str]:
-        """All padding strings in the final path component."""
-        raise NotImplementedError
-
-    # TODO: Or maybe set via part objects?
-    def with_paddings(self, *paddings: str) -> Self:
-        """Set new pads.
-
-        Raises:
-            ValueError: When the number of provided padding strings does not match
-                the number of padding strings in the final path component.
-        """
-        raise NotImplementedError
-
-    @classmethod
-    def from_paths(cls, paths: Iterable[os.PathLike[str]]) -> Iterable[Self]:
-        """Create one or more path sequences from a list of paths."""
-        raise NotImplementedError
-
     def format(self, *numbers: int | Decimal) -> PathT_co:
         """Return a path for the given file number(s) in the sequence.
 
