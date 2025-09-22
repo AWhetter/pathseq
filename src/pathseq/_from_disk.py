@@ -3,7 +3,6 @@ import functools
 import operator
 import pathlib
 import re
-from typing import TypeVar
 
 from ._ast import (
     RangesStartName,

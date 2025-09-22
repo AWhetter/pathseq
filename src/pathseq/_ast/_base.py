@@ -124,7 +124,7 @@ class PaddedRange(Generic[FileNumT]):
 
     @staticmethod
     def has_subsamples(
-        range_: PaddedRange[FileNumT],
+        range_: PaddedRange,
     ) -> TypeGuard[PaddedRange[decimal.Decimal]]:
         """Check whether this file number sequence contains any decimal numbers."""
         if isinstance(range_.file_nums, str):

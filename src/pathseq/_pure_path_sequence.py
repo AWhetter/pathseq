@@ -250,10 +250,27 @@ class PurePathSequence(Sequence[PathT_co]):
     def with_file_num_seqs(
         self, seqs: Iterable[FileNumSequence[int] | FileNumSequence[Decimal]]
     ) -> Self:
-        raise NotImplementedError
+        new_ranges = tuple(
+            PaddedRange(seq, range_.pad_format)
+            for seq, range_ in zip(seqs, self._parsed.ranges)
+        )
+        if len(new_ranges) != len(self._parsed.ranges):
+            raise ValueError(
+                f"Need {len(self._parsed.ranges)} sequences, but got {len(new_ranges)}"
+            )
+
+        new = self._parsed.__class__(
+            self._parsed.stem,
+            self._parsed.prefix_separator,
+            new_ranges,
+            self._parsed.inter_ranges,
+            self._parsed.suffixes,
+        )
+        return self.__class__(self._path.with_name(str(new)))
 
     def has_subsamples(self) -> bool:
-        raise NotImplementedError
+        """Check whether this path sequences contains any decimal file numbers."""
+        return any(r.has_subsamples(r) for r in self._parsed.ranges)
 
     @property
     def parsed(self) -> ParsedSequence:
