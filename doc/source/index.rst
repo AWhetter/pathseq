@@ -24,12 +24,12 @@ Now, let's get started:
     PosixPath('tests/fixtures/simple/images.0004.exr')
     PosixPath('tests/fixtures/simple/images.0005.exr')
 
-    >>> seq2 = PathSequence.from_disk("tests/fixtures/simple/images.####.exr")
+    >>> seq2 = PathSequence("tests/fixtures/simple/images.####.exr").with_existing_paths()
     >>> seq2 == seq
     True
 
     >>> seq.parent
-    PosixPath('/path/to')
+    PosixPath('tests/fixtures/simple')
     >>> seq3 = seq.parent / PathSequence("images.1-5####.exr")
     >>> seq3 == seq
     True
@@ -38,12 +38,12 @@ Now, let's get started:
     >>> for path in anim_udims:
     ...     path
     ...
-    PosixPath('/path/to/images.1011_1.exr')
-    PosixPath('/path/to/images.1011_2.exr')
-    PosixPath('/path/to/images.1011_3.exr')
-    PosixPath('/path/to/images.1012_1.exr')
-    PosixPath('/path/to/images.1012_2.exr')
-    PosixPath('/path/to/images.1012_3.exr')
+    PosixPath('/path/to/textures.1011_1.tex')
+    PosixPath('/path/to/textures.1011_2.tex')
+    PosixPath('/path/to/textures.1011_3.tex')
+    PosixPath('/path/to/textures.1012_1.tex')
+    PosixPath('/path/to/textures.1012_2.tex')
+    PosixPath('/path/to/textures.1012_3.tex')
 
 A wide range of sequence string formats are supported:
 

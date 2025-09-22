@@ -40,22 +40,7 @@ class PathSequence(PurePathSequence[PathT_co]):
     def absolute(self) -> Self:
         return self.__class__(self._path.absolute())
 
-    @overload
-    @classmethod
-    def from_disk(
-        cls: type[PathSequence[pathlib.Path]], path: str
-    ) -> PathSequence[pathlib.Path]: ...
-
-    @overload
-    @classmethod
-    def from_disk(
-        cls: type[PathSequence[PathT]], path: PathT
-    ) -> PathSequence[PathT]: ...
-
-    @classmethod
-    def from_disk(
-        cls, path: str | PathT
-    ) -> PathSequence[pathlib.Path] | PathSequence[PathT]:
+    def with_existing_paths(self) -> Self:
         """Create a sequence using the ranges of files that exist on disk.
 
         Each file number sequence in the path sequence will be ordered numerically.
@@ -65,18 +50,5 @@ class PathSequence(PurePathSequence[PathT_co]):
             a multi-dimension sequence does not have a consistent number of
             files in each other dimension.
         """
-        if isinstance(path, str):
-            _path = cls._pathlib_type(path)
-        else:
-            _path = path
-
-        parsed = parse_path_sequence(_path.name)
-        ranges = find_on_disk(_path, parsed)
-        new = parsed.__class__(
-            parsed.stem,
-            parsed.prefix_separator,
-            ranges,
-            parsed.inter_ranges,
-            parsed.suffixes,
-        )
-        return cls(_path.with_name(str(new)))
+        seqs = find_on_disk(self._path, self._parsed)
+        return self.with_file_num_seqs(seqs)

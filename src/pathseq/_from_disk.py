@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from decimal import Decimal
 import functools
 import operator
@@ -9,7 +10,6 @@ from ._ast import (
     RangesInName,
     RangesEndName,
     ParsedSequence,
-    PaddedRange,
 )
 from ._error import IncompleteDimensionError
 from ._file_num_seq import FileNumSequence
@@ -18,7 +18,7 @@ from ._file_num_seq import FileNumSequence
 def find_on_disk(
     path: pathlib.Path,
     parsed: ParsedSequence | RangesStartName | RangesInName | RangesEndName,
-) -> tuple[PaddedRange, ...]:
+) -> Iterator[FileNumSequence[int] | FileNumSequence[Decimal]]:
     """Find the ranges of files that exist on disk for the given path.
 
     Each file number sequence in the path sequence will be ordered numerically.
@@ -57,7 +57,6 @@ def find_on_disk(
             f"Sequence '{path}' contains an inconsistent number of files across one or more dimensions."
         )
 
-    file_num_seqs = []
     for file_str_set in file_str_sets:
         file_num_seq: FileNumSequence[int] | FileNumSequence[Decimal]
         if any("." in file_str for file_str in file_str_set):
@@ -69,9 +68,4 @@ def find_on_disk(
                 sorted(int(file_str) for file_str in file_str_set)
             )
 
-        file_num_seqs.append(file_num_seq)
-
-    return tuple(
-        PaddedRange(file_num_seq, range_.pad_format)  # type: ignore[misc]
-        for file_num_seq, range_ in zip(file_num_seqs, parsed.ranges)
-    )
+        yield file_num_seq
