@@ -8,7 +8,6 @@ from typing_extensions import (
 )
 
 from ._from_disk import find_on_disk
-from ._parse_path_sequence import parse_path_sequence
 from ._pure_path_sequence import PurePathSequence
 
 PathT = TypeVar("PathT", bound=pathlib.Path, default=pathlib.Path)
@@ -51,4 +50,4 @@ class PathSequence(PurePathSequence[PathT_co]):
             files in each other dimension.
         """
         seqs = find_on_disk(self._path, self._parsed)
-        return self.with_file_num_seqs(seqs)
+        return self.with_file_num_seqs(*seqs)

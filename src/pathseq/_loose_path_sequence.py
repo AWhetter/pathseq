@@ -9,7 +9,6 @@ from typing_extensions import (
 
 from ._from_disk import find_on_disk
 from ._loose_pure_path_sequence import LoosePurePathSequence
-from ._parse_loose_path_sequence import parse_path_sequence
 
 PathT = TypeVar("PathT", bound=pathlib.Path, default=pathlib.Path)
 PathT_co = TypeVar("PathT_co", covariant=True, bound=pathlib.Path, default=pathlib.Path)
@@ -51,4 +50,4 @@ class LoosePathSequence(LoosePurePathSequence[PathT_co]):
             files in each other dimension.
         """
         seqs = find_on_disk(self._path, self._parsed)
-        return self.with_file_num_seqs(seqs)
+        return self.with_file_num_seqs(*seqs)

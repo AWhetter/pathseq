@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterator, Sequence
 from decimal import Decimal
 import itertools
 import os
@@ -228,17 +228,17 @@ class PurePathSequence(Sequence[PathT_co]):
         return ranges
 
     def with_file_num_seqs(
-        self, seqs: Iterable[FileNumSequence[int] | FileNumSequence[Decimal]]
+        self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
     ) -> Self:
+        if len(seqs) != len(self._parsed.ranges):
+            raise TypeError(
+                f"Need {len(self._parsed.ranges)} sequences, but got {len(seqs)}"
+            )
+
         new_ranges = tuple(
             PaddedRange(seq, range_.pad_format)
             for seq, range_ in zip(seqs, self._parsed.ranges)
         )
-        if len(new_ranges) != len(self._parsed.ranges):
-            raise ValueError(
-                f"Need {len(self._parsed.ranges)} sequences, but got {len(new_ranges)}"
-            )
-
         new = self._parsed.__class__(
             self._parsed.stem,
             self._parsed.prefix_separator,

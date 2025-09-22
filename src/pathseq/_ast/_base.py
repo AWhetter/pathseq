@@ -7,7 +7,7 @@ import decimal
 from decimal import Decimal
 import itertools
 import typing
-from typing import Any, Generic, Literal, TypeAlias, TypeGuard, TypeVar, Union
+from typing import Any, Generic, TypeAlias, TypeGuard, TypeVar, Union
 
 if typing.TYPE_CHECKING:
     from .._file_num_seq import FileNumSequence

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 import enum
 import re
-from typing import Literal, TypeAlias, Union
+from typing import TypeAlias, Union
 
 from statemachine import StateMachine, State
 
