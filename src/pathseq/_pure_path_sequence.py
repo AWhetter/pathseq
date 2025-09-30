@@ -5,6 +5,8 @@ from decimal import Decimal
 import itertools
 import os
 import pathlib
+import re
+import sys
 from typing import ClassVar, overload, TypeVar, Union
 
 from typing_extensions import (
@@ -124,11 +126,20 @@ class PurePathSequence(Sequence[PathT_co]):
     def is_relative_to(self, other: pathlib.PurePath) -> bool:
         return self._path.is_relative_to(other)
 
-    def relative_to(self, other: Segment, *, walk_up: bool = False) -> Self:
-        # TODO: walk_up only valid in Python 3.12+
-        # TODO: Need __contains__ because it should not be possible to pass
-        # a file that's in this sequence.
-        raise NotImplementedError
+    if sys.version_info >= (3, 12):
+
+        def relative_to(self, other: Segment, *, walk_up: bool = False) -> Self:
+            if other == str(self):
+                raise ValueError("Cannot make a path sequence relative to itself")
+
+            return type(self)(self._path.relative_to(other, walk_up=walk_up))
+    else:
+
+        def relative_to(self, other: Segment) -> Self:
+            if other == str(self):
+                raise ValueError("Cannot make a path sequence relative to itself")
+
+            return type(self)(self._path.relative_to(other))
 
     def with_name(self, name: str) -> Self:
         return self.with_segments(self._path.with_name(name))
@@ -143,7 +154,7 @@ class PurePathSequence(Sequence[PathT_co]):
         If the given suffix is the empty string, the existing suffix will be removed.
         But if the path sequence has only one suffix,
         then a :exc:`ValueError` will be raised because removing the suffix will result in
-        and invalid path sequence.
+        an invalid path sequence.
 
         Args:
             The new suffix to replace the existing suffix with.
@@ -171,13 +182,62 @@ class PurePathSequence(Sequence[PathT_co]):
     def __getitem__(self, index: int) -> PathT_co: ...
 
     @overload
-    def __getitem__(self, index: slice) -> Self: ...
+    def __getitem__(self, index: slice) -> Sequence[PathT_co]: ...
 
-    def __getitem__(self, index: int | slice) -> PathT_co | Self:
-        raise NotImplementedError
+    def __getitem__(self, index: int | slice) -> PathT_co | Sequence[PathT_co]:
+        file_num_seqs = [x.file_nums for x in self._parsed.ranges if x.file_nums]
+        if len(file_num_seqs) != len(self._parsed.ranges):
+            raise ValueError(
+                "Cannot index a path sequence with one or more unknown ranges"
+            )
+
+        if isinstance(index, slice):
+            return tuple(itertools.islice(self, *index.indices(len(self))))
+
+        start = index
+        if start < 0:
+            start += len(self)
+            if start < 0:
+                raise IndexError("index out of range")
+        elif start > len(self):
+            raise IndexError("index out of range")
+
+        indexes = [0 for _ in file_num_seqs]
+        for i, file_num_seq in enumerate(reversed(file_num_seqs), start=1):
+            next_idx = start % len(file_num_seq)
+            indexes[-i] = next_idx
+            start -= next_idx
+
+        assert start == 0
+        file_nums = [
+            x.file_nums[i] for x, i in zip(self._parsed.ranges, reversed(indexes))
+        ]
+        return self.format(*file_nums)
 
     def __contains__(self, item: object) -> bool:
-        raise NotImplementedError
+        if not isinstance(item, self._pathlib_type):
+            return False
+
+        pattern = re.compile(self._parsed.as_regex())
+
+        match = pattern.fullmatch(str(item.name))
+        if not match:
+            return False
+
+        for i, range_ in enumerate(self._parsed.ranges):
+            group_name = f"range{i}"
+            group = match.group(group_name)
+            assert isinstance(group, str), "Got an unexpected type from regex group"
+
+            file_num_seq = range_.file_nums
+            if FileNumSequence.has_subsamples(file_num_seq):
+                if Decimal(group) not in file_num_seq:
+                    return False
+            else:
+                if int(group) not in file_num_seq:
+                    return False
+
+        return True
 
     def __iter__(self) -> Iterator[PathT_co]:
         iterators = (iter(x) for x in self.file_num_seqs)
@@ -190,14 +250,7 @@ class PurePathSequence(Sequence[PathT_co]):
         result = 1
 
         for x in self._parsed.ranges:
-            if isinstance(x, PaddedRange):
-                if x.file_nums is None:
-                    raise ValueError(
-                        "Cannot calculate the length of a path sequence"
-                        " with one or more unknown ranges"
-                    )
-
-                result *= len(x.file_nums)
+            result *= len(x.file_nums)
 
         return result
 

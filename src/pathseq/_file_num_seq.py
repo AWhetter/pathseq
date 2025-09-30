@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Sequence
 import decimal
+import itertools
 from typing import Generic, overload, Self
 
 from typing_extensions import (
@@ -184,19 +185,19 @@ class FileNumSequence(Sequence[FileNumT]):
     def __getitem__(self, index: int) -> FileNumT: ...
 
     @overload
-    def __getitem__(self, index: slice) -> Self: ...
+    def __getitem__(self, index: slice) -> Sequence[FileNumT]: ...
 
-    def __getitem__(self, index: int | slice) -> FileNumT | Self:
-        if isinstance(index, int):
-            for rng in self._ranges:
-                range_len = len(rng)
-                if index < range_len:
-                    return rng[index]
-                index -= range_len
-            else:
-                raise IndexError(index)
+    def __getitem__(self, index: int | slice) -> FileNumT | Sequence[FileNumT]:
+        if isinstance(index, slice):
+            return tuple(itertools.islice(self, *index.indices(len(self))))
 
-        raise NotImplementedError
+        for rng in self._ranges:
+            range_len = len(rng)
+            if index < range_len:
+                return rng[index]
+            index -= range_len
+        else:
+            raise IndexError(index)
 
     def __str__(self) -> str:
         return ",".join(str(rng) for rng in self._ranges)
@@ -206,7 +207,7 @@ class FileNumSequence(Sequence[FileNumT]):
 
     @staticmethod
     def has_subsamples(
-        file_num_seq: FileNumSequence[FileNumT],
+        file_num_seq: FileNumSequence,
     ) -> TypeGuard[FileNumSequence[decimal.Decimal]]:
         """Check whether this file number sequence contains any decimal numbers."""
         if not file_num_seq:

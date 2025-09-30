@@ -126,21 +126,27 @@ class ArithmeticSequence(Sequence[FileNumT]):
 
     def __getitem__(self, index: int | slice) -> FileNumT | Self:
         if isinstance(index, slice):
+            start_i, stop_i, step = index.indices(len(self))
+            if step > 0:
+                if start_i >= stop_i:
+                    raise IndexError("slice creates an empty arithemtic sequence")
+            else:
+                if start_i <= stop_i:
+                    raise IndexError("slice creates an empty arithemtic sequence")
+
+            start = self[index.start]
             try:
-                start = self[index.start]
+                stop = self[index.stop + 1]
             except IndexError:
-                # We don't allow empty ArithmeticSequence objects.
-                # Maybe we need a better exception type here.
-                raise
+                stop = self.end
 
-            try:
-                end = self[index.stop - 1]
-            except IndexError:
-                end = self.end
+            return self.__class__(start, stop, self.step * index.step)
 
-            return self.__class__(start, end, self.step * index.step)
-
-        if index > len(self):
-            raise IndexError(index)
+        if index < 0:
+            index += len(self)
+            if index < 0:
+                raise IndexError("index out of range")
+        elif index >= len(self):
+            raise IndexError("index out of range")
 
         return self._range.start + index * self._range.step
