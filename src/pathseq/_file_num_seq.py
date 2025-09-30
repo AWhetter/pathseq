@@ -207,7 +207,7 @@ class FileNumSequence(Sequence[FileNumT]):
 
     @staticmethod
     def has_subsamples(
-        file_num_seq: FileNumSequence,
+        file_num_seq: FileNumSequence[int] | FileNumSequence[decimal.Decimal],
     ) -> TypeGuard[FileNumSequence[decimal.Decimal]]:
         """Check whether this file number sequence contains any decimal numbers."""
         if not file_num_seq:
