@@ -120,8 +120,15 @@ class PurePathSequence(Sequence[PathT_co]):
     def as_posix(self) -> str:
         return self._path.as_posix()
 
-    def is_reserved(self) -> bool:
-        return self._path.is_reserved()
+    def has_reserved(self) -> bool:
+        return (
+            self.stem in ("COM", "LPT")
+            and not self._parsed.prefix_separator
+            and len(self._parsed.ranges) == 1
+            and not self._parsed.inter_ranges
+            and self._parsed.ranges[0].pad_format == "#"
+            and any(x in self._parsed.ranges[0].file_nums for x in range(1, 10))
+        )
 
     def is_relative_to(self, other: pathlib.PurePath) -> bool:
         return self._path.is_relative_to(other)
