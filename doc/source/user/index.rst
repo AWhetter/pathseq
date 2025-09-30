@@ -16,6 +16,7 @@ User Guide
 * Reformatting and setting new ranges
 * Complex equality and normalisation
 * Conversions
+* Empty ranges = empty sequence
 
 * API reference
 * Grammar

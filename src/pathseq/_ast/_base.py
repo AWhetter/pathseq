@@ -47,7 +47,7 @@ def stringify_parsed_sequence(seq: Any) -> str:
 
 
 def splice_numbers_onto_ranges(
-    numbers: tuple[int | Decimal | None, ...],
+    numbers: tuple[int | Decimal, ...],
     ranges: Sequence[PaddedRange[int] | PaddedRange[Decimal]],
     inter_ranges: Sequence[str],
 ) -> str:
@@ -60,10 +60,7 @@ def splice_numbers_onto_ranges(
 
     to_splice: list[str] = []
     for number, _range in zip(numbers, ranges):
-        if number is None:
-            to_splice.append(str(_range))
-        else:
-            to_splice.append(_range.format(number))
+        to_splice.append(_range.format(number))
 
     return splice_strings_onto_ranges(to_splice, inter_ranges)
 

@@ -16,7 +16,7 @@ from ._base import (
 
 @dataclass(frozen=True)
 class RangesStartName:
-    """A parsed loose range sequence where the range starts a path's name."""
+    """A parsed loose path sequence where the range starts a path's name."""
 
     prefix_separator: Literal[""]
     ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
@@ -29,13 +29,26 @@ class RangesStartName:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
+        """Return a new parsed sequence with the :attr:`~.stem` changed.
+
+        If the stem is removed, the postfix will be as well.
+        """
         kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
-        if not stem and self.stem and self.suffixes:
+        if not stem:
             kwargs["postfix"] = ""
         return self.__class__(**kwargs)
 
     def with_suffix(self, suffix: str) -> Self:
+        """Return a new parsed sequence with the suffix changed.
+
+        Args:
+            suffix: The new suffix to replace the existing one with.
+                This must start with a "." or be the empty string.
+
+        Raises:
+            ValueError: If an invalid suffix is given.
+        """
         if suffix:
             if not suffix.startswith(".") or suffix == ".":
                 raise ValueError(f"Invalid suffix '{suffix}'")
@@ -52,7 +65,13 @@ class RangesStartName:
 
         return self
 
-    def format(self, *numbers: int | Decimal | None) -> str:
+    def format(self, *numbers: int | Decimal) -> str:
+        """Format the sequence with given numbers using each range's padding rules.
+
+        Raises:
+            TypeError: If the number of numbers given does not match the
+            number of ranges to be formatted.
+        """
         spliced = splice_numbers_onto_ranges(
             numbers,
             self.ranges,
@@ -62,12 +81,14 @@ class RangesStartName:
         return spliced + self.postfix + self.stem + "".join(self.suffixes)
 
     def as_glob(self) -> str:
+        """Get a glob pattern to match paths in this sequence."""
         to_splice = "*" * len(self.ranges)
         spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
 
         return spliced + self.postfix + self.stem + "".join(self.suffixes)
 
     def as_regex(self) -> str:
+        """Get a regex pattern to match paths in this sequence."""
         to_splice = [
             f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
         ]
@@ -93,6 +114,10 @@ class RangesInName:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
+        """Return a new parsed sequence with the :attr:`~.stem` changed.
+
+        If the stem is removed, the prefix will be as well.
+        """
         kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         if not stem and self.stem:
@@ -100,6 +125,15 @@ class RangesInName:
         return self.__class__(**kwargs)
 
     def with_suffix(self, suffix: str) -> Self:
+        """Return a new parsed sequence with the suffix changed.
+
+        Args:
+            suffix: The new suffix to replace the existing one with.
+                This must start with a "." or be the empty string.
+
+        Raises:
+            ValueError: If an invalid suffix is given.
+        """
         if suffix:
             if not suffix.startswith("."):
                 raise ValueError(f"Invalid suffix '{suffix}'")
@@ -118,7 +152,13 @@ class RangesInName:
 
         return self
 
-    def format(self, *numbers: int | Decimal | None) -> str:
+    def format(self, *numbers: int | Decimal) -> str:
+        """Format the sequence with given numbers using each range's padding rules.
+
+        Raises:
+            TypeError: If the number of numbers given does not match the
+            number of ranges to be formatted.
+        """
         spliced = splice_numbers_onto_ranges(
             numbers,
             self.ranges,
@@ -134,6 +174,7 @@ class RangesInName:
         )
 
     def as_glob(self) -> str:
+        """Get a glob pattern to match paths in this sequence."""
         to_splice = "*" * len(self.ranges)
         spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
 
@@ -146,6 +187,7 @@ class RangesInName:
         )
 
     def as_regex(self) -> str:
+        """Get a regex pattern to match paths in this sequence."""
         to_splice = [
             f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
         ]
@@ -175,11 +217,21 @@ class RangesEndName:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
+        """Return a new parsed sequence with the :attr:`~.stem` changed."""
         kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         return self.__class__(**kwargs)
 
     def with_suffix(self, suffix: str) -> Self:
+        """Return a new parsed sequence with the suffix changed.
+
+        Args:
+            suffix: The new suffix to replace the existing one with.
+                This must start with a "." or be the empty string.
+
+        Raises:
+            ValueError: If an invalid suffix is given.
+        """
         if suffix:
             if not suffix.startswith("."):
                 raise ValueError(f"Invalid suffix '{suffix}'")
@@ -196,7 +248,13 @@ class RangesEndName:
 
         return self
 
-    def format(self, *numbers: int | Decimal | None) -> str:
+    def format(self, *numbers: int | Decimal) -> str:
+        """Format the sequence with given numbers using each range's padding rules.
+
+        Raises:
+            TypeError: If the number of numbers given does not match the
+            number of ranges to be formatted.
+        """
         spliced = splice_numbers_onto_ranges(
             numbers,
             self.ranges,
@@ -206,12 +264,14 @@ class RangesEndName:
         return self.stem + "".join(self.suffixes) + self.prefix_separator + spliced
 
     def as_glob(self) -> str:
+        """Get a glob pattern to match paths in this sequence."""
         to_splice = "*" * len(self.ranges)
         spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
 
         return self.stem + "".join(self.suffixes) + self.prefix_separator + spliced
 
     def as_regex(self) -> str:
+        """Get a regex pattern to match paths in this sequence."""
         to_splice = [
             f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
         ]
