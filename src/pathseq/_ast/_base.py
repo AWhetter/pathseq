@@ -17,6 +17,7 @@ FileNum: TypeAlias = Union[int, decimal.Decimal]
 
 
 def non_recursive_asdict(datacls: Any) -> dict[str, Any]:
+    """Like :func:`dataclasses.asdict` but does not recurse into attributes."""
     return {
         field.name: getattr(datacls, field.name)
         for field in dataclasses.fields(datacls)
@@ -87,8 +88,12 @@ class PaddedRange(Generic[FileNumT]):
         return str(self.file_nums) + self.pad_format
 
     def format(self, number: int | Decimal) -> str:
+        """Format the given number using the range's padding rules."""
         if self.pad_format == "<UVTILE>":
-            raise NotImplementedError
+            # udim = 1000+(v*10)+(u+1)
+            u = (number - 1) % 10
+            v = (number - 1000 - u - 1) // 10
+            return f"u{u + 1}_v{v + 1}"
 
         pad_format = self.pad_format
         if self.pad_format == "<UDIM>":
@@ -101,6 +106,7 @@ class PaddedRange(Generic[FileNumT]):
         return pad(number, len(pad_format))
 
     def as_regex(self) -> str:
+        """Get a regex pattern to match range strings with this range's padding rules."""
         if self.pad_format == "<UVTILE>":
             return r"u\d+_v\d+"
 

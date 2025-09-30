@@ -16,6 +16,8 @@ from ._base import (
 
 @dataclass(frozen=True)
 class RangesStartName:
+    """A parsed loose range sequence where the range starts a path's name."""
+
     prefix_separator: Literal[""]
     ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
     inter_ranges: tuple[str, ...]
@@ -78,6 +80,8 @@ class RangesStartName:
 
 @dataclass(frozen=True)
 class RangesInName:
+    """A parsed loose range sequence where the range follows a path's stem."""
+
     stem: str
     prefix_separator: str
     ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
@@ -158,6 +162,8 @@ class RangesInName:
 
 @dataclass(frozen=True)
 class RangesEndName:
+    """A parsed loose range sequence where the range ends a path's name."""
+
     stem: str
     suffixes: tuple[str, ...]
     prefix_separator: str

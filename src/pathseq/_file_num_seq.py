@@ -115,6 +115,14 @@ def _consolidate_ranges(
 
 
 class FileNumSequence(Sequence[FileNumT]):
+    """A sequence of file numbers.
+
+    Warning:
+        The constructor is not considered public, and should not be used.
+        Instead, use the :meth:`~FileNumberSequence.from_str`
+        and :meth:`~FileNumberSequence.from_file_nums` class methods.
+    """
+
     def __init__(self, ranges: Iterable[ArithmeticSequence[FileNumT]]) -> None:
         self._ranges: tuple[ArithmeticSequence[FileNumT], ...] = _consolidate_ranges(
             ranges
@@ -156,7 +164,7 @@ class FileNumSequence(Sequence[FileNumT]):
         return any(item in rng for rng in self._ranges)
 
     def __iter__(self) -> Iterator[FileNumT]:
-        """Iterate over the file numbers in the sequence.
+        """Iterate over the file numbers in this sequence.
 
         Yields:
             Each file number in the sequence.
@@ -188,6 +196,16 @@ class FileNumSequence(Sequence[FileNumT]):
     def __getitem__(self, index: slice) -> Sequence[FileNumT]: ...
 
     def __getitem__(self, index: int | slice) -> FileNumT | Sequence[FileNumT]:
+        """Return one or more file numbers from this sequence.
+
+        Note:
+            Negative slice steps are not supported at this time.
+
+        Returns:
+            PurePath: When indexed with an integer.
+            Sequence: An immutable sequence of file numbers from this sequence
+                when indexed with a :class:`slice`.
+        """
         if isinstance(index, slice):
             return tuple(itertools.islice(self, *index.indices(len(self))))
 

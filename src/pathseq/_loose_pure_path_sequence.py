@@ -7,27 +7,18 @@ from typing_extensions import (
 )
 
 from ._ast import PaddedRange
-from ._base import BasePurePathSequence, PathT_co
+from ._base import BasePurePathSequence, PurePathT_co
 from ._file_num_seq import FileNumSequence
 from ._parse_loose_path_sequence import parse_path_sequence, ParsedLooseSequence
 
 
-class LoosePurePathSequence(BasePurePathSequence[PathT_co]):
-    """A generic class that represents a path sequence in the system's path flavour.
-
-    Instantiating this class creates either a :class:`PurePosixPathSequence`
-    or a :class:`PureWindowsPathSequence`.
-
-    Differences:
-    * No __bytes__ because not a filesystem path.
-    * No __fspath__ because not a filesystem path.
-    * No as_uri because not a filesystem path.
-    * No __truediv__ (only __rtruediv__) or joinpath because sequences are supported only in
-      the last part of the path.
-    * No match because not a filesystem path that can be matched against.
+class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
+    """A sequence of PurePath objects.
 
     Raises:
-        NotASequenceError: When the given path does not represent a sequence.
+        NotASequenceError: When the given path does not represent a sequence,
+            but a regular path.
+        ParseError: When the given path is not a valid path sequence.
     """
 
     _parsed: ParsedLooseSequence
@@ -37,11 +28,62 @@ class LoosePurePathSequence(BasePurePathSequence[PathT_co]):
 
     @property
     def parsed(self) -> ParsedLooseSequence:
+        """The parsed sequence string, as a tree of objects."""
         return self._parsed
+
+    @property
+    def suffix(self) -> str:
+        """The file extension of the paths in the sequence.
+
+        Example:
+        If there is no suffix, this will be the empty string.
+        .. code-block:: pycon
+            >>> LoosePurePathSequence('file1-3###').suffix
+            ''
+
+        See also:
+            :attr:`pathlib.PurePath.suffix`
+        """
+        return super().suffix
+
+    @property
+    def stem(self) -> str:
+        """The final path component, without any ranges, suffixes, or range strings.
+
+        Example:
+        .. code-block:: pycon
+            >>> LoosePurePathSequence('/path/to/images.1-3####.exr').stem
+            'images'
+            >>> LoosePurePathSequence('/path/to/1-3####.images.exr').stem
+            'images'
+            >>> LoosePurePathSequence('/path/to/images.exr.1-3####').stem
+            'images'
+
+        Unlike :attr:`pathlib.PurePath.stem`, this will never contain a suffix
+        if the paths have multiple suffixes.
+
+        Example:
+        .. code-block:: pycon
+            >>> PurePathSequence('/path/to/images.tar.gz.1-3####').stem
+            'images'
+
+        If the paths have no stem, then the empty string is returned.
+        Example:
+        .. code-block:: pycon
+            >>> LosePurePathSequence('1-3#.tar.gz').stem
+            ''
+        """
+        return super().stem
 
     def with_file_num_seqs(
         self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
     ) -> Self:
+        """Return a new sequence with the :attr:`~.file_num_seqs <file number sequences>` changed.
+
+        Raises:
+            TypeError: If the given number of file number sequences does not match
+                the sequence's number of file number sequences.
+        """
         if len(seqs) != len(self._parsed.ranges):
             raise TypeError(
                 f"Need {len(self._parsed.ranges)} sequences, but got {len(seqs)}"

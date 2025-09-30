@@ -13,10 +13,12 @@ from ._parse_path_sequence import parse_path_sequence
 
 
 class PurePathSequence(BasePurePathSequence[PathT_co]):
-    """A generic class that represents a path sequence.
+    """A sequence of PurePath objects.
 
     Raises:
-        NotASequenceError: When the given path does not represent a sequence.
+        NotASequenceError: When the given path does not represent a sequence,
+            but a regular path.
+        ParseError: When the given path is not a valid path sequence.
     """
 
     _parsed: ParsedSequence
@@ -26,11 +28,18 @@ class PurePathSequence(BasePurePathSequence[PathT_co]):
 
     @property
     def parsed(self) -> ParsedSequence:
+        """The parsed sequence string, as a tree of objects."""
         return self._parsed
 
     def with_file_num_seqs(
         self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
     ) -> Self:
+        """Return a new sequence with the :attr:`~.file_num_seqs <file number sequences>` changed.
+
+        Raises:
+            TypeError: If the given number of file number sequences does not match
+                the sequence's number of file number sequences.
+        """
         if len(seqs) != len(self._parsed.ranges):
             raise TypeError(
                 f"Need {len(self._parsed.ranges)} sequences, but got {len(seqs)}"
