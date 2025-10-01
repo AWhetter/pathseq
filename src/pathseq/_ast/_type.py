@@ -19,7 +19,7 @@ class ParsedSequence:
     """A parsed path sequence."""
 
     stem: str
-    prefix_separator: str
+    prefix: str
     ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
     inter_ranges: tuple[str, ...]
     suffixes: tuple[str, ...]
@@ -35,7 +35,7 @@ class ParsedSequence:
         kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         if not stem and self.stem:
-            kwargs["prefix_separator"] = ""
+            kwargs["prefix"] = ""
         return self.__class__(**kwargs)
 
     def with_suffix(self, suffix: str) -> Self:
@@ -73,7 +73,7 @@ class ParsedSequence:
             self.inter_ranges,
         )
 
-        return self.stem + self.prefix_separator + spliced + "".join(self.suffixes)
+        return self.stem + self.prefix + spliced + "".join(self.suffixes)
 
     # TODO: Replace the need for the following two methods
     # with some kind of formatting functionality.
@@ -82,7 +82,7 @@ class ParsedSequence:
         to_splice = "*" * len(self.ranges)
         spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
 
-        return self.stem + self.prefix_separator + spliced + "".join(self.suffixes)
+        return self.stem + self.prefix + spliced + "".join(self.suffixes)
 
     def as_regex(self) -> str:
         """Get a regex pattern to match paths in this sequence."""
@@ -94,7 +94,7 @@ class ParsedSequence:
         )
 
         return (
-            re.escape(self.stem + self.prefix_separator)
+            re.escape(self.stem + self.prefix)
             + spliced
             + re.escape("".join(self.suffixes))
         )

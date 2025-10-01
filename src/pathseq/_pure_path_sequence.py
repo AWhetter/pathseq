@@ -51,7 +51,7 @@ class PurePathSequence(BasePurePathSequence[PathT_co]):
         )
         new = self._parsed.__class__(
             self._parsed.stem,
-            self._parsed.prefix_separator,
+            self._parsed.prefix,
             new_ranges,
             self._parsed.inter_ranges,
             self._parsed.suffixes,

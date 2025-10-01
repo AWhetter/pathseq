@@ -18,7 +18,7 @@ from ._base import (
 class RangesStartName:
     """A parsed loose path sequence where the range starts a path's name."""
 
-    prefix_separator: Literal[""]
+    prefix: Literal[""]
     ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
     inter_ranges: tuple[str, ...]
     postfix: str
@@ -104,7 +104,7 @@ class RangesInName:
     """A parsed loose range sequence where the range follows a path's stem."""
 
     stem: str
-    prefix_separator: str
+    prefix: str
     ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
     inter_ranges: tuple[str, ...]
     postfix: str
@@ -121,7 +121,7 @@ class RangesInName:
         kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         if not stem and self.stem:
-            kwargs["prefix_separator"] = ""
+            kwargs["prefix"] = ""
         return self.__class__(**kwargs)
 
     def with_suffix(self, suffix: str) -> Self:
@@ -165,26 +165,14 @@ class RangesInName:
             self.inter_ranges,
         )
 
-        return (
-            self.stem
-            + self.prefix_separator
-            + spliced
-            + self.postfix
-            + "".join(self.suffixes)
-        )
+        return self.stem + self.prefix + spliced + self.postfix + "".join(self.suffixes)
 
     def as_glob(self) -> str:
         """Get a glob pattern to match paths in this sequence."""
         to_splice = "*" * len(self.ranges)
         spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
 
-        return (
-            self.stem
-            + self.prefix_separator
-            + spliced
-            + self.postfix
-            + "".join(self.suffixes)
-        )
+        return self.stem + self.prefix + spliced + self.postfix + "".join(self.suffixes)
 
     def as_regex(self) -> str:
         """Get a regex pattern to match paths in this sequence."""
@@ -196,7 +184,7 @@ class RangesInName:
         )
 
         return (
-            re.escape(self.stem + self.prefix_separator)
+            re.escape(self.stem + self.prefix)
             + spliced
             + re.escape(self.postfix + "".join(self.suffixes))
         )
@@ -208,7 +196,7 @@ class RangesEndName:
 
     stem: str
     suffixes: tuple[str, ...]
-    prefix_separator: str
+    prefix: str
     ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
     inter_ranges: tuple[str, ...]
     postfix: Literal[""]
@@ -261,14 +249,14 @@ class RangesEndName:
             self.inter_ranges,
         )
 
-        return self.stem + "".join(self.suffixes) + self.prefix_separator + spliced
+        return self.stem + "".join(self.suffixes) + self.prefix + spliced
 
     def as_glob(self) -> str:
         """Get a glob pattern to match paths in this sequence."""
         to_splice = "*" * len(self.ranges)
         spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
 
-        return self.stem + "".join(self.suffixes) + self.prefix_separator + spliced
+        return self.stem + "".join(self.suffixes) + self.prefix + spliced
 
     def as_regex(self) -> str:
         """Get a regex pattern to match paths in this sequence."""
@@ -279,7 +267,4 @@ class RangesEndName:
             to_splice, [re.escape(x) for x in self.inter_ranges]
         )
 
-        return (
-            re.escape(self.stem + "".join(self.suffixes) + self.prefix_separator)
-            + spliced
-        )
+        return re.escape(self.stem + "".join(self.suffixes) + self.prefix) + spliced

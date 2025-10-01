@@ -95,7 +95,7 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
         )
         new = self._parsed.__class__(
             stem=self._parsed.stem,
-            prefix_separator=self._parsed.prefix_separator,  # type: ignore[arg-type]
+            prefix=self._parsed.prefix,  # type: ignore[arg-type]
             ranges=new_ranges,
             inter_ranges=self._parsed.inter_ranges,
             postfix=self._parsed.postfix,  # type: ignore[arg-type]
