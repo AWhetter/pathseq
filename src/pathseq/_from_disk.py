@@ -13,6 +13,7 @@ from ._ast import (
 )
 from ._error import IncompleteDimensionError
 from ._file_num_seq import FileNumSequence
+from ._formatter import GlobFormatter, RegexFormatter
 
 
 def find_on_disk(
@@ -28,10 +29,11 @@ def find_on_disk(
         a multi-dimension sequence does not have a consistent number of
         files in each other dimension.
     """
-    num_ranges = len(parsed.ranges)
+    num_ranges = len(parsed.ranges.ranges)
     file_str_sets: list[set[str]] = [set() for _ in range(num_ranges)]
-    paths = path.parent.glob(parsed.as_glob())
-    pattern = re.compile(parsed.as_regex())
+    glob_pattern = GlobFormatter().format(parsed)
+    paths = path.parent.glob(glob_pattern)
+    pattern = re.compile(RegexFormatter().format(parsed))
     num_paths = 0
     for found in paths:
         match = pattern.fullmatch(str(found.name))

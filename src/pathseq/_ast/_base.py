@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 import dataclasses
 from dataclasses import dataclass
 import decimal
@@ -46,34 +46,40 @@ def stringify_parsed_sequence(seq: Any) -> str:
     return result
 
 
-def splice_numbers_onto_ranges(
-    numbers: tuple[int | Decimal, ...],
-    ranges: Sequence[PaddedRange[int] | PaddedRange[Decimal]],
-    inter_ranges: Sequence[str],
-) -> str:
-    len_numbers = len(numbers)
-    expected_numbers = len(ranges)
-    if len_numbers != expected_numbers:
-        raise TypeError(f"Expected {expected_numbers} file numbers. Got {len_numbers}")
-
-    assert len(inter_ranges) == expected_numbers - 1
-
-    to_splice: list[str] = []
-    for number, _range in zip(numbers, ranges):
-        to_splice.append(_range.format(number))
-
-    return splice_strings_onto_ranges(to_splice, inter_ranges)
-
-
 def splice_strings_onto_ranges(
-    strings: Sequence[str], inter_ranges: Sequence[str]
+    strings: Iterable[str], inter_ranges: Iterable[str]
 ) -> str:
-    assert len(strings) == len(inter_ranges) + 1
+    """Format the given range strings and inter-range strings together.
 
-    spliced = itertools.chain.from_iterable(
-        itertools.zip_longest(strings, inter_ranges, fillvalue="")
+    Raises:
+        TypeError: If the given number of strings does not match
+        the number of inter-range strings minus one.
+    """
+    result = ""
+
+    strs = iter(strings)
+    for inter_range in inter_ranges:
+        try:
+            result += next(strs)
+        except StopIteration:
+            break
+
+        result += inter_range
+    else:
+        try:
+            result += next(strs)
+        except StopIteration:
+            pass
+        else:
+            try:
+                next(strs)
+            except StopIteration:
+                return result
+
+    raise TypeError(
+        "The number of inter-range strings given does not match"
+        " the number of range strings given minus one."
     )
-    return "".join(spliced)
 
 
 @dataclass(frozen=True)
@@ -102,35 +108,31 @@ class PaddedRange(Generic[FileNumT]):
 
         return pad(number, len(pad_format))
 
-    def as_regex(self) -> str:
-        """Get a regex pattern to match range strings with this range's padding rules."""
-        if self.pad_format == "<UVTILE>":
-            return r"u\d+_v\d+"
-
-        pad_format = self.pad_format
-        if self.pad_format == "<UDIM>":
-            pad_format = "####"
-
-        if "." in pad_format:
-            head, tail = pad_format.split(".", 1)
-            tail_re = r"\.[0-9]*" + r"[0-9]" * len(tail)
-        else:
-            head = pad_format
-            tail_re = ""
-            if self.has_subsamples(self):
-                tail_re = r"(\.[0-9]+)?"
-
-        positive_re = r"([1-9][0-9]*)?" + r"[0-9]" * len(head)
-        negative_re = r"-([1-9][0-9]*)?" + r"[0-9]" * (len(head) - 1)
-
-        return f"({positive_re}|{negative_re}){tail_re}"
-
     @staticmethod
     def has_subsamples(
         range_: PaddedRange[int] | PaddedRange[decimal.Decimal],
     ) -> TypeGuard[PaddedRange[decimal.Decimal]]:
         """Check whether this file number sequence contains any decimal numbers."""
         return FileNumSequence[Any].has_subsamples(range_.file_nums)
+
+
+@dataclass(frozen=True)
+class Ranges:
+    ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
+    inter_ranges: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if len(self.inter_ranges) != len(self.ranges) - 1:
+            raise ValueError(
+                "The number of inter-range strings given does not match"
+                " the number of range strings minus one."
+            )
+
+    def __str__(self) -> str:
+        return splice_strings_onto_ranges(
+            (str(range_) for range_ in self.ranges),
+            self.inter_ranges,
+        )
 
 
 # The MIT License (MIT)

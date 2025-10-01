@@ -13,6 +13,7 @@ from ._file_num_seq import FileNumSequence
 from ._ast import (
     PaddedRange,
     ParsedSequence,
+    Ranges,
 )
 
 _PREFIX_SEPARATORS = {".", "_"}
@@ -294,8 +295,7 @@ class _SeqParser(StateMachine):
         return ParsedSequence(
             stem=self._stem,
             prefix=self._prefix,
-            ranges=tuple(self._ranges),
-            inter_ranges=tuple(self._inter_ranges),
+            ranges=Ranges(tuple(self._ranges), tuple(self._inter_ranges)),
             suffixes=self._suffixes,
         )
 

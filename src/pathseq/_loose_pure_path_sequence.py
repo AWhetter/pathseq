@@ -6,10 +6,10 @@ from typing_extensions import (
     Self,  # PY311
 )
 
-from ._ast import PaddedRange
+from ._ast import PaddedRange, ParsedLooseSequence, Ranges
 from ._base import BasePurePathSequence, PurePathT_co
 from ._file_num_seq import FileNumSequence
-from ._parse_loose_path_sequence import parse_path_sequence, ParsedLooseSequence
+from ._parse_loose_path_sequence import parse_path_sequence
 
 
 class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
@@ -84,20 +84,19 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
             TypeError: If the given number of file number sequences does not match
                 the sequence's number of file number sequences.
         """
-        if len(seqs) != len(self._parsed.ranges):
+        if len(seqs) != len(self._parsed.ranges.ranges):
             raise TypeError(
-                f"Need {len(self._parsed.ranges)} sequences, but got {len(seqs)}"
+                f"Need {len(self._parsed.ranges.ranges)} sequences, but got {len(seqs)}"
             )
 
         new_ranges = tuple(
             PaddedRange(seq, range_.pad_format)
-            for seq, range_ in zip(seqs, self._parsed.ranges)
+            for seq, range_ in zip(seqs, self._parsed.ranges.ranges)
         )
         new = self._parsed.__class__(
             stem=self._parsed.stem,
             prefix=self._parsed.prefix,  # type: ignore[arg-type]
-            ranges=new_ranges,
-            inter_ranges=self._parsed.inter_ranges,
+            ranges=Ranges(new_ranges, self._parsed.ranges.inter_ranges),
             postfix=self._parsed.postfix,  # type: ignore[arg-type]
             suffixes=self._parsed.suffixes,
         )

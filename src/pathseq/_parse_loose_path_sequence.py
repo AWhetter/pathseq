@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from decimal import Decimal
 import enum
 import re
-from typing import TypeAlias, Union
 
 from statemachine import StateMachine, State
 
@@ -13,6 +12,8 @@ from ._error import NotASequenceError, ParseError
 from ._file_num_seq import FileNumSequence
 from ._ast import (
     PaddedRange,
+    ParsedLooseSequence,
+    Ranges,
     RangesEndName,
     RangesInName,
     RangesStartName,
@@ -53,8 +54,6 @@ RANGES_RE = re.compile(
     """,
     flags=RANGE_RE.flags | PAD_FORMAT_RE.flags | re.VERBOSE,
 )
-
-ParsedLooseSequence: TypeAlias = Union[RangesStartName, RangesInName, RangesEndName]
 
 
 class TokenType(enum.Enum):
@@ -502,8 +501,7 @@ class SeqParser(StateMachine):
         return self._range_type(
             stem=self._stem,
             prefix=self._prefix,  # type: ignore[arg-type]
-            ranges=tuple(self._ranges),
-            inter_ranges=tuple(self._inter_ranges),
+            ranges=Ranges(tuple(self._ranges), tuple(self._inter_ranges)),
             postfix=self._postfix,  # type: ignore[arg-type]
             suffixes=self._suffixes,
         )

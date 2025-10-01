@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import Decimal
-import re
-from typing import Literal, Self
+from typing import Literal, Self, TypeAlias, Union
 
 from ._base import (
     non_recursive_asdict,
-    splice_numbers_onto_ranges,
-    splice_strings_onto_ranges,
     stringify_parsed_sequence,
-    PaddedRange,
+    Ranges,
 )
 
 
@@ -19,8 +15,7 @@ class RangesStartName:
     """A parsed loose path sequence where the range starts a path's name."""
 
     prefix: Literal[""]
-    ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
-    inter_ranges: tuple[str, ...]
+    ranges: Ranges
     postfix: str
     stem: str
     suffixes: tuple[str, ...]
@@ -65,39 +60,6 @@ class RangesStartName:
 
         return self
 
-    def format(self, *numbers: int | Decimal) -> str:
-        """Format the sequence with given numbers using each range's padding rules.
-
-        Raises:
-            TypeError: If the number of numbers given does not match the
-            number of ranges to be formatted.
-        """
-        spliced = splice_numbers_onto_ranges(
-            numbers,
-            self.ranges,
-            self.inter_ranges,
-        )
-
-        return spliced + self.postfix + self.stem + "".join(self.suffixes)
-
-    def as_glob(self) -> str:
-        """Get a glob pattern to match paths in this sequence."""
-        to_splice = "*" * len(self.ranges)
-        spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
-
-        return spliced + self.postfix + self.stem + "".join(self.suffixes)
-
-    def as_regex(self) -> str:
-        """Get a regex pattern to match paths in this sequence."""
-        to_splice = [
-            f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
-        ]
-        spliced = splice_strings_onto_ranges(
-            to_splice, [re.escape(x) for x in self.inter_ranges]
-        )
-
-        return spliced + re.escape(self.postfix + self.stem + "".join(self.suffixes))
-
 
 @dataclass(frozen=True)
 class RangesInName:
@@ -105,8 +67,7 @@ class RangesInName:
 
     stem: str
     prefix: str
-    ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
-    inter_ranges: tuple[str, ...]
+    ranges: Ranges
     postfix: str
     suffixes: tuple[str, ...]
 
@@ -152,43 +113,6 @@ class RangesInName:
 
         return self
 
-    def format(self, *numbers: int | Decimal) -> str:
-        """Format the sequence with given numbers using each range's padding rules.
-
-        Raises:
-            TypeError: If the number of numbers given does not match the
-            number of ranges to be formatted.
-        """
-        spliced = splice_numbers_onto_ranges(
-            numbers,
-            self.ranges,
-            self.inter_ranges,
-        )
-
-        return self.stem + self.prefix + spliced + self.postfix + "".join(self.suffixes)
-
-    def as_glob(self) -> str:
-        """Get a glob pattern to match paths in this sequence."""
-        to_splice = "*" * len(self.ranges)
-        spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
-
-        return self.stem + self.prefix + spliced + self.postfix + "".join(self.suffixes)
-
-    def as_regex(self) -> str:
-        """Get a regex pattern to match paths in this sequence."""
-        to_splice = [
-            f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
-        ]
-        spliced = splice_strings_onto_ranges(
-            to_splice, [re.escape(x) for x in self.inter_ranges]
-        )
-
-        return (
-            re.escape(self.stem + self.prefix)
-            + spliced
-            + re.escape(self.postfix + "".join(self.suffixes))
-        )
-
 
 @dataclass(frozen=True)
 class RangesEndName:
@@ -197,8 +121,7 @@ class RangesEndName:
     stem: str
     suffixes: tuple[str, ...]
     prefix: str
-    ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
-    inter_ranges: tuple[str, ...]
+    ranges: Ranges
     postfix: Literal[""]
 
     def __str__(self) -> str:
@@ -236,35 +159,5 @@ class RangesEndName:
 
         return self
 
-    def format(self, *numbers: int | Decimal) -> str:
-        """Format the sequence with given numbers using each range's padding rules.
 
-        Raises:
-            TypeError: If the number of numbers given does not match the
-            number of ranges to be formatted.
-        """
-        spliced = splice_numbers_onto_ranges(
-            numbers,
-            self.ranges,
-            self.inter_ranges,
-        )
-
-        return self.stem + "".join(self.suffixes) + self.prefix + spliced
-
-    def as_glob(self) -> str:
-        """Get a glob pattern to match paths in this sequence."""
-        to_splice = "*" * len(self.ranges)
-        spliced = splice_strings_onto_ranges(to_splice, self.inter_ranges)
-
-        return self.stem + "".join(self.suffixes) + self.prefix + spliced
-
-    def as_regex(self) -> str:
-        """Get a regex pattern to match paths in this sequence."""
-        to_splice = [
-            f"(?P<range{i}>{range_.as_regex()})" for i, range_ in enumerate(self.ranges)
-        ]
-        spliced = splice_strings_onto_ranges(
-            to_splice, [re.escape(x) for x in self.inter_ranges]
-        )
-
-        return re.escape(self.stem + "".join(self.suffixes) + self.prefix) + spliced
+ParsedLooseSequence: TypeAlias = Union[RangesStartName, RangesInName, RangesEndName]

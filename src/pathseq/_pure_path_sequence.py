@@ -6,7 +6,7 @@ from typing_extensions import (
     Self,  # PY311
 )
 
-from ._ast import PaddedRange, ParsedSequence
+from ._ast import PaddedRange, ParsedSequence, Ranges
 from ._base import BasePurePathSequence, PathT_co
 from ._file_num_seq import FileNumSequence
 from ._parse_path_sequence import parse_path_sequence
@@ -40,20 +40,19 @@ class PurePathSequence(BasePurePathSequence[PathT_co]):
             TypeError: If the given number of file number sequences does not match
                 the sequence's number of file number sequences.
         """
-        if len(seqs) != len(self._parsed.ranges):
+        if len(seqs) != len(self._parsed.ranges.ranges):
             raise TypeError(
-                f"Need {len(self._parsed.ranges)} sequences, but got {len(seqs)}"
+                f"Need {len(self._parsed.ranges.ranges)} sequences, but got {len(seqs)}"
             )
 
         new_ranges = tuple(
             PaddedRange(seq, range_.pad_format)
-            for seq, range_ in zip(seqs, self._parsed.ranges)
+            for seq, range_ in zip(seqs, self._parsed.ranges.ranges)
         )
         new = self._parsed.__class__(
             self._parsed.stem,
             self._parsed.prefix,
-            new_ranges,
-            self._parsed.inter_ranges,
+            Ranges(new_ranges, self._parsed.ranges.inter_ranges),
             self._parsed.suffixes,
         )
         return self.__class__(self._path.with_name(str(new)))

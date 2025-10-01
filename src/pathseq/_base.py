@@ -15,11 +15,17 @@ from typing_extensions import (
     TypeAlias,  # PY310
 )
 
-from ._ast import ParsedSequence, RangesEndName, RangesInName, RangesStartName
+from ._ast import (
+    ParsedLooseSequence,
+    ParsedSequence,
+    RangesEndName,
+    RangesInName,
+    RangesStartName,
+)
 from ._error import ParseError
 from ._file_num_seq import FileNumSequence
 from ._from_disk import find_on_disk
-from ._parse_loose_path_sequence import ParsedLooseSequence
+from ._formatter import FileNumberFormatter, RegexFormatter
 
 Segment: TypeAlias = Union[str, os.PathLike[str]]
 PurePathT_co = TypeVar(
@@ -389,7 +395,7 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         if not self:
             raise IndexError("Path sequence is empty so index is out of range")
 
-        file_num_seqs = [x.file_nums for x in self._parsed.ranges]
+        file_num_seqs = [x.file_nums for x in self._parsed.ranges.ranges]
         start = index
         if start < 0:
             start += len(self)
@@ -406,7 +412,8 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
 
         assert start == 0
         file_nums = [
-            x.file_nums[i] for x, i in zip(self._parsed.ranges, reversed(indexes))
+            x.file_nums[i]
+            for x, i in zip(self._parsed.ranges.ranges, reversed(indexes))
         ]
         return self.format(*file_nums)
 
@@ -415,13 +422,13 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         if not isinstance(item, self._pathlib_type):
             return False
 
-        pattern = re.compile(self._parsed.as_regex())
+        pattern = re.compile(RegexFormatter().format(self._parsed))
 
         match = pattern.fullmatch(str(item.name))
         if not match:
             return False
 
-        for i, range_ in enumerate(self._parsed.ranges):
+        for i, range_ in enumerate(self._parsed.ranges.ranges):
             group_name = f"range{i}"
             group = match.group(group_name)
             assert isinstance(group, str), "Got an unexpected type from regex group"
@@ -456,7 +463,7 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         """
         result = 1
 
-        for x in self._parsed.ranges:
+        for x in self._parsed.ranges.ranges:
             result *= len(x.file_nums)
 
         return result
@@ -474,7 +481,7 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
             >>> p.format(5)
             PurePath('images.5.exr')
         """
-        name = self._parsed.format(*numbers)
+        name = FileNumberFormatter(*numbers).format(self._parsed)
         return self._path.with_name(name)
 
     @property
@@ -483,9 +490,11 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
     ) -> tuple[FileNumSequence[int] | FileNumSequence[Decimal], ...]:
         """All file number sequences in the final path component."""
         ranges = tuple(
-            x.file_nums for x in self._parsed.ranges if not isinstance(x.file_nums, str)
+            x.file_nums
+            for x in self._parsed.ranges.ranges
+            if not isinstance(x.file_nums, str)
         )
-        if len(ranges) != len(self._parsed.ranges):
+        if len(ranges) != len(self._parsed.ranges.ranges):
             raise TypeError(
                 "Cannot get the file number sequences of a path sequence with incomplete ranges."
             )
@@ -505,7 +514,7 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
 
     def has_subsamples(self) -> bool:
         """Check whether this path sequences contains any decimal file numbers."""
-        return any(r.has_subsamples(r) for r in self._parsed.ranges)
+        return any(r.has_subsamples(r) for r in self._parsed.ranges.ranges)
 
 
 PathT_co = TypeVar("PathT_co", covariant=True, bound=pathlib.Path)
