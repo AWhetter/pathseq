@@ -29,7 +29,7 @@ from ._formatter import FileNumberFormatter, RegexFormatter
 
 Segment: TypeAlias = Union[str, os.PathLike[str]]
 PurePathT_co = TypeVar(
-    "PurePathT_co", covariant=True, bound=pathlib.PurePath, default=pathlib.PurePath
+    "PurePathT_co", covariant=True, bound=pathlib.PurePath,
 )
 T = TypeVar("T", ParsedSequence, RangesEndName, RangesInName, RangesStartName)
 

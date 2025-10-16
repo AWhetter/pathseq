@@ -1,5 +1,6 @@
+**************************
 Format of Sequence Strings
-==========================
+**************************
 
 PathSeq's chosen sequence format is a simple, unambiguous format that maximises
 compatibility across VFX DCCs (Digital Content Creation software).
@@ -8,18 +9,22 @@ compatibility across VFX DCCs (Digital Content Creation software).
 
    See :ref:`adr-001` for more information about why this format was chosen.
 
+
 Path Sequences
---------------
+==============
 
 Like in :mod:`pathlib`,
 the name of a path sequence is the final component in a path.
 
-.. figure:: /_static/name.svg
-   :figclass: solid-background
-   :width: 90%
+.. code-block:: text
 
+   /directory/ file.1001-1010#.tar.gz
+              ├──────────────────────┤
+              │         name         │
+              └──────────────────────┘
 
-A sequence's name represents the file names of all files in the sequence.
+Unlike a :class:`pathlib.Path`, a path sequence's name
+represents the name of not one file but of all the files in the sequence.
 The name has four components:
 
 * The stem
@@ -27,148 +32,123 @@ The name has four components:
 * The ranges
 * The suffixes
 
-.. figure:: /_static/name_breakdown.svg
-   :figclass: solid-background
-   :width: 90%
+.. code-block:: text
+
+   /directory/ file . 1001-1010# .tar.gz
+             ┌┴────┼─┼──────────┼───────┴┐
+             │    ┌┘ └───┐      │        │
+             │stem│prefix│ranges│suffixes│
+             ├────┴──────┴──────┴────────┤
+             │           name            │
+             └───────────────────────────┘
+
+Supporting multiple ranges in a sequence requires an additional component:
+an inter-range separator.
+
+.. code-block:: text
+
+   /directory/ file . 1001-1002<UDIM> _ 1001-1010# .tar.gz
+         ┌────┴────┼─┼───────────────┼─┼──────────┼───────┴┐
+         │    ┌────┘ │          ┌────┘ └────┐     │        │
+         │stem│prefix│   range  │inter-range│range│suffixes│
+         └────┴──────┼──────────┴───────────┴─────┼────────┘
+                     │           ranges           │
+                     └────────────────────────────┘
+
+
+Stem
+----
+
+The stem is the name of a path sequence, without the prefix, ranges, and suffixes.
+A non-empty stem MUST be present in the name of a path sequence.
+
+The stem MUST NOT contain a valid :ref:`range string <range_string_format>`,
+or by definition it would be considered part of the ranges.
+
+The stem MUST NOT end with a "``-``" or digit,
+otherwise there is no clear end to the stem and the start of the ranges.
+For example, in ``file-1.1-5#.tar.gz`` it is unclear whether the stem and range are
+``file`` and ``-1.1-5#`` respectively, or ``file-1`` and ``1-5#``.
+
+
+Prefix
+------
+
+The name of a path sequence MAY contain a single prefix character
+that separates the stem from the ranges.
+
+The prefix character MUST be one of "``.``" or "``_``".
 
 .. tip::
 
-   Including a prefix as ``.`` is recommended for best compatibility with VFX software.
+   Including a prefix as "``.``" is RECOMMENDED for best compatibility with VFX software.
 
    .. code-block:: text
 
       file.1001-1010#.exr
       file.1001-1010#.tar.gz
 
-Supporting multiple ranges in a sequence requires an additional component:
-an inter-range separator.
-
-.. TODO: Add more detail about what's valid as an inter-range string.
-
-.. figure:: /_static/multi_range_breakdown.svg
-   :figclass: solid-background
-   :width: 90%
-
-.. tip::
-
-   Using ``_`` as an inter-range separator is recommended for best
-   compatibility with VFX software.
-   For the same reason, it is recommended to place the frame number after UDIMs
-   for animated texture sequences.
-
-   .. code-block:: text
-
-      file.1-5#_1001-1010#.vdb
-      file.1001-1005<UDIM>_1001-1010#.exr
-
-.. warning::
-
-   It is recommended to not use ``.`` as an inter-range separator,
-   so that it is clearer that there are two ranges in the resulting file paths
-   rather than a single range with subframes.
-
-   .. code-block:: text
-
-      # Good
-      file.1011-1019<UDIM>_1-5#.tar.gz  # file.1011_1.tar.gz
-      file.1011-1019<UDIM>_1-5x0.5#.#.tar.gz  # file.1011_1.5.tar.gz
-
-      # Bad
-      file.1011-1019<UDIM>.1-5#.tar.gz
-      # In file.1011.5.tar.gz, it is unclear if there's numbers from two ranges (1001 and 5),
-      # or a single subframe (1011.5).
-      file.1011-1019<UDIM>1-5#.tar.gz
-      # In file.10115.tar.gz, it looks like there is only a single frame number.
-
-
-Specification
-~~~~~~~~~~~~~
-
-File sequences are parsed by a two step process consisting of tokenisation
-and parsing those tokens with a
-`Deterministic Finite State Machine <https://en.wikipedia.org/wiki/Deterministic_finite_automaton>`_.
-That state machine is as follows:
-
-.. figure:: /_static/format.svg
-   :figclass: solid-background
-   :width: 90%
-
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     oval "stem" fit
-
-  Similar to :attr:`python:pathlib.PurePath.stem`.
-  This is the final path component without the ranges and all suffixes.
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     box "prefix" fit
-
-  An optional ``.`` or ``_`` that separates the stem from the ranges.
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     oval "range" fit
-
-  A range, as defined in `Frame Ranges`_.
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     box "inter-range" fit
-
-  An arbitrary string that separates the ranges.
-  Typically this is a ``_``, but may be more complex.
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     oval "suffixes" fit
-
-  The file suffixes, including the leading ``.``.
-
 
 .. _range_string_format:
 
-Frame Ranges
-------------
+Range
+-----
 
-Frame ranges consist of the range string, and the pad string.
+A range MUST be present in the name of a path sequence.
+A range consists of the ranges string, and the padding.
 
-.. figure:: /_static/range_string_breakdown.svg
-   :figclass: solid-background
-   :width: 50%
+.. code-block:: text
 
-**Range strings**:
+    1001-1010,1020-1030 ####
+   ├───────────────────┼────┴──┐
+   │      ranges       │padding│
+   └───────────────────┴───────┘
 
-Range string consist of comma separated ranges,
-where each range is of the format ``START-ENDxSTEP``,
-where ``END`` is inclusive and ``xSTEP`` is optional.
 
-So the range string ``1-5`` represents the numbers 1, 2, 3, 4, 5.
-The range string ``1-5x2`` represents the numbers 1, 3, 5..
+Ranges String
+~~~~~~~~~~~~~
 
-**Pad string**:
+The ranges string is OPTIONAL.
+When no ranges string is present, the path sequence is considered empty.
+
+A ranges string consists of comma separated range strings,
+where each range string is of the format ``START-ENDxSTEP``.
+``START`` is REQUIRED, and ``END`` and ``xSTEP`` are OPTIONAL.
+
+``START`` is the first value in the range,
+``END`` is the last value in the range (in other words, ``END`` is inclusive),
+and ``STEP`` represents the difference between numbers in the range.
+When ``STEP`` is not present, it defaults to 1.
+
+More formally, a range string represents a
+`finite Arithmetic Progression <https://en.wikipedia.org/wiki/Arithmetic_progression>`_.
+
+So the range string "``1-5``" represents the numbers 1, 2, 3, 4, 5.
+The range string "``1-5x2``" represents the numbers 1, 3, 5.
+
+
+Padding
+~~~~~~~
+
+The padding is a REQUIRED part of the ranges.
 
 A pad string represents how the numbers in the range should be formatted
 when putting a number from the range into a file path.
 
-The most basic form of a pad string is a string of ``#`` characters.
-The number of ``#`` represents the minimum with of the formatted number.
+A pad string can be a string of "``#``" characters, or a MaterialX token.
+
+
+``#`` characters
+^^^^^^^^^^^^^^^^
+
+The most basic form of a pad string is a string of "``#``" characters.
+The number of "``#``" represents the minimum with of the formatted number.
 If the stringified number is smaller than the width,
 then it will be zero padded.
 If the stringified number is larger than the width,
 it will exceed the given width.
-A ``-`` sign to indicate a negative number is counted in the width.
+
+A "``-``" sign, to indicate a negative number, is counted in the width.
 
 .. list-table::
 
@@ -181,7 +161,7 @@ A ``-`` sign to indicate a negative number is counted in the width.
    * - ``-1####``
      - ``-001``
 
-.. warning::
+.. note::
 
    Some DCCs support the use of the "@" character as a single digit pad string.
    PathSeq does not support this character because it has conflicting definitions
@@ -189,6 +169,9 @@ A ``-`` sign to indicate a negative number is counted in the width.
    Users are encouraged to preprocess "@" characters out of sequence strings
    passed to PathSeq if this character may be present as a pad character.
 
+
+MaterialX tokens
+^^^^^^^^^^^^^^^^
 
 Pad strings can also use MaterialX tokens (https://materialx.org/Specification.html).
 The "Filename Substitutions" section of the specification
@@ -202,7 +185,7 @@ describes two tokens for representing UDIMs in file names.
   As an example, ``texture.1001-1010<UDIM>_1001-1010####.tex``
   is clearer than ``texture.1001-1010####_1001-1010####.tex``.
 
-* ``<UVTILE>``: Originating from Mudbox, this token represents the string
+* ``<UVTILE>``: This token represents the string
   ":math:`\text{u}U\text{_v}V`", where :math:`U` is :math:`1+` the integer portion of the u coordinate,
   and :math:`V` is :math:`1+` the integer portion of the v coordinate.
 
@@ -223,23 +206,86 @@ describes two tokens for representing UDIMs in file names.
 
 .. tip::
 
-   Using ``<UDIM>`` is recommended over ``<UVTILE>`` for best compatibility with VFX software.
+   Using ``<UDIM>`` is RECOMMENDED over ``<UVTILE>`` for best compatibility with VFX software.
 
 
-Grammar
-~~~~~~~
+.. _inter_range_separator:
 
-Frame ranges are simple enough to form an unambiguous
+Inter-range Separator
+---------------------
+
+An inter-range separator separates one range from another in a multi-range path sequence.
+A non-empty inter-range separator MUST exist between each range.
+
+An inter-range separator MUST NOT be a single "``.``" character,
+so that it is clear when there are two ranges in the resulting file paths
+rather than a single range with subframes.
+
+.. code-block:: text
+
+   # Good
+   file.1011-1019<UDIM>_1-5#.tar.gz  # file.1011_1.tar.gz
+   file.1011-1019<UDIM>_1-5x0.5#.#.tar.gz  # file.1011_1.5.tar.gz
+
+   # Bad
+   file.1011-1019<UDIM>.1-5#.tar.gz
+   # In file.1011.5.tar.gz, it is unclear if there's numbers from two ranges (1001 and 5),
+   # or a single subframe (1011.5).
+   file.1011-1019<UDIM>1-5#.tar.gz
+   # In file.10115.tar.gz, it looks like there is only a single frame number.
+
+.. tip::
+
+   Using ``_`` as an inter-range separator is recommended for best
+   compatibility with VFX software.
+   For the same reason, it is recommended to place the frame number after UDIMs
+   for animated texture sequences.
+
+   .. code-block:: text
+
+      file.1-5#_1001-1010#.vdb
+      file.1001-1005<UDIM>_1001-1010#.exr
+
+An inter-range separator MUST NOT contain a valid :ref:`range string <range_string_format>`,
+or by definition it would itself be a range.
+
+An inter-range separator MUST NOT end with a "``-``" or digit,
+otherwise there is no clear end to the separator and the start of the next range.
+
+
+Suffixes
+--------
+
+Suffixes MUST be present in the name of the sequence.
+The file suffixes represent the file extension of the files in the path sequence.
+The suffixes include the leading "``.``".
+
+
+Parsing
+-------
+
+File sequences are parsed by a two step process consisting of tokenisation
+and parsing those tokens with a
+`Deterministic Finite State Machine <https://en.wikipedia.org/wiki/Deterministic_finite_automaton>`_.
+That state machine is as follows:
+
+.. figure:: /_static/format.svg
+   :figclass: solid-background
+   :width: 90%
+
+
+Range Grammar
+-------------
+
+Ranges are simple enough to form an unambiguous
 `Context Free Grammar <https://en.wikipedia.org/wiki/Context-free_grammar>`_.
 
 .. productionlist:: frame_ranges
    ranges: range ("," range)*
    range: FILE_NUM ["-" FILE_NUM ["x" NUM]]
    FILE_NUM: "-"? NUM
-   NUM: /
-       (0|[1-9][0-9]*)       # the digits
-       (\.0|\.[0-9]*[1-9])?  # the subsamples
-   /x
+   NUM: (0|[1-9][0-9]*)
+      : (\.0|\.[0-9]*[1-9])?
 
 
 Compatibility with VFX Software
@@ -343,15 +389,16 @@ Notes:
 .. [#] fcheck supports writing sequences as ``file#.ext`` and ``#file.ext``,
    but ``file.#.ext`` format must be used for pathseq's strict format.
 
-Loose Format
-------------
+
+Loose Path Sequences
+====================
 
 The PathSeq API has the concept of a "loose" format.
 Whereas the normal sequence string format maximises simplicity
 and compatibility across VFX software,
 the loose format prioritises compatibility in parsing more sequence strings.
 This compatibility comes at a cost of complexity,
-and a loose sequence string will likely be less compatible across VFX software.
+and a loose sequence string will likely be cross-compatible between VFX software.
 
 The loose format is a flexible format that is useful
 when parsing sequence strings from unknown sources.
@@ -361,64 +408,157 @@ This format can be useful when there isn't a guarantee that the
 sequence string being parsed is in the simple format.
 
 In `Path Sequences`_ we saw that in the strict format,
-a sequence's name has four components:
+a sequence's name has five components:
 the stem, an optional prefix, the ranges, inter-range strings, and the suffixes.
-The loose format has an additional component, the postfix,
+The loose format has an additional component, the OPTIONAL postfix,
 to support additional characters after the ranges but before the next component.
 
-.. figure:: /_static/loose_name_breakdown.svg
-   :figclass: solid-background
-   :width: 90%
+.. code-block:: text
 
-In addition, ranges can be placed anywhere in the sequence string.
-The placement of the range in the strings creates three varieties of loose sequence strings,
-based on where the ranges are placed in the string.
+   /directory/ file . 1001-1002<UDIM> _ 1001-1010# _final .tar.gz
+         ┌────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴─┐
+         │    ┌────┘ │          ┌────┘ └────┐     │      └┐        │
+         │stem│prefix│   range  │inter-range│range│postfix│suffixes│
+         └────┴──────┼──────────┴───────────┴─────┼───────┴────────┘
+                     │           ranges           │
+                     └────────────────────────────┘
 
-The ranges can be at the start of the sequence string:
+In addition, ranges can be placed anywhere in a loose sequence string.
+The placement of the ranges in the strings creates three varieties of loose sequence strings,
+based on where the ranges are placed.
 
-.. figure:: /_static/starts_name_breakdown.svg
-   :figclass: solid-background
-   :width: 90%
+The ranges can be at the start of the name:
 
-The ranges can be inside the sequence string:
+.. code-block:: text
 
-.. figure:: /_static/loose_name_breakdown.svg
-   :figclass: solid-background
-   :width: 90%
+   /directory/ 1001-1002<UDIM> _ 1001-1010# _ filename .tar.gz
+              ├───────────────┼─┼──────────┼─┼────────┼───────┴──┐
+              │          ┌────┘ └────┐     │ └─────┐  └─┐        │
+              │   range  │inter-range│range│postfix│stem│suffixes│
+              ├──────────┴───────────┴─────┼───────┴────┴────────┘
+              │           ranges           │
+              └────────────────────────────┘
 
-Finally, the ranges can be at the end of the sequence string:
+The ranges can be inside the name:
 
-.. figure:: /_static/ends_name_breakdown.svg
-   :figclass: solid-background
-   :width: 90%
+.. code-block:: text
+
+   /directory/ file . 1001-1002<UDIM> _ 1001-1010# _final .tar.gz
+         ┌────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴─┐
+         │    ┌────┘ │          ┌────┘ └────┐     │      └┐        │
+         │stem│prefix│   range  │inter-range│range│postfix│suffixes│
+         └────┴──────┼──────────┴───────────┴─────┼───────┴────────┘
+                     │           ranges           │
+                     └────────────────────────────┘
+
+Finally, the ranges can be at the end of the name:
+
+.. code-block:: text
+
+   /directory/ file .tar.gz . 1001-1002<UDIM> _ 1001-1010#
+        ┌─────┴────┼───────┼─┼───────────────┼─┼──────────┤
+        │    ┌─────┘  ┌────┘ │          ┌────┘ └────┐     │
+        │stem│suffixes│prefix│   range  │inter-range│range│
+        └────┴────────┴──────┼──────────┴───────────┴─────┤
+                             │           ranges           │
+                             └────────────────────────────┘
 
 .. warning::
 
    Because the stem or suffix are allowed to be empty, the loose format is ambiguous.
    For example, ``#.tar.gz`` could be represented as a sequence where
    the range starts the string and has a blank stem,
-   or the range starts the string and has a stem of "tar",
+   or the range starts the string and has a stem of "tar" and prefix of ".",
    or the range is in the string and has a blank stem and prefix.
 
    Therefore the loose format can only make a best guess at how to interpret a sequence string.
    The strict format can be parsed consistently.
 
-.. attention:: Hidden file sequences (starting with .)
 
-   File sequences starting with a "." have unintuitive behaviour.
-   For example:
+Stem
+----
+
+The stem is the name of a path sequence, without the prefix, ranges, and suffixes.
+A non-empty stem MAY be present in the name of a path sequence.
+
+The stem MUST NOT contain a valid :ref:`range string <range_string_format>`,
+or by definition it would be considered part of the ranges.
+
+The stem MAY start or end with a "``-``" or digit,
+but this is NOT RECOMMENDED because it creates abiguity when parsing
+a file in the sequence.
+
+.. note::
+
+   Path sequences that represent a sequence of hidden files (files starting with a ``.``)
+   are interpreted as though the stem starts with "``.``".
+
+   In this example, where the ranges are in the name, the stem is ``.file``:
 
    .. code:: text
 
-      .1-5#file.ext
+      .file1-5#.ext
 
-   In this case, the range is considered "in" the string, where the "." is the stem.
+   In this example, where the ranges end the name, the stem is ``.tar``.
 
-   .. TODO: Maybe it should just be a prefix though?
+   .. code:: text
+
+      .tar.gz1-5#
 
 
-Specification
-~~~~~~~~~~~~~
+Prefix
+------
+
+Path sequences where the name starts with a range MUST NOT contain a prefix.
+Path sequences where the ranges exist inside or at the end of the name
+MAY contain a single prefix character.
+
+The prefix separates the ranges from the previous component in the name.
+
+The prefix character MUST be one of "``.``" or "``_``".
+
+
+Range
+-----
+
+A range MUST be present in the name of a path sequence.
+It follows the same format as for strict path sequences (see :ref:`range_string_format`).
+
+
+Inter-range Separator
+---------------------
+
+An inter-range separator separates one range from another in a multi-range path sequence.
+A non-empty inter-range separator MUST exist between each range.
+It follows the same format as for strict paths sequences
+(see :ref:`inter_range_separator`),
+except that an inter-range separator MAY be a single "``.``" character.
+However, this is NOT RECOMMENDED because it creates abiguity when parsing
+a file in the sequence.
+
+
+Postfix
+-------
+
+Path sequences where the name ends with a range MUST NOT contain a prefix.
+Path sequences where the ranges start or exist inside of the name
+MAY contain a single postfix character.
+
+The postfix separates the ranges from the next component in the name.
+
+The postfix character MUST be a "``_``".
+
+
+Suffixes
+--------
+
+Suffixes MAY be present in the name of the sequence.
+The file suffixes represent the file extension of the files in the path sequence.
+The suffixes include the leading "``.``".
+
+
+Parsing
+-------
 
 Like strict file sequences,
 loose file sequences are parsed by a two step process consisting of tokenisation
@@ -428,54 +568,3 @@ That state machine is as follows:
 
 .. figure:: /_static/adrs/all_formats.svg
    :figclass: solid-background
-
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     oval "stem" fit
-
-  Similar to :attr:`python:pathlib.PurePath.stem`.
-  This is the final path component without the ranges and all suffixes.
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     box "prefix" fit
-
-  An optional ``.`` or ``_`` that separates the stem or suffixes from the ranges.
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     oval "range" fit
-
-  A range, as defined in `Frame Ranges`_.
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     box "inter-range" fit
-
-  An arbitrary string that separates the ranges.
-  Typically this is a ``_``, but may be more complex.
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     box "postfix" fit
-
-  An optional ``.`` or ``_`` that separates the ranges from the stem or suffixes.
-* .. kroki::
-     :type: pikchr
-     :align: left
-     :class: legend-image solid-background
-
-     oval "suffixes" fit
-
-  The file suffixes, including the leading ``.``.

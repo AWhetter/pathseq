@@ -20,7 +20,6 @@ extensions = [
     "sphinx_design",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
-    "sphinxcontrib.kroki",
 ]
 
 templates_path = ["_templates"]
@@ -33,7 +32,6 @@ exclude_patterns = ["decisions/000-decision-record-template.rst"]
 html_theme = "furo"
 html_static_path = ["_static"]
 html_css_files = [
-    "kroki_lists.css",
     "solid_image_background.css",
 ]
 
