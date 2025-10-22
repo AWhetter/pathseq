@@ -636,7 +636,7 @@ Support for ranges existing anywhere other than before the suffix will be suppor
 because this is essential for pathseq to be adopted.
 Although increased complexity comes from this more flexible approach,
 it's complexity that users already need to be concious of.
-The pathseq documentation will encourage the usage of the simpler format where possible
+The pathseq documentation will encourage the usage of the simpler format where possible.
 If the API needs to be made more complex to support the more flexible approach,
 there will be "simple" classes and "loose" versions of those classes
 where the simple classes support the simpler sequence format

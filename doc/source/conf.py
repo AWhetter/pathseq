@@ -19,7 +19,9 @@ release = pathseq.__version__
 extensions = [
     "sphinx_design",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
     "sphinx.ext.todo",
+    "sphinx_toolbox.more_autodoc.typevars",
 ]
 
 templates_path = ["_templates"]
@@ -41,4 +43,13 @@ html_css_files = [
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
+}
+
+
+# -- Options for autodoc -----------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#configuration
+
+extensions.append("sphinx.ext.autodoc")
+autodoc_default_options = {
+    "member-order": "bysource",
 }

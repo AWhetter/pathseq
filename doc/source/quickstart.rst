@@ -163,9 +163,3 @@ Like :class:`pathlib.Path`, path sequences can be joined with a ``/``.
     >>> joined = seq.parent / PathSequence("image.1-5####.exr")
     >>> joined == seq
     True
-
-Type Checking
-=============
-
-* Type checking (has_subsamples)
-

@@ -1,0 +1,20 @@
+$boxwidth = 4cm
+down
+
+BPP: box "BasePurePathSequence" width $boxwidth
+arrow <- down
+BP: box "BasePathSequence" width $boxwidth
+
+move from BPP.w then down left
+box "PurePathSequence" width $boxwidth
+arrow from last box.n to BPP.w
+arrow <- from last box.s then down
+box "PathSequence" width $boxwidth
+arrow from last box.n to BP.w
+
+move from BPP.e then down right
+box "LoosePurePathSequence" width $boxwidth
+arrow from last box.n to BPP.e
+arrow <- from last box.s then down
+box "LoosePathSequence" width $boxwidth
+arrow from last box.n to BP.e

@@ -118,9 +118,9 @@ class FileNumSequence(Sequence[FileNumT]):
     """A sequence of file numbers.
 
     Warning:
-        The constructor is not considered public, and should not be used.
-        Instead, use the :meth:`~FileNumberSequence.from_str`
-        and :meth:`~FileNumberSequence.from_file_nums` class methods.
+        The constructor is not considered public.
+        Instead, use the :meth:`~FileNumSequence.from_str`
+        and :meth:`~FileNumSequence.from_file_nums` class methods.
     """
 
     def __init__(self, ranges: Iterable[ArithmeticSequence[FileNumT]]) -> None:
@@ -135,7 +135,7 @@ class FileNumSequence(Sequence[FileNumT]):
         """Parse a range string in a file number sequence.
 
         Args:
-            seq_str: The range string to parse (eg '1001-1005,1010-1015').
+            seq: The range string to parse (eg '1001-1005,1010-1015').
 
         Returns:
             The resulting file number sequence.

@@ -83,5 +83,6 @@ Documentation
     quickstart
     format
     user/index
+    api
     contributor
     decisions/index

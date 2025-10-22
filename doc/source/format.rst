@@ -10,6 +10,8 @@ compatibility across VFX DCCs (Digital Content Creation software).
    See :ref:`adr-001` for more information about why this format was chosen.
 
 
+.. _simple-format:
+
 Path Sequences
 ==============
 
@@ -70,6 +72,15 @@ otherwise there is no clear end to the stem and the start of the ranges.
 For example, in ``file-1.1-5#.tar.gz`` it is unclear whether the stem and range are
 ``file`` and ``-1.1-5#`` respectively, or ``file-1`` and ``1-5#``.
 
+.. note::
+
+   Although this ambiguity is removed when a prefix separator of "``_``" is included,
+   ending the stem with a digit is still forbidden
+   to prevent complexity in an API that implements this format.
+   For example, if it were possible to rename a path sequence by
+   removing or changing the prefix, doing that may not be possible unless
+   the stem is changed first.
+
 
 Prefix
 ------
@@ -95,7 +106,7 @@ Range
 -----
 
 A range MUST be present in the name of a path sequence.
-A range consists of the ranges string, and the padding.
+A range consists of the ranges specifier, and the padding.
 
 .. code-block:: text
 
@@ -105,14 +116,14 @@ A range consists of the ranges string, and the padding.
    └───────────────────┴───────┘
 
 
-Ranges String
-~~~~~~~~~~~~~
+Ranges Specifier
+~~~~~~~~~~~~~~~~
 
-The ranges string is OPTIONAL.
-When no ranges string is present, the path sequence is considered empty.
+The ranges specifier is OPTIONAL.
+When no ranges specifier is present, the path sequence is considered empty.
 
-A ranges string consists of comma separated range strings,
-where each range string is of the format ``START-ENDxSTEP``.
+A ranges specifier consists of comma separated range specifiers,
+where each range specifier is of the format ``START-ENDxSTEP``.
 ``START`` is REQUIRED, and ``END`` and ``xSTEP`` are OPTIONAL.
 
 ``START`` is the first value in the range,
@@ -120,11 +131,11 @@ where each range string is of the format ``START-ENDxSTEP``.
 and ``STEP`` represents the difference between numbers in the range.
 When ``STEP`` is not present, it defaults to 1.
 
-More formally, a range string represents a
+More formally, a range specifier represents a
 `finite Arithmetic Progression <https://en.wikipedia.org/wiki/Arithmetic_progression>`_.
 
-So the range string "``1-5``" represents the numbers 1, 2, 3, 4, 5.
-The range string "``1-5x2``" represents the numbers 1, 3, 5.
+So the range specifier "``1-5``" represents the numbers 1, 2, 3, 4, 5.
+The range specifier "``1-5x2``" represents the numbers 1, 3, 5.
 
 
 Padding
@@ -247,10 +258,13 @@ rather than a single range with subframes.
       file.1001-1005<UDIM>_1001-1010#.exr
 
 An inter-range separator MUST NOT contain a valid :ref:`range string <range_string_format>`,
-or by definition it would itself be a range.
+or by definition it would itself be part of the ranges.
 
 An inter-range separator MUST NOT end with a "``-``" or digit,
 otherwise there is no clear end to the separator and the start of the next range.
+Similarly, an inter-range separator MUST NOT start with a digit,
+or a "``.``" and digits,
+otherwise there is no clear end of the previous range and start to the separator.
 
 
 Suffixes
@@ -259,6 +273,12 @@ Suffixes
 Suffixes MUST be present in the name of the sequence.
 The file suffixes represent the file extension of the files in the path sequence.
 The suffixes include the leading "``.``".
+
+The suffixes MUST NOT contain a valid :ref:`range string <range_string_format>`,
+or by definition they would be part of the ranges.
+
+The suffixes MUST NOT start with a "``.``" and digits
+otherwise there is no clear end of the previous range and start to the suffixes.
 
 
 Parsing
@@ -288,22 +308,24 @@ Ranges are simple enough to form an unambiguous
       : (\.0|\.[0-9]*[1-9])?
 
 
+.. _compatibility:
+
 Compatibility with VFX Software
 -------------------------------
 
 This format was chosen for its compatibility with software commonly used in
 the VFX industry.
 
-The "File Compatible" column notes whether pathseq can represent
+The "**File Compatible**" column notes whether pathseq can represent
 a file sequence output by the DCC.
 
 DCCs often support different sequence string formats depending on whether the
 file sequence is being read or written by the DCC.
 Therefore this table separately notes
-whether a strict pathseq sequence string be passed to the DCC
-directly for the DCC to use to read a file sequence (Read Compatible),
-and whether a strict pathseq sequence string be passed to the DCC
-directly for the DCC to use to write a file sequence (Write Compatible).
+whether a simple pathseq sequence string be passed to the DCC
+directly for the DCC to use to read a file sequence (**Read Compatible**),
+and whether a simple pathseq sequence string be passed to the DCC
+directly for the DCC to use to write a file sequence (**Write Compatible**).
 
 .. list-table::
    :header-rows: 1
@@ -387,8 +409,10 @@ Notes:
    but it can be used to express the same sequences as pathseq.
 .. [#] Mari supports only ``$UDIM`` but files are output as interpreted by ``<UDIM>``.
 .. [#] fcheck supports writing sequences as ``file#.ext`` and ``#file.ext``,
-   but ``file.#.ext`` format must be used for pathseq's strict format.
+   but ``file.#.ext`` format must be used for pathseq's simple format.
 
+
+.. _loose-format:
 
 Loose Path Sequences
 ====================
@@ -407,7 +431,7 @@ but those strings may only work for one DCC.
 This format can be useful when there isn't a guarantee that the
 sequence string being parsed is in the simple format.
 
-In `Path Sequences`_ we saw that in the strict format,
+In `Path Sequences`_ we saw that in the simple format,
 a sequence's name has five components:
 the stem, an optional prefix, the ranges, inter-range strings, and the suffixes.
 The loose format has an additional component, the OPTIONAL postfix,
@@ -472,7 +496,7 @@ Finally, the ranges can be at the end of the name:
    or the range is in the string and has a blank stem and prefix.
 
    Therefore the loose format can only make a best guess at how to interpret a sequence string.
-   The strict format can be parsed consistently.
+   The simple format can be parsed consistently.
 
 
 Stem
@@ -484,7 +508,7 @@ A non-empty stem MAY be present in the name of a path sequence.
 The stem MUST NOT contain a valid :ref:`range string <range_string_format>`,
 or by definition it would be considered part of the ranges.
 
-The stem MAY start or end with a "``-``" or digit,
+The stem MAY start or end with a "``-``", or digit, or "``.``" and digits,
 but this is NOT RECOMMENDED because it creates abiguity when parsing
 a file in the sequence.
 
@@ -493,11 +517,17 @@ a file in the sequence.
    Path sequences that represent a sequence of hidden files (files starting with a ``.``)
    are interpreted as though the stem starts with "``.``".
 
-   In this example, where the ranges are in the name, the stem is ``.file``:
+   In this example, where the ranges are in the name, the stem is ``.``:
 
    .. code:: text
 
-      .file1-5#.ext
+      .1-5#.ext
+
+   In this example, where the ranges are in the name, the stem is ``.``:
+
+   .. code:: text
+
+      .1-5#.ext
 
    In this example, where the ranges end the name, the stem is ``.tar``.
 
@@ -522,31 +552,53 @@ Range
 -----
 
 A range MUST be present in the name of a path sequence.
-It follows the same format as for strict path sequences (see :ref:`range_string_format`).
+It follows the same format as for simple path sequences (see :ref:`range_string_format`).
 
 
 Inter-range Separator
 ---------------------
 
 An inter-range separator separates one range from another in a multi-range path sequence.
-A non-empty inter-range separator MUST exist between each range.
-It follows the same format as for strict paths sequences
-(see :ref:`inter_range_separator`),
-except that an inter-range separator MAY be a single "``.``" character.
-However, this is NOT RECOMMENDED because it creates abiguity when parsing
+A non-empty inter-range separator MAY exist between each range.
+Omitting the inter-range separator is NOT RECOMMENDED in multi-range sequences
+because it creates abiguity when parsing a file in the sequence.
+
+An inter-range separator MUST NOT contain a valid :ref:`range string <range_string_format>`,
+or by definition it would itself be part of the ranges.
+
+An inter-range separator MAY end with a "``-``" or digit,
+but this is NOT RECOMMENDED because it creates abiguity when parsing
+a file in the sequence.
+Similarly, an inter-range separator MAY start with a digit,
+or a "``.``" and digits,
+but this is NOT RECOMMENDED either because it creates abiguity when parsing
 a file in the sequence.
 
 
 Postfix
 -------
 
-Path sequences where the name ends with a range MUST NOT contain a prefix.
-Path sequences where the ranges start or exist inside of the name
-MAY contain a single postfix character.
-
 The postfix separates the ranges from the next component in the name.
 
-The postfix character MUST be a "``_``".
+The rules that define what is a valid postfix, depend on the type of path sequence.
+
+In path sequences where the ranges start the name:
+
+* The sequence MAY contain a postfix.
+* If present, the postfix MUST be a "``_``", or it would be part of the stem.
+
+In path sequences where the ranges exist inside of the name:
+
+* A postfix MAY be present.
+* The postfix can be of any length of any length.
+* The postfix MUST NOT contain a "``.``", or by definition it would be part of the suffixes.
+* The postfix MAY start with digits,
+  but this is NOT RECOMMENDED because it creates abiguity when parsing
+  a file in the sequence.
+
+In path sequences where the name ends with a range:
+
+* A postfix CANNOT be present, otherwise the ranges would exist inside of the name.
 
 
 Suffixes
@@ -556,11 +608,17 @@ Suffixes MAY be present in the name of the sequence.
 The file suffixes represent the file extension of the files in the path sequence.
 The suffixes include the leading "``.``".
 
+The suffixes MUST NOT contain a valid :ref:`range string <range_string_format>`,
+or by definition they would be part of the ranges.
+
+The suffixes MUST NOT start with a "``.``" and digits
+otherwise there is no clear end of the previous range and start to the suffixes.
+
 
 Parsing
 -------
 
-Like strict file sequences,
+Like simple file sequences,
 loose file sequences are parsed by a two step process consisting of tokenisation
 and parsing those tokens with a
 `Deterministic Finite State Machine <https://en.wikipedia.org/wiki/Deterministic_finite_automaton>`_.

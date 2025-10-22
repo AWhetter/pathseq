@@ -31,10 +31,9 @@ Segment: TypeAlias = Union[str, os.PathLike[str]]
 PurePathT_co = TypeVar(
     "PurePathT_co", covariant=True, bound=pathlib.PurePath,
 )
-T = TypeVar("T", ParsedSequence, RangesEndName, RangesInName, RangesStartName)
 
 
-class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
+class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
     """A generic class that represents a path sequence.
 
     Raises:
@@ -73,6 +72,7 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         in the same order, even if their string representation differs:
 
         .. code-block:: pycon
+
             >>> seq_a = PathSequence("/path/to/image.1-3####.exr")
             >>> seq_b = PathSequence("/path/to/image.1,2,3####.exr")
             >>> seq_a == seq_b
@@ -90,6 +90,7 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         return str(self._path)
 
     def __hash__(self) -> int:
+        """Path sequences are immutable, so can be hashed and used as dictionary keys."""
         return hash((type(self), self._path.parent, self._parsed))
 
     # Path operations
@@ -103,7 +104,6 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
     def parts(self) -> tuple[str, ...]:
         """A tuple giving access to the sequence's various components.
 
-        Example:
         .. code-block:: pycon
 
             >>> s = PathSequence('/path/to/image.1-3####.exr')
@@ -116,62 +116,14 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         return self._path.parts
 
     @property
-    def drive(self) -> str:
-        """A string representing the drive letter or name.
-
-        Example:
-        .. code-block:: pycon
-            >>> PurePathSequence(PureWindowsPath('c:/Program Files/image.1-3####.exr')).drive
-            'c:'
-            >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).drive
-            ''
-
-        See also:
-            :attr:`pathlib.PurePath.drive`
-        """
-        return self._path.drive
-
-    @property
-    def root(self) -> str:
-        r"""A string representing the (local or global) root, if any.
-
-        Example:
-        .. code-block:: pycon
-            >>> PurePathSequence(PureWindowsPath('c:/Program Files/image.1-3####.exr')).root
-            '\\'
-            >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).root
-            '/'
-
-        See also:
-            :attr:`pathlib.PurePath.root`
-        """
-        return self._path.root
-
-    @property
-    def anchor(self) -> str:
-        r"""The concatenation of the drive and root.
-
-        Example:
-        .. code-block:: pycon
-            >>> PurePathSequence(PureWindowsPath('c:/Program Files/image.1-3####.exr')).anchor
-            'c:\\'
-            >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).anchor
-            '/'
-
-        See also:
-            :attr:`pathlib.PurePath.anchor`
-        """
-        return self._path.anchor
-
-    @property
     def name(self) -> str:
         """A string representing the final path component, excluding the drive and root.
 
         Given that a sequence's final path component must be the sequence's files,
         the name will always be a valid sequence string.
 
-        Example:
         .. code-block:: pycon
+
             >>> PurePathSequence('/path/to/image.1-3####.exr').name
             'image.1-3####.exr'
 
@@ -181,10 +133,38 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         return self._path.name
 
     @property
+    def stem(self) -> str:
+        """The name, without any ranges, suffixes, or range strings.
+
+        .. code-block:: pycon
+
+            >>> PurePathSequence('/path/to/images.1-3####.exr').stem
+            'images'
+        """
+        return self._parsed.stem
+
+    @property
+    def file_num_seqs(
+        self,
+    ) -> tuple[FileNumSequence[int] | FileNumSequence[Decimal], ...]:
+        """All file number sequences in the name."""
+        ranges = tuple(
+            x.file_nums
+            for x in self._parsed.ranges.ranges
+            if not isinstance(x.file_nums, str)
+        )
+        if len(ranges) != len(self._parsed.ranges.ranges):
+            raise TypeError(
+                "Cannot get the file number sequences of a path sequence with incomplete ranges."
+            )
+
+        return ranges
+
+    @property
     def suffix(self) -> str:
         """The file extension of the paths in the sequence.
 
-        A strict path sequence will always have a file extension.
+        A simple path sequence will always have a file extension.
         Therefore this will never return the empty string.
 
         See also:
@@ -206,22 +186,11 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         return self._parsed.suffixes
 
     @property
-    def stem(self) -> str:
-        """The final path component, without any ranges, suffixes, or range strings.
-
-        Example:
-        .. code-block:: pycon
-            >>> PurePathSequence('/path/to/images.1-3####.exr').stem
-            'images'
-        """
-        return self._parsed.stem
-
-    @property
-    def parents(self) -> Sequence[pathlib.PurePath]:
+    def parents(self) -> Sequence[PurePathT_co]:
         """An immutable sequence providing access to the logical ancestors of the sequence.
 
-        Example:
         .. code-block:: pycon
+
             >>> s = PurePathSequence(PureWindowsPath('c:/path/to/images.1-3####.exr'))
             >>> s[0]
             PureWindowsPath('c:/path/to')
@@ -239,8 +208,8 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
     def parent(self) -> pathlib.PurePath:
         """The logical parent of the sequence.
 
-        Example:
         .. code-block:: pycon
+
             >>> s = PurePathSequence(PurePosixPath('/a/b/c/d.1-3#.exr'))
             >>> s.parent
             PurePosixPath('/a/b/c')
@@ -250,11 +219,59 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         """
         return self._path.parent
 
+    @property
+    def drive(self) -> str:
+        """A string representing the drive letter or name.
+
+        .. code-block:: pycon
+
+            >>> PurePathSequence(PureWindowsPath('c:/Program Files/image.1-3####.exr')).drive
+            'c:'
+            >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).drive
+            ''
+
+        See also:
+            :attr:`pathlib.PurePath.drive`
+        """
+        return self._path.drive
+
+    @property
+    def root(self) -> str:
+        r"""A string representing the (local or global) root, if any.
+
+        .. code-block:: pycon
+
+            >>> PurePathSequence(PureWindowsPath('c:/Program Files/image.1-3####.exr')).root
+            '\\'
+            >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).root
+            '/'
+
+        See also:
+            :attr:`pathlib.PurePath.root`
+        """
+        return self._path.root
+
+    @property
+    def anchor(self) -> str:
+        r"""The concatenation of the drive and root.
+
+        .. code-block:: pycon
+
+            >>> PurePathSequence(PureWindowsPath('c:/Program Files/image.1-3####.exr')).anchor
+            'c:\\'
+            >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).anchor
+            '/'
+
+        See also:
+            :attr:`pathlib.PurePath.anchor`
+        """
+        return self._path.anchor
+
     def as_posix(self) -> str:
         r"""Return a string representation of the sequence with forward slashes (/).
 
-        Example:
         .. code-block:: pycon
+
             >>> s = PurePathSequence(PureWindowsPath('c:\\windows\\images.1-3#.exr'))
             >>> str(s)
             'c:\\windows\\images.1-3#.exr'
@@ -285,6 +302,10 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
 
         def relative_to(self, other: Segment, *, walk_up: bool = False) -> Self:
             """Compute a version of this path relative to the path represented by ``other``.
+
+            .. note::
+
+                `walk_up` is available in Python 3.12 and newer.
 
             Raises:
                 ValueError: When this sequence cannot be relative to the given path.
@@ -328,14 +349,40 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         a :exc:`ValueError` will never be raised because a path sequence
         must always have a stem, even if it was previously empty.
 
-        Example:
         .. code-block:: pycon
+
             >>> p = PurePathSequence('images.#1-3.exr')
             >>> p.with_stem('textures')
             PurePathSequence('textures.#1-3.exr')
         """
         parsed = self._parsed.with_stem(stem)
         return self.with_segments(self._path.parent, str(parsed))
+
+    @abc.abstractmethod
+    def with_file_num_seqs(
+        self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
+    ) -> Self:
+        """Return a new sequence with the :attr:`~.file_num_seqs <file number sequences>` changed.
+
+        Raises:
+            TypeError: If the given number of file number sequences does not match
+                the sequence's number of file number sequences.
+        """
+
+    def with_file_numbers(self, *numbers: int | Decimal) -> PurePathT_co:
+        """Return a path for the given file number(s) in the sequence.
+
+        Args:
+            numbers: The number to use in place of each range in the string.
+
+        .. code-block:: pycon
+
+            >>> p = PurePathSequence('images.1-3#.exr')
+            >>> p.with_file_numbers(5)
+            PurePath('images.5.exr')
+        """
+        name = FileNumberFormatter(*numbers).format(self._parsed)
+        return self._path.with_name(name)
 
     def with_suffix(self, suffix: str) -> Self:
         """Return a new path sequence with the suffix changed.
@@ -346,13 +393,13 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         an invalid path sequence.
 
         Args:
-            The new suffix to replace the existing suffix with.
+            suffix: The new suffix to replace the existing suffix with.
 
         Raises:
             ValueError: If the given suffix would result in an invalid path sequence.
         """
         if not suffix:
-            raise ValueError("Strict path format must have a suffix")
+            raise ValueError("Simple path format must have a suffix")
 
         parsed = self._parsed.with_suffix(suffix)
         try:
@@ -371,7 +418,6 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         """
         return type(self)(self._path.__class__(*pathsegments))  # type: ignore[abstract]
 
-    # Sequence operations
     @overload
     def __getitem__(self, index: int) -> PurePathT_co: ...
 
@@ -415,7 +461,7 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
             x.file_nums[i]
             for x, i in zip(self._parsed.ranges.ranges, reversed(indexes))
         ]
-        return self.format(*file_nums)
+        return self.with_file_numbers(*file_nums)
 
     def __contains__(self, item: object) -> bool:
         """Return whether the given object exists in this path sequence."""
@@ -449,15 +495,15 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
         # TODO: Swap this out for manual looping so that are aren't using mega amounts of memory
         for result in itertools.product(*iterators):
             # https://github.com/python/typeshed/issues/13490
-            yield self.format(*result)  # type: ignore[arg-type]
+            yield self.with_file_numbers(*result)  # type: ignore[arg-type]
 
     def __len__(self) -> int:
         """Return the length of this sequence.
 
         If the sequence has any empty ranges, then its length is zero.
 
-        Example:
         .. code-block:: pycon
+
             >>> len(PurePathSequence('images.####.exr'))
             0
         """
@@ -468,50 +514,6 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
 
         return result
 
-    # PathSeq specific operations
-    def format(self, *numbers: int | Decimal) -> PurePathT_co:
-        """Return a path for the given file number(s) in the sequence.
-
-        Args:
-            The number to use in place of each range in the string.
-
-        Example:
-        .. code-block:: pycon
-            >>> p = PurePathSequence('images.1-3#.exr')
-            >>> p.format(5)
-            PurePath('images.5.exr')
-        """
-        name = FileNumberFormatter(*numbers).format(self._parsed)
-        return self._path.with_name(name)
-
-    @property
-    def file_num_seqs(
-        self,
-    ) -> tuple[FileNumSequence[int] | FileNumSequence[Decimal], ...]:
-        """All file number sequences in the final path component."""
-        ranges = tuple(
-            x.file_nums
-            for x in self._parsed.ranges.ranges
-            if not isinstance(x.file_nums, str)
-        )
-        if len(ranges) != len(self._parsed.ranges.ranges):
-            raise TypeError(
-                "Cannot get the file number sequences of a path sequence with incomplete ranges."
-            )
-
-        return ranges
-
-    @abc.abstractmethod
-    def with_file_num_seqs(
-        self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
-    ) -> Self:
-        """Return a new sequence with the :attr:`~.file_num_seqs <file number sequences>` changed.
-
-        Raises:
-            TypeError: If the given number of file number sequences does not match
-                the sequence's number of file number sequences.
-        """
-
     def has_subsamples(self) -> bool:
         """Check whether this path sequences contains any decimal file numbers."""
         return any(r.has_subsamples(r) for r in self._parsed.ranges.ranges)
@@ -520,7 +522,7 @@ class BasePurePathSequence(abc.ABC, Sequence[PurePathT_co]):
 PathT_co = TypeVar("PathT_co", covariant=True, bound=pathlib.Path)
 
 
-class BasePathSequence(BasePurePathSequence[PathT_co], abc.ABC):
+class BasePathSequence(BasePurePathSequence[PathT_co], metaclass=abc.ABCMeta):
     """A sequence of Path objects.
 
     Raises:
@@ -530,6 +532,17 @@ class BasePathSequence(BasePurePathSequence[PathT_co], abc.ABC):
     """
 
     _pathlib_type: ClassVar[type[pathlib.Path]] = pathlib.Path
+
+    @overload
+    def __init__(self: BasePurePathSequence[pathlib.Path], path: str) -> None: ...
+
+    @overload
+    def __init__(
+        self: BasePurePathSequence[PathT_co], path: PathT_co
+    ) -> None: ...
+
+    def __init__(self, path: PathT_co | str) -> None:
+        super().__init__(path)
 
     def expanduser(self) -> Self:
         """Return a new sequence with expanded ``~`` and ``~user`` constructs.
@@ -555,8 +568,8 @@ class BasePathSequence(BasePurePathSequence[PathT_co], abc.ABC):
 
         Raises:
             IncompleteDimensionError: When one or more dimensions in
-            a multi-dimension sequence does not have a consistent number of
-            files in each other dimension.
+                a multi-dimension sequence does not have a consistent number of
+                files in each other dimension.
         """
         seqs = find_on_disk(self._path, self._parsed)
         return self.with_file_num_seqs(*seqs)

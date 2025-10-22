@@ -35,9 +35,10 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
     def suffix(self) -> str:
         """The file extension of the paths in the sequence.
 
-        Example:
         If there is no suffix, this will be the empty string.
+
         .. code-block:: pycon
+
             >>> LoosePurePathSequence('file1-3###').suffix
             ''
 
@@ -50,8 +51,8 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
     def stem(self) -> str:
         """The final path component, without any ranges, suffixes, or range strings.
 
-        Example:
         .. code-block:: pycon
+
             >>> LoosePurePathSequence('/path/to/images.1-3####.exr').stem
             'images'
             >>> LoosePurePathSequence('/path/to/1-3####.images.exr').stem
@@ -60,16 +61,17 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
             'images'
 
         Unlike :attr:`pathlib.PurePath.stem`, this will never contain a suffix
-        if the paths have multiple suffixes.
+        if the paths have multiple suffixes:
 
-        Example:
         .. code-block:: pycon
+
             >>> PurePathSequence('/path/to/images.tar.gz.1-3####').stem
             'images'
 
-        If the paths have no stem, then the empty string is returned.
-        Example:
+        If the paths have no stem, then the empty string is returned:
+
         .. code-block:: pycon
+
             >>> LosePurePathSequence('1-3#.tar.gz').stem
             ''
         """
@@ -78,7 +80,7 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
     def with_file_num_seqs(
         self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
     ) -> Self:
-        """Return a new sequence with the :attr:`~.file_num_seqs <file number sequences>` changed.
+        """Return a new sequence with the :attr:`file number sequences <~.file_num_seqs>` changed.
 
         Raises:
             TypeError: If the given number of file number sequences does not match

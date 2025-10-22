@@ -1,0 +1,28 @@
+<svg xmlns='http://www.w3.org/2000/svg' style='font-family:sans-serif; font-size:initial;' viewBox="0 0 828.635 292.32" data-pikchr-date="20250319161943">
+<path d="M300.932,74.16L527.703,74.16L527.703,2.16L300.932,2.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="414.317" y="38.16" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">BasePurePathSequence</text>
+<polygon points="414.317,74.16 418.637,85.68 409.997,85.68" style="fill:rgb(0,0,0)"/>
+<path d="M414.317,79.92L414.317,146.16"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M300.932,218.16L527.703,218.16L527.703,146.16L300.932,146.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="414.317" y="182.16" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">BasePathSequence</text>
+<path d="M2.16,146.16L228.932,146.16L228.932,74.16L2.16,74.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="115.546" y="110.16" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">PurePathSequence</text>
+<polygon points="300.932,38.16 290.446,44.5968 288.799,36.1153" style="fill:rgb(0,0,0)"/>
+<path d="M115.546,74.16L295.277,39.258"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="115.546,146.16 119.866,157.68 111.226,157.68" style="fill:rgb(0,0,0)"/>
+<path d="M115.546,151.92L115.546,218.16"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M2.16,290.16L228.932,290.16L228.932,218.16L2.16,218.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="115.546" y="254.16" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">PathSequence</text>
+<polygon points="300.932,182.16 290.446,188.597 288.799,180.115" style="fill:rgb(0,0,0)"/>
+<path d="M115.546,218.16L295.277,183.258"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M599.703,146.16L826.475,146.16L826.475,74.16L599.703,74.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="713.089" y="110.16" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">LoosePurePathSequence</text>
+<polygon points="527.703,38.16 539.836,36.1153 538.189,44.5968" style="fill:rgb(0,0,0)"/>
+<path d="M713.089,74.16L533.358,39.258"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<polygon points="713.089,146.16 717.409,157.68 708.769,157.68" style="fill:rgb(0,0,0)"/>
+<path d="M713.089,151.92L713.089,218.16"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<path d="M599.703,290.16L826.475,290.16L826.475,218.16L599.703,218.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+<text x="713.089" y="254.16" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="central">LoosePathSequence</text>
+<polygon points="527.703,182.16 539.836,180.115 538.189,188.597" style="fill:rgb(0,0,0)"/>
+<path d="M713.089,218.16L533.358,183.258"  style="fill:none;stroke-width:2.16;stroke:rgb(0,0,0);" />
+</svg>
