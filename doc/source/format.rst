@@ -58,13 +58,15 @@ an inter-range separator.
                      └────────────────────────────┘
 
 
+.. _format-simple-stem:
+
 Stem
 ----
 
 The stem is the name of a path sequence, without the prefix, ranges, and suffixes.
 A non-empty stem MUST be present in the name of a path sequence.
 
-The stem MUST NOT contain a valid :ref:`range string <range_string_format>`,
+The stem MUST NOT contain a valid :ref:`range string <format-simple-range>`,
 or by definition it would be considered part of the ranges.
 
 The stem MUST NOT end with a "``-``" or digit,
@@ -82,11 +84,15 @@ For example, in ``file-1.1-5#.tar.gz`` it is unclear whether the stem and range 
    the stem is changed first.
 
 
+.. _format-simple-prefix:
+
 Prefix
 ------
 
-The name of a path sequence MAY contain a single prefix character
-that separates the stem from the ranges.
+The prefix is a single character that separates the :ref:`stem <format-simple-stem>`
+from the :ref:`ranges <format-simple-range>`.
+
+The name of a path sequence MAY contain a single prefix character.
 
 The prefix character MUST be one of "``.``" or "``_``".
 
@@ -100,10 +106,14 @@ The prefix character MUST be one of "``.``" or "``_``".
       file.1001-1010#.tar.gz
 
 
-.. _range_string_format:
+.. _format-simple-range:
 
 Range
 -----
+
+The range is a concice representation of the file numbers of each file
+in the sequence plus a definition of how those numbers are formatted
+in the resulting file names.
 
 A range MUST be present in the name of a path sequence.
 A range consists of the ranges specifier, and the padding.
@@ -116,8 +126,13 @@ A range consists of the ranges specifier, and the padding.
    └───────────────────┴───────┘
 
 
+.. _format-simple-ranges:
+
 Ranges Specifier
 ~~~~~~~~~~~~~~~~
+
+The ranges specifier is a concice representation of the file numbers of each file
+in the sequence.
 
 The ranges specifier is OPTIONAL.
 When no ranges specifier is present, the path sequence is considered empty.
@@ -138,8 +153,13 @@ So the range specifier "``1-5``" represents the numbers 1, 2, 3, 4, 5.
 The range specifier "``1-5x2``" represents the numbers 1, 3, 5.
 
 
+.. _format-simple-padding:
+
 Padding
 ~~~~~~~
+
+The padding string is definition of how a file number is formatted
+in each file names contained in the sequence.
 
 The padding is a REQUIRED part of the ranges.
 
@@ -220,7 +240,7 @@ describes two tokens for representing UDIMs in file names.
    Using ``<UDIM>`` is RECOMMENDED over ``<UVTILE>`` for best compatibility with VFX software.
 
 
-.. _inter_range_separator:
+.. _format-simple-inter-range:
 
 Inter-range Separator
 ---------------------
@@ -257,7 +277,7 @@ rather than a single range with subframes.
       file.1-5#_1001-1010#.vdb
       file.1001-1005<UDIM>_1001-1010#.exr
 
-An inter-range separator MUST NOT contain a valid :ref:`range string <range_string_format>`,
+An inter-range separator MUST NOT contain a valid :ref:`range string <format-simple-range>`,
 or by definition it would itself be part of the ranges.
 
 An inter-range separator MUST NOT end with a "``-``" or digit,
@@ -267,6 +287,8 @@ or a "``.``" and digits,
 otherwise there is no clear end of the previous range and start to the separator.
 
 
+.. _format-simple-suffixes:
+
 Suffixes
 --------
 
@@ -274,7 +296,7 @@ Suffixes MUST be present in the name of the sequence.
 The file suffixes represent the file extension of the files in the path sequence.
 The suffixes include the leading "``.``".
 
-The suffixes MUST NOT contain a valid :ref:`range string <range_string_format>`,
+The suffixes MUST NOT contain a valid :ref:`range string <format-simple-range>`,
 or by definition they would be part of the ranges.
 
 The suffixes MUST NOT start with a "``.``" and digits
@@ -499,13 +521,15 @@ Finally, the ranges can be at the end of the name:
    The simple format can be parsed consistently.
 
 
+.. _format-loose-stem:
+
 Stem
 ----
 
-The stem is the name of a path sequence, without the prefix, ranges, and suffixes.
+The stem is the name of a path sequence, without the prefix, ranges, postfix, and suffixes.
 A non-empty stem MAY be present in the name of a path sequence.
 
-The stem MUST NOT contain a valid :ref:`range string <range_string_format>`,
+The stem MUST NOT contain a valid :ref:`range string <format-simple-range>`,
 or by definition it would be considered part of the ranges.
 
 The stem MAY start or end with a "``-``", or digit, or "``.``" and digits,
@@ -536,6 +560,8 @@ a file in the sequence.
       .tar.gz1-5#
 
 
+.. _format-loose-prefix:
+
 Prefix
 ------
 
@@ -548,12 +574,16 @@ The prefix separates the ranges from the previous component in the name.
 The prefix character MUST be one of "``.``" or "``_``".
 
 
+.. _format-loose-range:
+
 Range
 -----
 
 A range MUST be present in the name of a path sequence.
-It follows the same format as for simple path sequences (see :ref:`range_string_format`).
+It follows the same format as for simple path sequences (see :ref:`format-simple-range`).
 
+
+.. _format-loose-inter-range:
 
 Inter-range Separator
 ---------------------
@@ -563,7 +593,7 @@ A non-empty inter-range separator MAY exist between each range.
 Omitting the inter-range separator is NOT RECOMMENDED in multi-range sequences
 because it creates abiguity when parsing a file in the sequence.
 
-An inter-range separator MUST NOT contain a valid :ref:`range string <range_string_format>`,
+An inter-range separator MUST NOT contain a valid :ref:`range string <format-simple-range>`,
 or by definition it would itself be part of the ranges.
 
 An inter-range separator MAY end with a "``-``" or digit,
@@ -575,10 +605,13 @@ but this is NOT RECOMMENDED either because it creates abiguity when parsing
 a file in the sequence.
 
 
+.. _format-loose-postfix:
+
 Postfix
 -------
 
-The postfix separates the ranges from the next component in the name.
+The prefix is a single character that separates the :ref:`ranges <format-loose-range>`
+from the next component of the sequence's name.
 
 The rules that define what is a valid postfix, depend on the type of path sequence.
 
@@ -586,6 +619,7 @@ In path sequences where the ranges start the name:
 
 * The sequence MAY contain a postfix.
 * If present, the postfix MUST be a "``_``", or it would be part of the stem.
+  If it contained a "``.``" then by definition it would be part of the suffixes.
 
 In path sequences where the ranges exist inside of the name:
 
@@ -601,14 +635,17 @@ In path sequences where the name ends with a range:
 * A postfix CANNOT be present, otherwise the ranges would exist inside of the name.
 
 
+.. _format-loose-suffixes:
+
 Suffixes
 --------
 
-Suffixes MAY be present in the name of the sequence.
 The file suffixes represent the file extension of the files in the path sequence.
+
+Suffixes MAY be present in the name of the sequence.
 The suffixes include the leading "``.``".
 
-The suffixes MUST NOT contain a valid :ref:`range string <range_string_format>`,
+The suffixes MUST NOT contain a valid :ref:`range string <format-simple-range>`,
 or by definition they would be part of the ranges.
 
 The suffixes MUST NOT start with a "``.``" and digits

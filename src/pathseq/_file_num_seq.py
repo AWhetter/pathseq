@@ -146,7 +146,7 @@ class FileNumSequence(Sequence[FileNumT]):
     def from_file_nums(cls, file_nums: Iterable[FileNumT]) -> FileNumSequence[FileNumT]:
         """Create a file number sequence from an iterable of file numbers.
 
-        The given numbers are put into the sequence in the order they are given.
+        The given numbers are put into the sequence in the order they are provided.
 
         Args:
             file_nums: The file numbers to turn into a sequence.

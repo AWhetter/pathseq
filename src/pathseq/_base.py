@@ -29,7 +29,9 @@ from ._formatter import FileNumberFormatter, RegexFormatter
 
 Segment: TypeAlias = Union[str, os.PathLike[str]]
 PurePathT_co = TypeVar(
-    "PurePathT_co", covariant=True, bound=pathlib.PurePath,
+    "PurePathT_co",
+    covariant=True,
+    bound=pathlib.PurePath,
 )
 
 
@@ -109,9 +111,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             >>> s = PathSequence('/path/to/image.1-3####.exr')
             >>> s.parts
             ('/', 'path', 'to', 'image.1-3####.exr')
-
-        See also:
-            :attr:`pathlib.PurePath.parts`
         """
         return self._path.parts
 
@@ -126,9 +125,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
             >>> PurePathSequence('/path/to/image.1-3####.exr').name
             'image.1-3####.exr'
-
-        See also:
-            :attr:`pathlib.PurePath.name`
         """
         return self._path.name
 
@@ -146,8 +142,14 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
     @property
     def file_num_seqs(
         self,
-    ) -> tuple[FileNumSequence[int] | FileNumSequence[Decimal], ...]:
-        """All file number sequences in the name."""
+    ) -> Sequence[FileNumSequence[int] | FileNumSequence[Decimal]]:
+        """All file number sequences in the name.
+
+        .. code-block:: pycon
+
+            >>> PurePathSequence('/path/to/texture.1011-1012<UDIM>_1-3#.tex').file_num_seqs
+            (FileNumSequence('1011-1012'), FileNumSequence('1-3'))
+        """
         ranges = tuple(
             x.file_nums
             for x in self._parsed.ranges.ranges
@@ -167,8 +169,10 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         A simple path sequence will always have a file extension.
         Therefore this will never return the empty string.
 
-        See also:
-            :attr:`pathlib.PurePath.suffix`
+        .. code-block:: pycon
+
+            >>> PurePathSequence('/path/to/image.1-3####.exr').suffix
+            '.exr'
         """
         suffixes = self.suffixes
         if not suffixes:
@@ -180,8 +184,10 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
     def suffixes(self) -> Sequence[str]:
         """A list of the file extensions of any path in the sequence.
 
-        See also:
-            :attr:`pathlib.PurePath.suffixes`
+        .. code-block:: pycon
+
+            >>> PurePathSequence('/path/to/file.1-3####.tar.gz').suffixes
+            ('.tar', '.gz')
         """
         return self._parsed.suffixes
 
@@ -198,9 +204,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             PureWindowsPath('c:/path')
             >>> s[2]
             PureWindowsPath('c:/')
-
-        See also:
-            :attr:`pathlib.PurePath.parents`
         """
         return self._path.parents
 
@@ -213,9 +216,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             >>> s = PurePathSequence(PurePosixPath('/a/b/c/d.1-3#.exr'))
             >>> s.parent
             PurePosixPath('/a/b/c')
-
-        See also:
-            :attr:`pathlib.PurePath.parent`
         """
         return self._path.parent
 
@@ -229,9 +229,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             'c:'
             >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).drive
             ''
-
-        See also:
-            :attr:`pathlib.PurePath.drive`
         """
         return self._path.drive
 
@@ -245,9 +242,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             '\\'
             >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).root
             '/'
-
-        See also:
-            :attr:`pathlib.PurePath.root`
         """
         return self._path.root
 
@@ -261,9 +255,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             'c:\\'
             >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).anchor
             '/'
-
-        See also:
-            :attr:`pathlib.PurePath.anchor`
         """
         return self._path.anchor
 
@@ -277,17 +268,11 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             'c:\\windows\\images.1-3#.exr'
             >>> s.as_posix()
             'c:/windows/images.1-3#.exr'
-
-        See also:
-            :meth:`pathlib.PurePath.as_posix`
         """
         return self._path.as_posix()
 
     def is_relative_to(self, other: pathlib.PurePath) -> bool:
         """Return whether or not all files in this sequence are relative to the other path.
-
-        See also:
-            :meth:`pathlib.PurePath.is_relative_to`
 
         Raises:
             ValueError: If this path sequence is given.
@@ -305,7 +290,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
             .. note::
 
-                `walk_up` is available in Python 3.12 and newer.
+                `walk_up` is available only in Python 3.12 and newer.
 
             Raises:
                 ValueError: When this sequence cannot be relative to the given path.
@@ -332,11 +317,10 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
         Given that a sequence's final path component must be the sequence's files,
         the given name must also be a valid sequence string.
-        In addition, unlike :meth:`pathlib.PurePath.with_name`,
-        a :exc:`ValueError` will never be raised because a path sequence
-        must always have a name.
 
         Raises:
+            ValueError: When the given name is empty.
+                Use :attr:`~.BasePurePathSequence.parent` instead.
             NotASequenceError: When the given name does not represent a sequence.
             ParseError: When the resulting path is not a valid path sequence.
         """
@@ -345,15 +329,14 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
     def with_stem(self, stem: str) -> Self:
         """Return a new path with the :attr:`~.stem` changed.
 
-        Unlike :meth:`pathlib.PurePath.with_name`,
-        a :exc:`ValueError` will never be raised because a path sequence
-        must always have a stem, even if it was previously empty.
-
         .. code-block:: pycon
 
             >>> p = PurePathSequence('images.#1-3.exr')
             >>> p.with_stem('textures')
             PurePathSequence('textures.#1-3.exr')
+
+        Raises:
+            ValueError: If the new stem is invalid.
         """
         parsed = self._parsed.with_stem(stem)
         return self.with_segments(self._path.parent, str(parsed))
@@ -362,14 +345,14 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
     def with_file_num_seqs(
         self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
     ) -> Self:
-        """Return a new sequence with the :attr:`~.file_num_seqs <file number sequences>` changed.
+        """Return a new sequence with the file number sequences changed.
 
         Raises:
             TypeError: If the given number of file number sequences does not match
                 the sequence's number of file number sequences.
         """
 
-    def with_file_numbers(self, *numbers: int | Decimal) -> PurePathT_co:
+    def path_with_file_nums(self, *numbers: int | Decimal) -> PurePathT_co:
         """Return a path for the given file number(s) in the sequence.
 
         Args:
@@ -378,7 +361,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         .. code-block:: pycon
 
             >>> p = PurePathSequence('images.1-3#.exr')
-            >>> p.with_file_numbers(5)
+            >>> p.path_with_file_nums(5)
             PurePath('images.5.exr')
         """
         name = FileNumberFormatter(*numbers).format(self._parsed)
@@ -411,11 +394,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             )
 
     def with_segments(self, *pathsegments: Segment) -> Self:
-        """Create a new sequence object of the same type by combining the given `pathsegments`.
-
-        See also:
-            :meth:`pathlib.PurePath.with_segments`
-        """
+        """Create a new sequence object of the same type by combining the given `pathsegments`."""
         return type(self)(self._path.__class__(*pathsegments))  # type: ignore[abstract]
 
     @overload
@@ -461,7 +440,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             x.file_nums[i]
             for x, i in zip(self._parsed.ranges.ranges, reversed(indexes))
         ]
-        return self.with_file_numbers(*file_nums)
+        return self.path_with_file_nums(*file_nums)
 
     def __contains__(self, item: object) -> bool:
         """Return whether the given object exists in this path sequence."""
@@ -495,7 +474,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         # TODO: Swap this out for manual looping so that are aren't using mega amounts of memory
         for result in itertools.product(*iterators):
             # https://github.com/python/typeshed/issues/13490
-            yield self.with_file_numbers(*result)  # type: ignore[arg-type]
+            yield self.path_with_file_nums(*result)  # type: ignore[arg-type]
 
     def __len__(self) -> int:
         """Return the length of this sequence.
@@ -515,7 +494,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         return result
 
     def has_subsamples(self) -> bool:
-        """Check whether this path sequences contains any decimal file numbers."""
+        """Check whether this path sequence contains any decimal file numbers."""
         return any(r.has_subsamples(r) for r in self._parsed.ranges.ranges)
 
 
@@ -534,12 +513,10 @@ class BasePathSequence(BasePurePathSequence[PathT_co], metaclass=abc.ABCMeta):
     _pathlib_type: ClassVar[type[pathlib.Path]] = pathlib.Path
 
     @overload
-    def __init__(self: BasePurePathSequence[pathlib.Path], path: str) -> None: ...
+    def __init__(self: BasePathSequence[pathlib.Path], path: str) -> None: ...
 
     @overload
-    def __init__(
-        self: BasePurePathSequence[PathT_co], path: PathT_co
-    ) -> None: ...
+    def __init__(self: BasePathSequence[PathT_co], path: PathT_co) -> None: ...
 
     def __init__(self, path: PathT_co | str) -> None:
         super().__init__(path)
@@ -555,14 +532,14 @@ class BasePathSequence(BasePurePathSequence[PathT_co], metaclass=abc.ABCMeta):
         return self.with_segments(self._path.expanduser())
 
     def absolute(self) -> Self:
-        """Return a new sequence with the path made absolute.
+        """Return a new sequence with the sequence's paths made absolute.
 
-        Normalisation and symlink resolution is not performed.
+        Normalisation and symlink resolution are not performed.
         """
         return self.with_segments(self._path.absolute())
 
     def with_existing_paths(self) -> Self:
-        """Create a sequence using the ranges of files that exist on disk.
+        """Return a new a sequence using the ranges of files that exist on disk.
 
         Each file number sequence in the path sequence will be ordered numerically.
 

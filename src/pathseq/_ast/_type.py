@@ -15,15 +15,22 @@ class ParsedSequence:
     """A parsed path sequence."""
 
     stem: str
+    """The name of the sequence, without the prefix, ranges, and suffixes."""
     prefix: str
+    """An optional single character separator between the stem and the ranges."""
     ranges: Ranges
+    """The file numbers of the files in the sequence and their formatting."""
     suffixes: tuple[str, ...]
+    """The file extensions of the files in the path sequence.
+
+    Each suffix includes the leading "``.``".
+    """
 
     def __str__(self) -> str:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
-        """Return a new parsed sequence with the :attr:`~.stem` changed.
+        """Return a new parsed sequence with the :attr:`~.ParsedSequence.stem` changed.
 
         If the stem is removed, the prefix will be as well.
         """

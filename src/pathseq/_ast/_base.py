@@ -24,13 +24,14 @@ def non_recursive_asdict(datacls: Any) -> dict[str, Any]:
     }
 
 
+# TODO: Replace with formatter usage
 def stringify_parsed_sequence(seq: Any) -> str:
     result = ""
     for field in dataclasses.fields(seq):
         if field.name == "ranges":
-            ranges = (str(x) for x in seq.ranges)
+            ranges = (str(x) for x in seq.ranges.ranges)
             # There's one more range than inter-range strings, so add an extra.
-            inter_ranges = itertools.chain(seq.inter_ranges, ("",))
+            inter_ranges = itertools.chain(seq.ranges.inter_ranges, ("",))
             result += "".join(itertools.chain.from_iterable(zip(ranges, inter_ranges)))
             continue
         elif field.name == "inter_ranges":
@@ -85,7 +86,9 @@ def splice_strings_onto_ranges(
 @dataclass(frozen=True)
 class PaddedRange(Generic[FileNumT]):
     file_nums: FileNumSequence[FileNumT]
+    """The file numbers of each file in the sequence."""
     pad_format: str
+    """The definition of how a file number is formatted in each file's name in the sequence."""
 
     def __str__(self) -> str:
         return str(self.file_nums) + self.pad_format
@@ -113,13 +116,18 @@ class PaddedRange(Generic[FileNumT]):
         range_: PaddedRange[int] | PaddedRange[decimal.Decimal],
     ) -> TypeGuard[PaddedRange[decimal.Decimal]]:
         """Check whether this file number sequence contains any decimal numbers."""
-        return FileNumSequence[Any].has_subsamples(range_.file_nums)
+        return range_.file_nums.has_subsamples(range_.file_nums)
 
 
 @dataclass(frozen=True)
 class Ranges:
     ranges: tuple[PaddedRange[int] | PaddedRange[Decimal], ...]
+    """Each :ref:`range specifier <format-simple-ranges>` in the sequence."""
     inter_ranges: tuple[str, ...]
+    """The inter-range separators between each range in the sequence.
+
+    The number of inter-range separators is guaranteed to be ``1 - len(self.ranges)``.
+    """
 
     def __post_init__(self) -> None:
         if len(self.inter_ranges) != len(self.ranges) - 1:

@@ -52,20 +52,20 @@ A wide range of sequence string formats are supported:
     >>> from pathseq import LoosePathSequence
     >>> seq = LoosePathSequence("/path/to/images.1-5####.exr")
 
-    >>> seq = LoosePathSequence("/path/to/1-5####.images.exr")
+    >>> seq = LoosePathSequence("/path/to/1-5####_images.exr")
     >>> seq[0]
-    PosixPath('/path/to/0001.images.exr')
+    PosixPath('/path/to/0001_images.exr')
     >>> seq.suffixes
-    ['.exr']
+    ('.exr',)
 
-    >>> LoosePathSequence("/path/to/1-5####.archives.tar.gz").suffixes
-    ['.tar', '.gz']
+    >>> LoosePathSequence("/path/to/1-5####_archives.tar.gz").suffixes
+    ('.tar', '.gz')
 
     >>> seq = LoosePathSequence("/path/to/images.exr.1-5####")
     >>> seq[0]
     PosixPath('/path/to/images.exr.0001')
     >>> seq.suffixes
-    ['.exr']
+    ('.exr',)
 
     >>> LoosePathSequence("/path/to/images.1001-1005<UDIM>.exr")[0]
     PosixPath('/path/to/images.1001.exr')

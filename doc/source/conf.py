@@ -21,7 +21,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
-    "sphinx_toolbox.more_autodoc.typevars",
 ]
 
 templates_path = ["_templates"]
@@ -52,4 +51,7 @@ intersphinx_mapping = {
 extensions.append("sphinx.ext.autodoc")
 autodoc_default_options = {
     "member-order": "bysource",
+}
+autodoc_type_aliases = {
+    "ParsedLooseSequence": "ParsedLooseSequence",
 }

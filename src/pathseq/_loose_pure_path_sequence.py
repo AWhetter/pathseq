@@ -41,15 +41,12 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
 
             >>> LoosePurePathSequence('file1-3###').suffix
             ''
-
-        See also:
-            :attr:`pathlib.PurePath.suffix`
         """
         return super().suffix
 
     @property
     def stem(self) -> str:
-        """The final path component, without any ranges, suffixes, or range strings.
+        """The final path component, without any prefix, ranges, postfix, or suffixes.
 
         .. code-block:: pycon
 
@@ -80,7 +77,7 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
     def with_file_num_seqs(
         self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
     ) -> Self:
-        """Return a new sequence with the :attr:`file number sequences <~.file_num_seqs>` changed.
+        """Return a new sequence with the file number sequences changed.
 
         Raises:
             TypeError: If the given number of file number sequences does not match

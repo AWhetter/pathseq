@@ -58,7 +58,6 @@ doc = [
     "furo",
     "sphinx",
     "sphinx-design",
-    "sphinx-toolbox",
 ]
 release_notes = [
     "towncrier",

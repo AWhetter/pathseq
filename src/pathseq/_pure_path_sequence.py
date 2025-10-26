@@ -34,7 +34,7 @@ class PurePathSequence(BasePurePathSequence[PathT_co]):
     def with_file_num_seqs(
         self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
     ) -> Self:
-        """Return a new sequence with the :attr:`file number sequences <~.file_num_seqs>` changed.
+        """Return a new sequence with the file number sequences changed.
 
         Raises:
             TypeError: If the given number of file number sequences does not match

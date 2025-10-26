@@ -2,10 +2,15 @@ import pytest
 
 from pathseq._parse_path_sequence import (
     parse_path_sequence,
-    PaddedRange,
-    ParsedSequence,
 )
-from pathseq import FileNumSequence, NotASequenceError, ParseError
+from pathseq import (
+    FileNumSequence,
+    NotASequenceError,
+    PaddedRange,
+    ParseError,
+    ParsedSequence,
+    Ranges,
+)
 
 
 class TestPathSequence:
@@ -17,13 +22,15 @@ class TestPathSequence:
                 ParsedSequence(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     (".exr",),
                 ),
                 id="file.#.exr",
@@ -33,13 +40,15 @@ class TestPathSequence:
                 ParsedSequence(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1-10"),
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1-10"),
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     (".exr",),
                 ),
                 id="file.1-10#.exr",
@@ -49,13 +58,15 @@ class TestPathSequence:
                 ParsedSequence(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1-10x2"),
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1-10x2"),
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     (".exr",),
                 ),
                 id="file.1-10x2#.exr",
@@ -65,17 +76,19 @@ class TestPathSequence:
                 ParsedSequence(
                     "textures",
                     ".",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1011-1012"),
-                            "<UDIM>",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1011-1012"),
+                                "<UDIM>",
+                            ),
+                            PaddedRange(
+                                FileNumSequence.from_str("1-3"),
+                                "#",
+                            ),
                         ),
-                        PaddedRange(
-                            FileNumSequence.from_str("1-3"),
-                            "#",
-                        ),
+                        ("_",),
                     ),
-                    ("_",),
                     (".tex",),
                 ),
                 id="textures.1011-1012<UDIM>_1-3#.tex",
@@ -94,13 +107,15 @@ class TestPathSequence:
                 ParsedSequence(
                     ".",
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     (".exr",),
                 ),
                 id=".#.exr",
@@ -110,13 +125,15 @@ class TestPathSequence:
                 ParsedSequence(
                     ".hidden",
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     (".exr",),
                 ),
                 id=".hidden#.exr",

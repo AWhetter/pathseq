@@ -15,16 +15,34 @@ class RangesStartName:
     """A parsed loose path sequence where the range starts a path's name."""
 
     prefix: Literal[""]
+    """An optional single character separator between the ranges and the previous component.
+
+    This is always empty for file names where the ranges start the name,
+    but is included so that :class:`~.RangesStartName`, :class:`~.RangesInName`,
+    and :class:`~.RangesEndName` all have the same attributes.
+    """
     ranges: Ranges
+    """The file numbers of the files in the sequence and their formatting."""
     postfix: str
+    """An optional single character separator between the ranges and the next component.
+
+    In sequences where the ranges start the name,
+    this separates the :ref:`ranges <format-loose-range>` from the
+    :ref:`stem <format-loose-stem>`.
+    """
     stem: str
+    """The name of the sequence, without the prefix, ranges, postfix, and suffixes."""
     suffixes: tuple[str, ...]
+    """The file extensions of the files in the path sequence.
+
+    Each suffix includes the leading "``.``".
+    """
 
     def __str__(self) -> str:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
-        """Return a new parsed sequence with the :attr:`~.stem` changed.
+        """Return a new parsed sequence with the :attr:`~.RangesStartName.stem` changed.
 
         If the stem is removed, the postfix will be as well.
         """
@@ -66,16 +84,34 @@ class RangesInName:
     """A parsed loose range sequence where the range follows a path's stem."""
 
     stem: str
+    """The name of the sequence, without the prefix, ranges, postfix, and suffixes."""
     prefix: str
+    """An optional single character separator between the ranges and the previous component.
+
+    In sequences where the ranges are in the name,
+    this separates the :ref:`ranges <format-loose-range>` from the
+    :ref:`stem <format-loose-stem>`.
+    """
     ranges: Ranges
+    """The file numbers of the files in the sequence and their formatting."""
     postfix: str
+    """An optional single character separator between the ranges and the next component.
+
+    In sequences where the ranges are in the name,
+    this separates the :ref:`ranges <format-loose-range>` from the
+    :ref:`suffixes <format-loose-suffixes>`.
+    """
     suffixes: tuple[str, ...]
+    """The file extensions of the files in the path sequence.
+
+    Each suffix includes the leading "``.``".
+    """
 
     def __str__(self) -> str:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
-        """Return a new parsed sequence with the :attr:`~.stem` changed.
+        """Return a new parsed sequence with the :attr:`~.RangesInName.stem` changed.
 
         If the stem is removed, the prefix will be as well.
         """
@@ -119,16 +155,34 @@ class RangesEndName:
     """A parsed loose range sequence where the range ends a path's name."""
 
     stem: str
+    """The name of the sequence, without the prefix, ranges, postfix, and suffixes."""
     suffixes: tuple[str, ...]
+    """The file extensions of the files in the path sequence.
+
+    Each suffix includes the leading "``.``".
+    """
     prefix: str
+    """An optional single character separator between the ranges and the previous component.
+
+    In sequences where the ranges are in the name,
+    this separates the :ref:`ranges <format-loose-range>` from the
+    :ref:`suffixes <format-loose-suffixes>`.
+    """
     ranges: Ranges
+    """The file numbers of the files in the sequence and their formatting."""
     postfix: Literal[""]
+    """An optional single character separator between the ranges and the next component.
+
+    This is always empty for file names where the ranges end the name,
+    but is included so that :class:`~.RangesStartName`, :class:`~.RangesInName`,
+    and :class:`~.RangesEndName` all have the same attributes.
+    """
 
     def __str__(self) -> str:
         return stringify_parsed_sequence(self)
 
     def with_stem(self, stem: str) -> Self:
-        """Return a new parsed sequence with the :attr:`~.stem` changed."""
+        """Return a new parsed sequence with the :attr:`~.RangesEndName.stem` changed."""
         kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         return self.__class__(**kwargs)

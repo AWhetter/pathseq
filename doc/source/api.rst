@@ -6,20 +6,20 @@ API Reference
    Path sequence classes come in two variations depending on the format
    of sequence string they support:
    :ref:`simple <simple-format>`, which prioritises simplicity to guarantee behaviour;
-   or :ref:`loose <loose-format>`, which prioritises compatibility with the most file names. 
+   or :ref:`loose <loose-format>`, which prioritises compatibility with more file names. 
    Both variations share common base classes.
 
    .. figure:: /_static/inheritance.svg
       :figclass: solid-background
       :width: 90%
 
-   If you aren't sure with variation is right for you,
+   If you aren't sure which variation is right for you,
    choose :ref:`simple <simple-format>` if you have control over the format of
    sequence strings that you support,
    and choose :ref:`loose <loose-format>` if you don't.
 
-   Like :mod:`pathlib`, both variants come in a `pure <Pure Path Sequences>`_
-   and `concrete <Concrete Path Sequences>`_ form.
+   The simple and loose variants both come in a `pure <Pure Path Sequences>`_
+   and `concrete <Concrete Path Sequences>`_ form, similar to the classes in :mod:`pathlib`.
    Pure path sequences contain :class:`pathlib.PurePath` objects,
    and concrete path sequences contain :class:`pathlib.Path` objects.
 
@@ -27,7 +27,11 @@ API Reference
    Pure Path Sequences
    -------------------
 
-   .. autotypevar:: PurePathT_co
+   .. py:data:: PurePathT_co
+      :value: TypeVar(PurePathT_co, bound=pathlib.PurePath, covariant=True)
+      :canonical: pathseq._base.PurePathT_co
+
+      The type of pure paths contained in a :class:`~.BasePurePathSequence`.
 
    .. autoclass:: BasePurePathSequence
       :show-inheritance:
@@ -37,7 +41,11 @@ API Reference
    Concrete Path Sequences
    -----------------------
 
-   .. autotypevar:: PathT_co
+   .. py:data:: PathT_co
+      :value: TypeVar(PathT_co, bound=pathlib.Path, covariant=True)
+      :canonical: pathseq._base.PathT_co
+
+      The type of concrete paths contained in a :class:`~.BasePathSequence`.
 
    .. autoclass:: BasePathSequence
       :show-inheritance:
@@ -85,8 +93,46 @@ API Reference
    File Number Sequences
    ---------------------
 
-   .. autotypevar:: FileNumT
+   .. py:data:: FileNumT
+      :type: typing.TypeVar
+      :value: TypeVar(FileNumT, int, decimal.Decimal)
+      :canonical: pathseq._ast._base.FileNumT
+
+      The type of file numbers in a :class:`~.FileNumSequence`.
 
    .. autoclass:: FileNumSequence()
       :show-inheritance:
+      :members:
+
+   Parsed Path Sequences
+   ---------------------
+
+   These classes represent a parsed path sequence in a tree structure.
+   Access to a parsed sequence can be useful for renaming sequences or
+   converting sequence strings between different formats.
+
+   .. seealso::
+
+      See :doc:`format` for the specification of what is valid in each part
+      of a sequence.
+
+   .. autoclass:: ParsedSequence
+      :members:
+
+   .. py:data:: ParsedLooseSequence
+      :value: pathseq.RangesStartName | pathseq.RangesInName | pathseq.RangesEndName
+
+   .. autoclass:: RangesStartName
+      :members:
+
+   .. autoclass:: RangesInName
+      :members:
+
+   .. autoclass:: RangesEndName
+      :members:
+
+   .. autoclass:: PaddedRange
+      :members:
+
+   .. autoclass:: Ranges
       :members:

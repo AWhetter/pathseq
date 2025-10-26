@@ -1,4 +1,20 @@
 class ParseError(ValueError):
+    """Raised when parsing a sequence string fails.
+
+    Args:
+        seq: The sequence string that failed parsing.
+        column: The index of the character of the part of the string that failed parsing.
+        end: The index of the last character of the part of the string that failed parsing.
+        reason: A human readable explanation of why parsing failed.
+    """
+
+    seq: str
+    """The sequence string that failed parsing."""
+    column: int
+    """The index of the character of the part of the string that failed parsing."""
+    end: int
+    """The index of the last character of the part of the string that failed parsing."""
+
     def __init__(
         self, seq: str, column: int, end_column: int = -1, reason: str | None = None
     ):
@@ -22,6 +38,12 @@ class ParseError(ValueError):
 
 
 class NotASequenceError(ParseError):
+    """Raised when parsing a string that does not represent a sequence, but a regular path.
+
+    In other words, the given sequence string has no :ref:`range <format-simple-range>`
+    present.
+    """
+
     def __init__(self, seq: str) -> None:
         super().__init__(seq, 0, len(seq) - 1, reason="No range string is present")
 
@@ -32,14 +54,18 @@ class IncompleteDimensionError(Exception):
     Example:
         .. code-block:: pycon
 
-            >>> for path in PathSequence("file.1001_1-3#.exr"):
+            >>> seq = PathSequence("file.1001-1002<UDIM>_1-3#.exr")
+            >>> for path in seq:
             ...     path.touch()
             ...
-            >>> for path in PathSequence("file.1002_1-2#.exr"):
-            ...     path.touch()
-            ...
-            >>> PathSequence.from_disk("file.<UDIM>_#.exr")
+            >>> seq.with_existing_paths()
+            PathSequence("file.1001-1002<UDIM>_1-3#.exr")
+            >>> Path('file.1002_3.exr').unlink()
+            >>> seq.with_existing_paths()
             Traceback (most recent call last):
             File "<stdin>", line 1, in <module>
             IncompleteDimensionError: Sequence 'file.<UDIM>_#.exr' contains an inconsistent number of files across one or more dimensions.
+            >>> Path('file.1001_3.exr').unlink()
+            >>> seq.with_existing_paths()
+            PathSequence("file.1001-1002<UDIM>_1-2#.exr")
     """

@@ -2,12 +2,16 @@ import pytest
 
 from pathseq._parse_loose_path_sequence import (
     parse_path_sequence,
+)
+from pathseq import (
+    FileNumSequence,
+    NotASequenceError,
     PaddedRange,
+    Ranges,
     RangesEndName,
     RangesInName,
     RangesStartName,
 )
-from pathseq import FileNumSequence, NotASequenceError
 
 
 class TestPathSequence:
@@ -18,13 +22,15 @@ class TestPathSequence:
                 "#_file.exr",
                 RangesStartName(
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "_",
                     "file",
                     (".exr",),
@@ -35,13 +41,15 @@ class TestPathSequence:
                 "1-10#_file.exr",
                 RangesStartName(
                     "",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1-10"),
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1-10"),
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "_",
                     "file",
                     (".exr",),
@@ -52,13 +60,15 @@ class TestPathSequence:
                 "1-10x2#_file.exr",
                 RangesStartName(
                     "",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1-10x2"),
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1-10x2"),
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "_",
                     "file",
                     (".exr",),
@@ -69,13 +79,15 @@ class TestPathSequence:
                 "#file.exr",
                 RangesStartName(
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     "file",
                     (".exr",),
@@ -86,13 +98,15 @@ class TestPathSequence:
                 "#file.tar.gz",
                 RangesStartName(
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     "file",
                     (".tar", ".gz"),
@@ -112,13 +126,15 @@ class TestPathSequence:
                 "#file",
                 RangesStartName(
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     "file",
                     (),
@@ -129,13 +145,15 @@ class TestPathSequence:
                 "#_file",
                 RangesStartName(
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "_",
                     "file",
                     (),
@@ -156,13 +174,15 @@ class TestPathSequence:
                 RangesInName(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (".exr",),
                 ),
@@ -173,13 +193,15 @@ class TestPathSequence:
                 RangesInName(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1-10"),
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1-10"),
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (".exr",),
                 ),
@@ -190,13 +212,15 @@ class TestPathSequence:
                 RangesInName(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1-10x2"),
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1-10x2"),
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (".exr",),
                 ),
@@ -207,13 +231,15 @@ class TestPathSequence:
                 RangesInName(
                     ".",
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (".exr",),
                 ),
@@ -224,13 +250,15 @@ class TestPathSequence:
                 RangesInName(
                     "",
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (
                         ".tar",
@@ -253,17 +281,19 @@ class TestPathSequence:
                 RangesInName(
                     "texture",
                     ".",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1011-1012"),
-                            "####",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1011-1012"),
+                                "####",
+                            ),
+                            PaddedRange(
+                                FileNumSequence.from_str("1-3"),
+                                "#",
+                            ),
                         ),
-                        PaddedRange(
-                            FileNumSequence.from_str("1-3"),
-                            "#",
-                        ),
+                        ("_",),
                     ),
-                    ("_",),
                     "",
                     (".tex",),
                 ),
@@ -283,13 +313,15 @@ class TestPathSequence:
                 RangesInName(
                     "",
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (".exr",),
                 ),
@@ -300,13 +332,15 @@ class TestPathSequence:
                 RangesInName(
                     "",
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (".tar", ".gz"),
                 ),
@@ -326,13 +360,15 @@ class TestPathSequence:
                 RangesInName(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     ".",
                     (),
                 ),
@@ -343,13 +379,15 @@ class TestPathSequence:
                 RangesInName(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "_",
                     (),
                 ),
@@ -360,13 +398,15 @@ class TestPathSequence:
                 RangesInName(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (),
                 ),
@@ -377,13 +417,15 @@ class TestPathSequence:
                 RangesInName(
                     "file",
                     "_",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (),
                 ),
@@ -394,13 +436,15 @@ class TestPathSequence:
                 RangesInName(
                     "file",
                     ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     ".exr.",
                     (),
                 ),
@@ -420,13 +464,15 @@ class TestPathSequence:
                 RangesInName(
                     "",
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                     (),
                 ),
@@ -437,17 +483,19 @@ class TestPathSequence:
                 RangesInName(
                     "",
                     "",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
-                        PaddedRange(
-                            "",
-                            "#",
-                        ),
+                        ("_",),
                     ),
-                    ("_",),
                     "",
                     (),
                 ),
@@ -468,13 +516,15 @@ class TestPathSequence:
                     "file",
                     (".exr",),
                     ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                 ),
                 id="file.exr.#",
@@ -485,13 +535,15 @@ class TestPathSequence:
                     "file",
                     (".exr",),
                     ".",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1-10"),
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1-10"),
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                 ),
                 id="file.exr.1-10#",
@@ -502,13 +554,15 @@ class TestPathSequence:
                     "file",
                     (".exr",),
                     ".",
-                    (
-                        PaddedRange(
-                            FileNumSequence.from_str("1-10x2"),
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                FileNumSequence.from_str("1-10x2"),
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                 ),
                 id="file.exr.1-10x2#",
@@ -519,13 +573,15 @@ class TestPathSequence:
                     ".file",
                     (".exr",),
                     ".",
-                    (
-                        PaddedRange(
-                            "",
-                            "#",
+                    Ranges(
+                        (
+                            PaddedRange(
+                                "",
+                                "#",
+                            ),
                         ),
+                        (),
                     ),
-                    (),
                     "",
                 ),
                 id=".file.exr.#",

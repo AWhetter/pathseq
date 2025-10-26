@@ -25,6 +25,9 @@ class Formatter:
             (self.inter_range(inter_range) for inter_range in ranges.inter_ranges),
         )
 
+    def postfix(self, postfix: str) -> str:
+        return postfix
+
     def suffixes(self, suffixes: tuple[str, ...]) -> str:
         return "".join(suffixes)
 
