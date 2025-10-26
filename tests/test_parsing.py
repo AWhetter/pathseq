@@ -25,7 +25,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_str(""),
                                 "#",
                             ),
                         ),
@@ -110,7 +110,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_str(""),
                                 "#",
                             ),
                         ),
@@ -128,7 +128,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_str(""),
                                 "#",
                             ),
                         ),

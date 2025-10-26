@@ -8,6 +8,7 @@ from typing_extensions import (
 
 from ._ast import PaddedRange, ParsedLooseSequence, Ranges
 from ._base import BasePurePathSequence, PurePathT_co
+from ._error import ParseError
 from ._file_num_seq import FileNumSequence
 from ._parse_loose_path_sequence import parse_path_sequence
 
@@ -43,6 +44,29 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
             ''
         """
         return super().suffix
+
+    def with_suffix(self, suffix: str) -> Self:
+        """Return a new path sequence with the suffix changed.
+
+        If the given suffix is the empty string, the existing suffix will be removed.
+        But if the path sequence has only one suffix,
+        then a :exc:`ValueError` will be raised because removing the suffix will result in
+        an invalid path sequence.
+
+        Args:
+            suffix: The new suffix to replace the existing suffix with.
+
+        Raises:
+            ValueError: If the given suffix would result in an invalid path sequence.
+        """
+        parsed = self._parsed.with_suffix(suffix)
+        try:
+            return self.with_segments(self._path.parent, str(parsed))
+        except ParseError:
+            raise ValueError(
+                f"Cannot use suffix '{suffix}' because"
+                " it would result in an invalid path sequence"
+            )
 
     @property
     def stem(self) -> str:

@@ -25,7 +25,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -82,7 +82,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -101,7 +101,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -129,7 +129,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -148,7 +148,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -177,7 +177,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -234,7 +234,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -253,7 +253,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -316,7 +316,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -335,7 +335,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -363,7 +363,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -382,7 +382,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -401,7 +401,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -420,7 +420,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -439,7 +439,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -467,7 +467,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -486,11 +486,11 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -519,7 +519,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
@@ -576,7 +576,7 @@ class TestPathSequence:
                     Ranges(
                         (
                             PaddedRange(
-                                "",
+                                FileNumSequence.from_file_nums([]),
                                 "#",
                             ),
                         ),
