@@ -148,7 +148,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         .. code-block:: pycon
 
             >>> PurePathSequence('/path/to/texture.1011-1012<UDIM>_1-3#.tex').file_num_seqs
-            (FileNumSequence('1011-1012'), FileNumSequence('1-3'))
+            (FileNumSequence(1011-1012), FileNumSequence(1-3))
         """
         ranges = tuple(
             x.file_nums
@@ -198,11 +198,11 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         .. code-block:: pycon
 
             >>> s = PurePathSequence(PureWindowsPath('c:/path/to/images.1-3####.exr'))
-            >>> s[0]
+            >>> s.parents[0]
             PureWindowsPath('c:/path/to')
-            >>> s[1]
+            >>> s.parents[1]
             PureWindowsPath('c:/path')
-            >>> s[2]
+            >>> s.parents[2]
             PureWindowsPath('c:/')
         """
         return self._path.parents
@@ -331,9 +331,9 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
         .. code-block:: pycon
 
-            >>> p = PurePathSequence('images.#1-3.exr')
+            >>> p = PurePathSequence('images.1-3#.exr')
             >>> p.with_stem('textures')
-            PurePathSequence('textures.#1-3.exr')
+            PurePathSequence('textures.1-3#.exr')
 
         Raises:
             ValueError: If the new stem is invalid.
@@ -362,7 +362,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
             >>> p = PurePathSequence('images.1-3#.exr')
             >>> p.path_with_file_nums(5)
-            PurePath('images.5.exr')
+            PurePosixPath('images.5.exr')
         """
         name = FileNumberFormatter(*numbers).format(self._parsed)
         return self._path.with_name(name)

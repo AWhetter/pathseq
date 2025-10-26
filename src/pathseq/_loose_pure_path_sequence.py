@@ -76,7 +76,7 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
 
             >>> LoosePurePathSequence('/path/to/images.1-3####.exr').stem
             'images'
-            >>> LoosePurePathSequence('/path/to/1-3####.images.exr').stem
+            >>> LoosePurePathSequence('/path/to/1-3####_images.exr').stem
             'images'
             >>> LoosePurePathSequence('/path/to/images.exr.1-3####').stem
             'images'
@@ -86,14 +86,14 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
 
         .. code-block:: pycon
 
-            >>> PurePathSequence('/path/to/images.tar.gz.1-3####').stem
+            >>> LoosePurePathSequence('/path/to/images.tar.gz.1-3####').stem
             'images'
 
         If the paths have no stem, then the empty string is returned:
 
         .. code-block:: pycon
 
-            >>> LosePurePathSequence('1-3#.tar.gz').stem
+            >>> LoosePurePathSequence('1-3#.tar.gz').stem
             ''
         """
         return super().stem

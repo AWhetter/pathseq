@@ -67,6 +67,9 @@ release_notes = [
 requires = ["uv_build>=0.8.5,<0.9.0"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+module-name = "pathseq"
+
 [tool.pylint]
 disable = "R,unused-argument"
 
@@ -80,8 +83,10 @@ title_format = "pathseq v{version} ({project_date})"
 markers = [
     "todo",
 ]
-addopts = "--doctest-glob='[!0]*.rst'"
+addopts = "--doctest-glob='[!0]*.rst' --doctest-modules"
+doctest_optionflags = "ELLIPSIS"
 testpaths = [
     "tests",
     "doc/source",
+    "src",
 ]
