@@ -55,18 +55,18 @@ class IncompleteDimensionError(Exception):
         .. code-block:: pycon
 
             >>> tmp = getfixture('tmp_path')
-            >>> seq = tmp / PathSequence('file.1001-1002<UDIM>_1-3#.exr')
+            >>> seq = tmp / PathSequence('file.1001,1002<UDIM>_1-3#.exr')
             >>> for path in seq:
             ...     path.touch()
             ...
             >>> seq.with_existing_paths()
-            PathSequence('.../file.1001-1002<UDIM>_1-3#.exr')
+            PathSequence('.../file.1001,1002<UDIM>_1-3#.exr')
             >>> (tmp / 'file.1002_3.exr').unlink()
             >>> seq.with_existing_paths()
             Traceback (most recent call last):
             ...
-            pathseq._error.IncompleteDimensionError: Sequence '.../file.1001-1002<UDIM>_1-3#.exr' contains an inconsistent number of files across one or more dimensions.
+            pathseq._error.IncompleteDimensionError: Sequence '.../file.1001,1002<UDIM>_1-3#.exr' contains an inconsistent number of files across one or more dimensions.
             >>> (tmp / 'file.1001_3.exr').unlink()
             >>> seq.with_existing_paths()
-            PathSequence('.../file.1001-1002<UDIM>_1-2#.exr')
+            PathSequence('.../file.1001,1002<UDIM>_1,2#.exr')
     """

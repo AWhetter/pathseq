@@ -147,8 +147,8 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
         .. code-block:: pycon
 
-            >>> PurePathSequence('/path/to/texture.1011-1012<UDIM>_1-3#.tex').file_num_seqs
-            (FileNumSequence(1011-1012), FileNumSequence(1-3))
+            >>> PurePathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').file_num_seqs
+            (FileNumSequence(1011-1013), FileNumSequence(1-3))
         """
         ranges = tuple(
             x.file_nums

@@ -107,6 +107,8 @@ class ArithmeticSequence(Sequence[FileNumT]):
         result = f"{self.start}-{self.end}"
         if self.step != 1:
             result += f"x{self.step}"
+        elif len(self) == 2:
+            return ",".join(str(x) for x in self)
 
         return result
 
