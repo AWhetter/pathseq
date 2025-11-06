@@ -33,6 +33,17 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
         return self._parsed
 
     @property
+    def postfix(self) -> str:
+        """A string that separates the ranges from the next component of the name.
+
+        .. code-block:: pycon
+
+            >>> LoosePurePathSequence('file.1-3####_final.exr').postfix
+            '_final'
+        """
+        return self._parsed.postfix
+
+    @property
     def suffix(self) -> str:
         """The file extension of the paths in the sequence.
 

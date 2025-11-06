@@ -26,6 +26,7 @@ The file paths in a path sequence are looped over in order.
     PosixPath('/path/to/image.0005.exr')
 
 PathSeq supports multi-dimension sequences (eg animated UDIMs).
+The file paths are looped over in order like nested for-loops.
 
 .. code-block:: pycon
 

@@ -18,9 +18,6 @@ from typing_extensions import (
 from ._ast import (
     ParsedLooseSequence,
     ParsedSequence,
-    RangesEndName,
-    RangesInName,
-    RangesStartName,
 )
 from ._error import ParseError
 from ._file_num_seq import FileNumSequence
@@ -136,6 +133,17 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
             >>> PurePathSequence('/path/to/images.1-3####.exr').stem
             'images'
+        """
+        return self._parsed.stem
+
+    @property
+    def prefix(self) -> str:
+        """A single character that separates the stem from the range strings.
+
+        .. code-block:: pycon
+
+            >>> PurePathSequence('/path/to/images.1-3####.exr').prefix
+            '.'
         """
         return self._parsed.stem
 

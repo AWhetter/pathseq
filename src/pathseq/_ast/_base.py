@@ -93,6 +93,9 @@ class PaddedRange(Generic[FileNumT]):
     def __str__(self) -> str:
         return str(self.file_nums) + self.pad_format
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self})"
+
     def format(self, number: int | Decimal) -> str:
         """Format the given number using the range's padding rules."""
         if self.pad_format == "<UVTILE>":
@@ -141,6 +144,9 @@ class Ranges:
             (str(range_) for range_ in self.ranges),
             self.inter_ranges,
         )
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self})"
 
 
 # The MIT License (MIT)

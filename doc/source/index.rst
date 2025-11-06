@@ -74,15 +74,12 @@ A wide range of sequence string formats are supported:
     PosixPath('/path/to/images.u1_v1.exr')
 
 
-Documentation
--------------
-
 .. toctree::
     :hidden:
 
     quickstart
-    format
     user/index
     api
+    format
     contributor
     decisions/index

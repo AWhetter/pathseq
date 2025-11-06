@@ -1,26 +1,30 @@
-*****************************
-Sequence String Specification
-*****************************
+***********************
+Sequence String Formats
+***********************
 
-.. sectnum::
-
-The document is a formal specification of the sequence strings that PathSeq can parse.
-It includes suggested behaviour of a PathSeq-compliant library when parsing these strings.
-
-This document uses :rfc:`2119` keywords to emphasise required and optional behaviour.
-
+PathSeq supports two variations of sequence string format.
 PathSeq's chosen sequence format is a simple, unambiguous format that maximises
 compatibility across VFX DCCs (Digital Content Creation software).
+The :ref:`loose format <loose-format>` is a more complex and ambiguous format
+that can represent more configurations of file name.
+
+If you aren't sure which variation is right for you,
+choose :ref:`simple <simple-format>` if you have control over the format of
+sequence strings that you support,
+and choose :ref:`loose <loose-format>` if you don't.
 
 .. seealso::
 
-   See :ref:`adr-001` for more information about why this format was chosen.
+   See :ref:`adr-001` for more information about why the simple format was chosen.
+
+   See :ref:`compatibility` for a review of this format's ability to represent
+   file sequences the different DCCs accept or output.
 
 
-.. _simple-spec:
+.. _simple-format:
 
-Simple Path Sequences
-=====================
+Path Sequences
+==============
 
 Like in :mod:`pathlib`,
 the name of a path sequence is the final component in a path.
@@ -31,6 +35,11 @@ the name of a path sequence is the final component in a path.
               ├──────────────────────┤
               │         name         │
               └──────────────────────┘
+
+.. code-block:: pycon
+
+   >>> PathSequence('/directory/file.1001-1010#.tar.gz').name
+   'file.1001-1010#.tar.gz'
 
 Unlike a :class:`pathlib.Path`, a path sequence's name
 represents the name of not one file but of all the files in the sequence.
@@ -51,6 +60,20 @@ The name has four components:
              │           name            │
              └───────────────────────────┘
 
+.. code-block:: pycon
+
+   >>> seq = PathSequence('/directory/file.1001-1010#.tar.gz')
+   >>> seq.name
+   'file.1001-1010#.tar.gz'
+   >>> seq.stem
+   'file'
+   >>> seq.prefix
+   '.'
+   >>> seq.parsed.ranges
+   Ranges(1001-1010#)
+   >>> seq.suffixes
+   ('.tar', '.gz')
+
 Supporting multiple ranges in a sequence requires an additional component:
 an inter-range separator.
 
@@ -65,47 +88,44 @@ an inter-range separator.
                      └────────────────────────────┘
 
 
-.. _spec-simple-stem:
+.. _format-simple-stem:
 
 Stem
 ----
 
 The stem is the name of a path sequence, without the prefix, ranges, and suffixes.
-A non-empty stem MUST be present in the name of a path sequence.
+A non-empty stem will always be present in the name of a path sequence.
 
-The stem MUST NOT contain a valid :ref:`range string <spec-simple-range>`,
-or by definition it would be considered part of the ranges.
+.. code-block:: pycon
 
-The stem MUST NOT end with a "``-``" or digit,
-otherwise there is no clear end to the stem and the start of the ranges.
-For example, in ``file-1.1-5#.tar.gz`` it is unclear whether the stem and range are
-``file`` and ``-1.1-5#`` respectively, or ``file-1`` and ``1-5#``.
-
-.. note::
-
-   Although this ambiguity is removed when a prefix separator of "``_``" is included,
-   ending the stem with a digit is still forbidden
-   to prevent complexity in an API that implements this format.
-   For example, if it were possible to rename a path sequence by
-   removing or changing the prefix, doing that may not be possible unless
-   the stem is changed first.
+   >>> PathSequence('/path/to/images.1-3####.exr').stem
+   'images'
+   >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').stem
+   'texture'
 
 
-.. _spec-simple-prefix:
+.. _format-simple-prefix:
 
 Prefix
 ------
 
-The prefix is a single character that separates the :ref:`stem <spec-simple-stem>`
-from the :ref:`ranges <spec-simple-range>`.
+The prefix is an optional, single "``.``" or "``_``" character that separates the :ref:`stem <format-simple-stem>`
+from the :ref:`ranges <format-simple-range>`.
 
-The name of a path sequence MAY contain a single prefix character.
+.. code-block:: pycon
 
-The prefix character MUST be one of "``.``" or "``_``".
+   >>> PathSequence('/path/to/images.1-3####.exr').prefix
+   '.'
+   >>> PathSequence('/path/to/images_1-3####.exr').prefix
+   '_'
+   >>> PathSequence('/path/to/images1-3####.exr').prefix
+   ''
+   >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').prefix
+   '.'
 
 .. tip::
 
-   Including a prefix as "``.``" is RECOMMENDED for best compatibility with VFX software.
+   Including a prefix as "``.``" is recommended for best compatibility with VFX software.
 
    .. code-block:: text
 
@@ -113,7 +133,7 @@ The prefix character MUST be one of "``.``" or "``_``".
       file.1001-1010#.tar.gz
 
 
-.. _spec-simple-range:
+.. _format-simple-range:
 
 Range
 -----
@@ -122,7 +142,7 @@ The range is a concice representation of the file numbers of each file
 in the sequence plus a definition of how those numbers are formatted
 in the resulting file names.
 
-A range MUST be present in the name of a path sequence.
+A range will always be present in the name of a path sequence.
 A range consists of the ranges specifier, and the padding.
 
 .. code-block:: text
@@ -132,8 +152,15 @@ A range consists of the ranges specifier, and the padding.
    │      ranges       │padding│
    └───────────────────┴───────┘
 
+.. code-block::
 
-.. _spec-simple-ranges:
+   >>> PathSequence('/path/to/images.1-3####.exr').parsed.ranges
+   Ranges(1-3###)
+   >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.ranges
+   Ranges(1011-1013<UDIM>_1-3#)
+
+
+.. _format-simple-ranges:
 
 Ranges Specifier
 ~~~~~~~~~~~~~~~~
@@ -141,37 +168,42 @@ Ranges Specifier
 The ranges specifier is a concice representation of the file numbers of each file
 in the sequence.
 
-The ranges specifier is OPTIONAL.
-When no ranges specifier is present, the path sequence is considered empty.
-
 A ranges specifier consists of comma separated range specifiers,
 where each range specifier is of the format ``START-ENDxSTEP``.
-``START`` is REQUIRED, and ``END`` and ``xSTEP`` are OPTIONAL.
+``START`` is required, and ``END`` and ``xSTEP`` are optional.
 
-``START`` is the first value in the range,
-``END`` is the last value in the range (in other words, ``END`` is inclusive),
-and ``STEP`` represents the difference between numbers in the range.
-When ``STEP`` is not present, it defaults to 1.
+.. code-block:: pycon
 
-More formally, a range specifier represents a
-`finite Arithmetic Progression <https://en.wikipedia.org/wiki/Arithmetic_progression>`_.
+   >>> seq = PathSequence('/path/to/images.1-5####.exr')
+   >>> seq.file_num_seqs
+   (FileNumSequence(1-5),)
+   >>> list(FileNumSequence.from_str('1-5')
+   [1, 2, 3, 4, 5]
+   >>> list(FileNumSequence.from_str('1'))
+   [1]
+   >>> list(FileNumSequence.from_str('1-5x2'))
+   [1, 3, 5]
+   >>> list(FileNumSequence.from_str('1-6x2'))
+   [1, 3, 5]
+   >>> list(FileNumSequence.from_str('1-2x0.5'))
+   [Decimal('1'), Decimal('1.5'), Decimal('2.0')]
 
-So the range specifier "``1-5``" represents the numbers 1, 2, 3, 4, 5.
-The range specifier "``1-5x2``" represents the numbers 1, 3, 5.
+The ranges specifier is optional.
+When no ranges specifier is present, the path sequence is considered empty.
+
+.. code-block:: pycon
+
+   >>> list(PathSequence('/path/to/images.####.exr'))
+   []
 
 
-.. _spec-simple-padding:
+.. _format-simple-padding:
 
 Padding
 ~~~~~~~
 
-The padding string is definition of how a file number is formatted
+The padding string (or pad string) is definition of how a file number is formatted
 in each file name contained in the sequence.
-
-The padding is a REQUIRED part of the ranges.
-
-A pad string represents how the numbers in the range should be formatted
-when putting a number from the range into a file path.
 
 A pad string can be a string of "``#``" characters, or a MaterialX token.
 
@@ -183,21 +215,32 @@ The most basic form of a pad string is a string of "``#``" characters.
 The number of "``#``" represents the minimum with of the formatted number.
 If the stringified number is smaller than the width,
 then it will be zero padded.
+
+.. code-block:: pycon
+
+   >>> seq = PathSequence('/path/to/images.1-3####.exr').parsed.ranges[0]
+   PaddedRange(1-3####)
+   >>> PaddedRange((), '####').format(1)
+   '0001'
+   >>> PaddedRange((), '##').format(1)
+   '01'
+   >>> PaddedRange((), '####').format(-1)
+   '-001'
+
 If the stringified number is larger than the width,
 it will exceed the given width.
 
-A "``-``" sign, to indicate a negative number, is counted in the width.
+.. code-block:: pycon
 
-.. list-table::
+   >>> PaddedRange((), '#').format(1001)
+   '1001'
 
-   * - Frame range string
-     - Formats to
-   * - ``1####``
-     - ``0001``
-   * - ``1001#``
-     - ``1001``
-   * - ``-1####``
-     - ``-001``
+In a negative number the "``-``" sign is counted in the width.
+
+.. code-block:: pycon
+
+   >>> PaddedRange((), '####').format(-1)
+   '-001'
 
 .. note::
 
@@ -223,54 +266,45 @@ describes two tokens for representing UDIMs in file names.
   As an example, ``texture.1001-1010<UDIM>_1001-1010####.tex``
   is clearer than ``texture.1001-1010####_1001-1010####.tex``.
 
+  .. code-block:: pycon
+
+     >>> PaddedRange((), '<UDIM>').format(1)
+     '0001'
+
 * ``<UVTILE>``: This token represents the string
   ":math:`\text{u}U\text{_v}V`", where :math:`U` is :math:`1+` the integer portion of the u coordinate,
   and :math:`V` is :math:`1+` the integer portion of the v coordinate.
 
-.. list-table::
+  .. code-block:: pycon
 
-   * - Frame range string
-     - Formats to
-   * - ``1001<UDIM>``
-     - ``1001``
-   * - ``1001<UVTILE>``
-     - ``u1_v1``
-   * - ``1002<UVTILE>``
-     - ``u2_v1``
-   * - ``1010<UVTILE>``
-     - ``u1_v2``
-   * - ``1011<UVTILE>``
-     - ``u2_v2``
+     >>> PaddedRange((), '<UVTILE>').format(1001)
+     'u1_v1'
+     >>> PaddedRange((), '<UVTILE>').format(1002)
+     'u2_v1'
+     >>> PaddedRange((), '<UVTILE>').format(1010)
+     'u1_v2'
+     >>> PaddedRange((), '<UVTILE>').format(1011)
+     'u2_v2'
 
 .. tip::
 
-   Using ``<UDIM>`` is RECOMMENDED over ``<UVTILE>`` for best compatibility across VFX software.
+   Using ``<UDIM>`` is recommended over ``<UVTILE>`` for best compatibility across VFX software.
 
 
-.. _spec-simple-inter-range:
+.. _format-simple-inter-range:
 
 Inter-range Separator
 ---------------------
 
 An inter-range separator separates one range from another in a multi-range path sequence.
-A non-empty inter-range separator MUST exist between each range.
+A non-empty inter-range separator will always exist between each range.
 
-An inter-range separator MUST NOT be a single "``.``" character,
-so that it is clear when there are two ranges in the resulting file paths
-rather than a single range with subframes.
+.. code-block::
 
-.. code-block:: text
-
-   # Good
-   file.1011-1019<UDIM>_1-5#.tar.gz  # file.1011_1.tar.gz
-   file.1011-1019<UDIM>_1-5x0.5#.#.tar.gz  # file.1011_1.5.tar.gz
-
-   # Bad
-   file.1011-1019<UDIM>.1-5#.tar.gz
-   # In file.1011.5.tar.gz, it is unclear if there's numbers from two ranges (1001 and 5),
-   # or a single subframe (1011.5).
-   file.1011-1019<UDIM>1-5#.tar.gz
-   # In file.10115.tar.gz, it looks like there is only a single frame number.
+   >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.ranges.inter_ranges
+   ('_',)
+   >>> PathSequence('texture.1-3#_interrange_1-3#.tex').parsed.ranges.inter_ranges
+   ('_interrange_',)
 
 .. tip::
 
@@ -284,193 +318,42 @@ rather than a single range with subframes.
       file.1-5#_1001-1010#.vdb
       file.1001-1005<UDIM>_1001-1010#.exr
 
-An inter-range separator MUST NOT contain a valid :ref:`range string <spec-simple-range>`,
-or by definition it would itself be part of the ranges.
 
-An inter-range separator MUST NOT end with a "``-``" or digit,
-otherwise there is no clear end to the separator and the start of the next range.
-Similarly, an inter-range separator MUST NOT start with a digit,
-or a "``.``" and digits,
-otherwise there is no clear end of the previous range and start to the separator.
-
-
-.. _spec-simple-suffixes:
+.. _format-simple-suffixes:
 
 Suffixes
 --------
 
-Suffixes MUST be present in the name of the sequence.
 The file suffixes represent the file extension of the files in the path sequence.
 The suffixes include the leading "``.``".
+They will always be present.
 
-The suffixes MUST NOT contain a valid :ref:`range string <spec-simple-range>`,
-or by definition they would be part of the ranges.
+.. code-block:: pycon
 
-The suffixes MUST NOT start with a "``.``" and digits
-otherwise there is no clear end of the previous range and start to the suffixes.
-
-
-Order
------
-
-* TODO: Mention order of ranges in string is order of iteration.
-  No sorting yet.
-
-
-Parsing
--------
-
-File sequences are parsed by a two step process consisting of tokenisation
-and parsing those tokens with a
-`Deterministic Finite State Machine <https://en.wikipedia.org/wiki/Deterministic_finite_automaton>`_.
-That state machine is as follows:
-
-.. figure:: /_static/format.svg
-   :figclass: solid-background
-   :width: 90%
+   >>> PathSequence('images.1-3####.exr').suffix
+   '.exr'
+   >>> PathSequence('images.1-3####.exr').suffixes
+   ('.exr',)
+   >>> PathSequence('file.1-3####.tar.xz').suffix
+   '.xz'
+   >>> PathSequence('file.1-3####.tar.xz').suffixes
+   ('.tar', '.xz')
 
 
-Range Grammar
--------------
-
-Ranges are simple enough to form an unambiguous
-`Context Free Grammar <https://en.wikipedia.org/wiki/Context-free_grammar>`_.
-
-.. productionlist:: frame_ranges
-   ranges: range ("," range)*
-   range: FILE_NUM ["-" FILE_NUM ["x" NUM]]
-   FILE_NUM: "-"? NUM
-   NUM: (0|[1-9][0-9]*)
-      : (\.0|\.[0-9]*[1-9])?
-
-
-.. _compatibility:
-
-Compatibility with VFX Software
--------------------------------
-
-This format was chosen for its compatibility with software commonly used in
-the VFX industry.
-
-The "**File Compatible**" column notes whether pathseq can represent
-a file sequence output by the DCC.
-
-DCCs often support different sequence string formats depending on whether the
-file sequence is being read or written by the DCC.
-Therefore this table separately notes
-whether a simple pathseq sequence string be passed to the DCC
-directly for the DCC to use to read a file sequence (**Read Compatible**),
-and whether a simple pathseq sequence string be passed to the DCC
-directly for the DCC to use to write a file sequence (**Write Compatible**).
-
-.. list-table::
-   :header-rows: 1
-
-   * - Software
-     - File Compatible
-     - Read Compatible
-     - Write Compatible
-     - Notes
-   * - Arnold
-     - N/A
-     - ✔
-     - N/A
-     -
-   * - Blender
-     - ✔ [#]_
-     - N/A
-     - ✔
-     -
-   * - fileseq
-     - N/A
-     - ✔ [#]_
-     - N/A
-     -
-   * - Houdini
-     - Partial
-     - ✗
-     - ✗
-     - [#]_
-   * - Katana
-     - ✔
-     - N/A
-     - ✔
-     -
-   * - Mari
-     - ✔
-     - ✗
-     - ✗
-     - [#]_
-   * - Maya (file texture node)
-     - N/A
-     - ✔
-     - N/A
-     -
-   * - Maya (fcheck)
-     - Partial [#]_
-     - ✔
-     - ✔
-     -
-   * - Mudbox
-     - ✔
-     - ✗
-     - ✗
-     -
-   * - Nuke
-     - ✔
-     - ✔
-     - ✔
-     -
-   * - USD
-     - N/A
-     - ✔
-     - N/A
-     -
-   * - ZBrush
-     - ✔
-     - ✗
-     - ✗
-     -
-
-Notes:
-
-.. [#] Blender supports writing sequences that start with a range,
-   which would not be compatible with pathseq format.
-   But, unlike other formats, such ranges need to be passed as an absolute path
-   so aren't as well supported by Blender.
-.. [#] fileseq treats ``#`` as 4 digits of padding by default.
-   It must be passed an argument to treat ``#`` as a single digit of padding.
-.. [#] Houdini expressions use their own syntax (See :ref:`houdini_file_seq`).
-   Houdini syntax is infinitely flexible,
-   but it can be used to express the same sequences as pathseq.
-.. [#] Mari supports only ``$UDIM`` but files are output as interpreted by ``<UDIM>``.
-.. [#] fcheck supports writing sequences as ``file#.ext`` and ``#file.ext``,
-   but ``file.#.ext`` format must be used for pathseq's simple format.
-
-
-.. _loose-spec:
+.. _loose-format:
 
 Loose Path Sequences
 ====================
 
-The PathSeq API has the concept of a "loose" format.
 Whereas the simple sequence string format maximises simplicity
 and compatibility across VFX software,
 the loose format prioritises compatibility in parsing more sequence strings.
-This compatibility comes at a cost of complexity,
-and a loose sequence string is less likely to be cross-compatible between VFX software.
+This compatibility comes at a cost of complexity and ambiguity.
 
-The loose format is a flexible format that is useful
-when parsing sequence strings from unknown sources.
-It can parse the most sequence strings,
-but those strings may only work for one DCC.
-This format can be useful when there isn't a guarantee that the
-sequence string being parsed is in the simple format.
-
-In `Simple Path Sequences`_ we saw that in the simple format,
+In `Path Sequences`_ we saw that in the simple format,
 a sequence's name has five components:
 the stem, an optional prefix, the ranges, inter-range strings, and the suffixes.
-The loose format has an additional component — the OPTIONAL postfix —
+The loose format has an additional component — the optional postfix —
 to support additional characters after the ranges but before the next component.
 
 .. code-block:: text
@@ -482,6 +365,11 @@ to support additional characters after the ranges but before the next component.
          └────┴──────┼──────────┴───────────┴─────┼───────┴────────┘
                      │           ranges           │
                      └────────────────────────────┘
+
+.. code-block:: pycon
+
+   >>> LoosePathSequence('file.1001-1002<UDIM>_1001-1010#_final.tar.gz').postfix
+   '_final'
 
 In addition, ranges can be placed anywhere in a loose sequence string.
 The placement of the ranges in the strings creates three varieties of loose sequence strings,
@@ -499,6 +387,11 @@ The ranges can be at the start of the name:
               │           ranges           │
               └────────────────────────────┘
 
+.. code-block:: pycon
+
+   >>> LoosePathSequence('1001-1002<UDIM>_1001-1010#_filename.tar.gz').parsed
+   RangesStartName(...)
+
 The ranges can be inside the name:
 
 .. code-block:: text
@@ -510,6 +403,11 @@ The ranges can be inside the name:
          └────┴──────┼──────────┴───────────┴─────┼───────┴────────┘
                      │           ranges           │
                      └────────────────────────────┘
+
+.. code-block:: pycon
+
+   >>> LoosePathSequence('file.1001-1002<UDIM>_1001-1010#_final.tar.gz').parsed
+   RangesInName(...)
 
 Finally, the ranges can be at the end of the name:
 
@@ -523,6 +421,11 @@ Finally, the ranges can be at the end of the name:
                              │           ranges           │
                              └────────────────────────────┘
 
+.. code-block:: pycon
+
+   >>> LoosePathSequence('file.tar.gz.1001-1002<UDIM>_1001-1010#').parsed
+   RangesEndName(...)
+
 .. warning::
 
    Because the stem or suffix are allowed to be empty, the loose format is ambiguous.
@@ -531,44 +434,34 @@ Finally, the ranges can be at the end of the name:
    or the range starts the string and has a stem of "tar" and prefix of ".",
    or the range is in the string and has a blank stem and prefix.
 
-   Implementations of PathSeq do not need to provide consistent behaviour when
-   parsing ambiguous loose format strings.
+   Therefore the loose format can only make a best guess at how to interpret a sequence string.
+   The simple format can be parsed consistently.
 
 
-.. _spec-loose-stem:
+.. _format-loose-stem:
 
 Stem
 ----
 
 The stem is the name of a path sequence, without the prefix, ranges, postfix, and suffixes.
-A non-empty stem MAY be present in the name of a path sequence.
+A non-empty stem may or may not be present in the name of a path sequence.
 
-The stem MUST NOT contain a valid :ref:`range string <spec-simple-range>`,
-or by definition it would be considered part of the ranges.
-
-The stem MAY start or end with a "``-``", or digit, or "``.``" and digits,
-but this is NOT RECOMMENDED because it creates abiguity when parsing
-a file in the sequence.
+TODO
 
 .. note::
 
    Path sequences that represent a sequence of hidden files (files starting with a ``.``)
    are interpreted as though the stem starts with "``.``".
 
-   In this example, where the ranges are in the name, the stem is ``.``:
+   .. code-block:: pycon
 
-   .. code:: text
-
-      .1-5#.ext
-
-   In this example, where the ranges end the name, the stem is ``.tar``.
-
-   .. code:: text
-
-      .tar.gz1-5#
+      >>> LoosePathSequence('.1-5#.ext').stem
+      '.'
+      >>> LoosePathSequence('.tar.gz1-5#').stem
+      '.tar'
 
 
-.. _spec-loose-prefix:
+.. _format-loose-prefix:
 
 Prefix
 ------
@@ -582,16 +475,16 @@ The prefix separates the ranges from the previous component in the name.
 The prefix character MUST be one of "``.``" or "``_``".
 
 
-.. _spec-loose-range:
+.. _format-loose-range:
 
 Range
 -----
 
 A range MUST be present in the name of a path sequence.
-It follows the same format as for simple path sequences (see :ref:`spec-simple-range`).
+It follows the same format as for simple path sequences (see :ref:`format-simple-range`).
 
 
-.. _spec-loose-inter-range:
+.. _format-loose-inter-range:
 
 Inter-range Separator
 ---------------------
@@ -601,7 +494,7 @@ A non-empty inter-range separator MAY exist between each range.
 Omitting the inter-range separator is NOT RECOMMENDED in multi-range sequences
 because it creates abiguity when parsing a file in the sequence.
 
-An inter-range separator MUST NOT contain a valid :ref:`range string <spec-simple-range>`,
+An inter-range separator MUST NOT contain a valid :ref:`range string <format-simple-range>`,
 or by definition it would itself be part of the ranges.
 
 An inter-range separator MAY end with a "``-``" or digit,
@@ -613,12 +506,12 @@ but this is NOT RECOMMENDED either because it creates abiguity when parsing
 a file in the sequence.
 
 
-.. _spec-loose-postfix:
+.. _format-loose-postfix:
 
 Postfix
 -------
 
-The prefix is a single character that separates the :ref:`ranges <spec-loose-range>`
+The prefix is a single character that separates the :ref:`ranges <format-loose-range>`
 from the next component of the sequence's name.
 
 The rules that define what is a valid postfix, depend on the type of path sequence.
@@ -643,7 +536,7 @@ In path sequences where the name ends with a range:
 * A postfix CANNOT be present, otherwise the ranges would exist inside of the name.
 
 
-.. _spec-loose-suffixes:
+.. _format-loose-suffixes:
 
 Suffixes
 --------
@@ -653,7 +546,7 @@ The file suffixes represent the file extension of the files in the path sequence
 Suffixes MAY be present in the name of the sequence.
 The suffixes include the leading "``.``".
 
-The suffixes MUST NOT contain a valid :ref:`range string <spec-simple-range>`,
+The suffixes MUST NOT contain a valid :ref:`range string <format-simple-range>`,
 or by definition they would be part of the ranges.
 
 The suffixes MUST NOT start with a "``.``" and digits

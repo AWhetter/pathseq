@@ -125,6 +125,20 @@ def process_tokens(seq: str, raw_tokens: list[str]) -> list[Token]:
             )
             tokens.append(token)
         elif i >= 2 and i != len(raw_tokens) - 1:
+            if not raw_token:
+                raise ParseError(
+                    seq,
+                    column + 1,
+                    column + 2,
+                    "Expected a non-empty inter-range separator",
+                )
+            if raw_token == '.':
+                raise ParseError(
+                    seq,
+                    column + 1,
+                    column + 2,
+                    "Cannot use '.' as an inter-range separator",
+                )
             token = Token(
                 TokenType.INTER_RANGE,
                 raw_token,
