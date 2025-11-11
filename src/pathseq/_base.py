@@ -137,17 +137,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         return self._parsed.stem
 
     @property
-    def prefix(self) -> str:
-        """A single character that separates the stem from the range strings.
-
-        .. code-block:: pycon
-
-            >>> PurePathSequence('/path/to/images.1-3####.exr').prefix
-            '.'
-        """
-        return self._parsed.stem
-
-    @property
     def file_num_seqs(
         self,
     ) -> Sequence[FileNumSequence[int] | FileNumSequence[Decimal]]:
@@ -226,45 +215,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             PurePosixPath('/a/b/c')
         """
         return self._path.parent
-
-    @property
-    def drive(self) -> str:
-        """A string representing the drive letter or name.
-
-        .. code-block:: pycon
-
-            >>> PurePathSequence(PureWindowsPath('c:/Program Files/image.1-3####.exr')).drive
-            'c:'
-            >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).drive
-            ''
-        """
-        return self._path.drive
-
-    @property
-    def root(self) -> str:
-        r"""A string representing the (local or global) root, if any.
-
-        .. code-block:: pycon
-
-            >>> PurePathSequence(PureWindowsPath('c:/Program Files/image.1-3####.exr')).root
-            '\\'
-            >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).root
-            '/'
-        """
-        return self._path.root
-
-    @property
-    def anchor(self) -> str:
-        r"""The concatenation of the drive and root.
-
-        .. code-block:: pycon
-
-            >>> PurePathSequence(PureWindowsPath('c:/Program Files/image.1-3####.exr')).anchor
-            'c:\\'
-            >>> PurePathSequence(PurePosixPath('/etc/image.1-3####.exr')).anchor
-            '/'
-        """
-        return self._path.anchor
 
     def as_posix(self) -> str:
         r"""Return a string representation of the sequence with forward slashes (/).

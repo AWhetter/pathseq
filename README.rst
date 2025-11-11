@@ -21,8 +21,8 @@ A pathlib-first library for working with file sequences.
 
 TODO: Note special features
 
+* Multi-dimension ranges (eg animated udims)
 * pathlib-first API
-* Multi-dimension ranges (eg animated udim)
 * Support for UDIM tokens
 * Sequence compression?
 

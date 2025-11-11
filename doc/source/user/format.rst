@@ -67,7 +67,7 @@ The name has four components:
    'file.1001-1010#.tar.gz'
    >>> seq.stem
    'file'
-   >>> seq.prefix
+   >>> seq.parsed.prefix
    '.'
    >>> seq.parsed.ranges
    Ranges(1001-1010#)
@@ -114,13 +114,13 @@ from the :ref:`ranges <format-simple-range>`.
 
 .. code-block:: pycon
 
-   >>> PathSequence('/path/to/images.1-3####.exr').prefix
+   >>> PathSequence('/path/to/images.1-3####.exr').parsed.prefix
    '.'
-   >>> PathSequence('/path/to/images_1-3####.exr').prefix
+   >>> PathSequence('/path/to/images_1-3####.exr').parsed.prefix
    '_'
-   >>> PathSequence('/path/to/images1-3####.exr').prefix
+   >>> PathSequence('/path/to/images1-3####.exr').parsed.prefix
    ''
-   >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').prefix
+   >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.prefix
    '.'
 
 .. tip::
@@ -368,7 +368,7 @@ to support additional characters after the ranges but before the next component.
 
 .. code-block:: pycon
 
-   >>> LoosePathSequence('file.1001-1002<UDIM>_1001-1010#_final.tar.gz').postfix
+   >>> LoosePathSequence('file.1001-1002<UDIM>_1001-1010#_final.tar.gz').parsed.postfix
    '_final'
 
 In addition, ranges can be placed anywhere in a loose sequence string.
