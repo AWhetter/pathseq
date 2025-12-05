@@ -83,7 +83,7 @@ title_format = "pathseq v{version} ({project_date})"
 markers = [
     "todo",
 ]
-addopts = "--doctest-glob='[!0]*.rst' --doctest-modules"
+addopts = "--doctest-glob='[!0]*.rst' --doctest-modules --ignore=doc/source/conf.py"
 doctest_optionflags = "ELLIPSIS"
 testpaths = [
     "tests",

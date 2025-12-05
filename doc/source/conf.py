@@ -57,7 +57,6 @@ autodoc_type_aliases = {
 }
 
 
-
 # -- Patch section numbering -------------------------------------------------
 
 from docutils import nodes
@@ -69,6 +68,7 @@ class Sectnum(SectnumDirective):
     """
     Override the Sectnum directive to call my own Sectnum transform
     """
+
     def run(self):
         pending = nodes.pending(SectNumTrans)
         pending.details.update(self.options)
@@ -95,10 +95,11 @@ class SectNumTrans(SectnumTransform):
            1.1.1. Subsection
 
     """
+
     start_depth = 1
 
     def update_section_numbers(self, node, prefix=(), depth=0, level=0):
-        self.suffix = '.'
+        self.suffix = "."
         depth += 1
         if prefix:
             sectnum = 1
@@ -113,18 +114,18 @@ class SectNumTrans(SectnumTransform):
 
                 if level > self.start_depth:
                     numbers = prefix + (str(sectnum),)
-                    text = (self.prefix + '.'.join(numbers) + self.suffix + u'\u00a0' * 2)
+                    text = self.prefix + ".".join(numbers) + self.suffix + "\u00a0" * 2
                 else:
                     numbers = prefix
-                    text = ''
+                    text = ""
 
-                generated = nodes.generated('', text, classes=['sectnum'])
+                generated = nodes.generated("", text, classes=["sectnum"])
                 title.insert(0, generated)
-                title['auto'] = 1
+                title["auto"] = 1
                 if depth < self.maxdepth:
                     self.update_section_numbers(child, numbers, depth, level)
                 sectnum += 1
 
 
 def setup(app):
-    app.add_directive('sectnum', Sectnum)
+    app.add_directive("sectnum", Sectnum)

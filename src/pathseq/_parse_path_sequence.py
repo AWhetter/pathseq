@@ -132,7 +132,7 @@ def process_tokens(seq: str, raw_tokens: list[str]) -> list[Token]:
                     column + 2,
                     "Expected a non-empty inter-range separator",
                 )
-            if raw_token == '.':
+            if raw_token == ".":
                 raise ParseError(
                     seq,
                     column + 1,

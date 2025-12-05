@@ -42,7 +42,7 @@ class ArithmeticSequence(Sequence[FileNumT]):
             # Normalise the end value to match the step
             remainder = divmod(end - start, step)[1]
             if remainder:
-                stop = end + remainder
+                stop = end + (step - remainder)
                 end -= remainder
             else:
                 stop = end + step

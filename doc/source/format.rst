@@ -618,7 +618,7 @@ a file in the sequence.
 Postfix
 -------
 
-The prefix is a single character that separates the :ref:`ranges <spec-loose-range>`
+The postfix string separates the :ref:`ranges <spec-loose-range>`
 from the next component of the sequence's name.
 
 The rules that define what is a valid postfix, depend on the type of path sequence.
@@ -631,12 +631,12 @@ In path sequences where the ranges start the name:
 
 In path sequences where the ranges exist inside of the name:
 
-* A postfix MAY be present.
-* The postfix can be of any length of any length.
+* The sequence MAY contain a postfix.
+* The postfix can be of any length.
 * The postfix MUST NOT contain a "``.``", or by definition it would be part of the suffixes.
 * The postfix MAY start with digits,
-  but this is NOT RECOMMENDED because it creates abiguity when parsing
-  a file in the sequence.
+  but this is NOT RECOMMENDED because it makes it difficult to tell
+  where the range starts and ends from a file path in the sequence.
 
 In path sequences where the name ends with a range:
 
@@ -656,8 +656,17 @@ The suffixes include the leading "``.``".
 The suffixes MUST NOT contain a valid :ref:`range string <spec-simple-range>`,
 or by definition they would be part of the ranges.
 
-The suffixes MUST NOT start with a "``.``" and digits
-otherwise there is no clear end of the previous range and start to the suffixes.
+In path sequences where the ranges exist inside of the name:
+
+* The suffixes MAY start with a digit, or a "``.``" and digits,
+  but this is NOT RECOMMENDED because it creates abiguity when parsing
+  a file in the sequence.
+
+In path sequences where the ranges end the name:
+
+* The suffixes MAY end with a digit, or a "``.``" and digits,
+  but this is NOT RECOMMENDED because it creates abiguity when parsing
+  a file in the sequence.
 
 
 Parsing

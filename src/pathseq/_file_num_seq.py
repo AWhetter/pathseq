@@ -38,10 +38,11 @@ def _seqs_from_nums(
         return []
 
     numbers = iter(numbers)
-    seqs = []
+    seqs: list[tuple[FileNumT, FileNumT, FileNumT | None]] = []
     start = next(numbers)
     previous = start
     step = None
+    current_step = None
 
     for current in numbers:
         if current == previous:
@@ -52,11 +53,8 @@ def _seqs_from_nums(
         if step is None:
             step = current_step
 
-        if current_step == 1:
+        if step == current_step:
             # Continue contiguous range
-            pass
-        elif step == current_step:
-            # Continue stepped range
             pass
         else:
             # Close off the current range
@@ -66,8 +64,8 @@ def _seqs_from_nums(
 
         previous = current
 
-    # Handle the last range
-    if step is not None:
+    # Handle the last or only range
+    if step is not None or current_step is None:
         seqs.append((start, previous, step))
 
     return [ArithmeticSequence(*seq) for seq in seqs]

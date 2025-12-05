@@ -6,7 +6,7 @@ PathSeq supports two variations of sequence string format.
 PathSeq's chosen sequence format is a simple, unambiguous format that maximises
 compatibility across VFX DCCs (Digital Content Creation software).
 The :ref:`loose format <loose-format>` is a more complex and ambiguous format
-that can represent more configurations of file name.
+that can represent more possible path sequences.
 
 If you aren't sure which variation is right for you,
 choose :ref:`simple <simple-format>` if you have control over the format of
@@ -155,7 +155,7 @@ A range consists of the ranges specifier, and the padding.
 .. code-block::
 
    >>> PathSequence('/path/to/images.1-3####.exr').parsed.ranges
-   Ranges(1-3###)
+   Ranges(1-3####)
    >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.ranges
    Ranges(1011-1013<UDIM>_1-3#)
 
@@ -177,7 +177,7 @@ where each range specifier is of the format ``START-ENDxSTEP``.
    >>> seq = PathSequence('/path/to/images.1-5####.exr')
    >>> seq.file_num_seqs
    (FileNumSequence(1-5),)
-   >>> list(FileNumSequence.from_str('1-5')
+   >>> list(FileNumSequence.from_str('1-5'))
    [1, 2, 3, 4, 5]
    >>> list(FileNumSequence.from_str('1'))
    [1]
@@ -218,8 +218,8 @@ then it will be zero padded.
 
 .. code-block:: pycon
 
-   >>> seq = PathSequence('/path/to/images.1-3####.exr').parsed.ranges[0]
-   PaddedRange(1-3####)
+   >>> PathSequence('/path/to/images.1-3####.exr').parsed.ranges
+   Ranges(1-3####)
    >>> PaddedRange((), '####').format(1)
    '0001'
    >>> PaddedRange((), '##').format(1)
@@ -282,9 +282,9 @@ describes two tokens for representing UDIMs in file names.
      >>> PaddedRange((), '<UVTILE>').format(1002)
      'u2_v1'
      >>> PaddedRange((), '<UVTILE>').format(1010)
-     'u1_v2'
+     'u10_v1'
      >>> PaddedRange((), '<UVTILE>').format(1011)
-     'u2_v2'
+     'u1_v2'
 
 .. tip::
 
@@ -299,7 +299,7 @@ Inter-range Separator
 An inter-range separator separates one range from another in a multi-range path sequence.
 A non-empty inter-range separator will always exist between each range.
 
-.. code-block::
+.. code-block:: pycon
 
    >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.ranges.inter_ranges
    ('_',)
@@ -347,8 +347,8 @@ Loose Path Sequences
 
 Whereas the simple sequence string format maximises simplicity
 and compatibility across VFX software,
-the loose format prioritises compatibility in parsing more sequence strings.
-This compatibility comes at a cost of complexity and ambiguity.
+the loose format prioritises compatibility with more sequence strings.
+This compatibility comes at a cost of complexity and the potential for ambiguity.
 
 In `Path Sequences`_ we saw that in the simple format,
 a sequence's name has five components:
@@ -446,7 +446,18 @@ Stem
 The stem is the name of a path sequence, without the prefix, ranges, postfix, and suffixes.
 A non-empty stem may or may not be present in the name of a path sequence.
 
-TODO
+.. code-block:: pycon
+
+   >>> LoosePathSequence('/path/to/images.1-3####.exr').stem
+   'images'
+   >>> LoosePathSequence('/path/to/1-3####images.exr').stem
+   'images'
+   >>> LoosePathSequence('/path/to/images.exr.1-3####').stem
+   'images'
+   >>> LoosePathSequence('/path/to/texture.1001-1002<UDIM>_1001-1010#_final.tex').stem
+   'texture'
+   >>> LoosePathSequence('/path/to/1-3####.exr').stem
+   ''
 
 .. note::
 
@@ -466,13 +477,25 @@ TODO
 Prefix
 ------
 
-Path sequences where the name starts with a range MUST NOT contain a prefix.
-Path sequences where the ranges exist inside or at the end of the name
-MAY contain a single prefix character.
+The prefix is an optional, single "``.``" or "``_``" character that separates the :ref:`ranges <format-simple-range>`
+from the previous component in the name.
 
-The prefix separates the ranges from the previous component in the name.
+.. code-block:: pycon
 
-The prefix character MUST be one of "``.``" or "``_``".
+   >>> LoosePathSequence('/path/to/images.1-3####.exr').parsed.prefix
+   '.'
+   >>> LoosePathSequence('/path/to/images_1-3####.exr').parsed.prefix
+   '_'
+   >>> LoosePathSequence('/path/to/images1-3####.exr').parsed.prefix
+   ''
+   >>> LoosePathSequence('/path/to/1-3####_images.exr').parsed.prefix
+   ''
+
+Path sequences where the name starts with a range won't contain a prefix
+because there is no preceding component to separate from the ranges.
+
+   >>> LoosePathSequence('/path/to/1-3####_images.exr').parsed.prefix
+   ''
 
 
 .. _format-loose-range:
@@ -480,8 +503,20 @@ The prefix character MUST be one of "``.``" or "``_``".
 Range
 -----
 
-A range MUST be present in the name of a path sequence.
-It follows the same format as for simple path sequences (see :ref:`format-simple-range`).
+A range will always be present in the name of a path sequence,
+otherwise it would be a path rather than a path sequence.
+A range follows the same format as for simple path sequences (see :ref:`format-simple-range`).
+
+.. code-block:: pycon
+
+   >>> LoosePathSequence('/path/to/images.1-3####.exr').parsed.ranges
+   Ranges(1-3####)
+   >>> LoosePathSequence('/path/to/1-3####.images.exr').parsed.ranges
+   Ranges(1-3####)
+   >>> LoosePathSequence('/path/to/images.exr.1-3####').parsed.ranges
+   Ranges(1-3####)
+   >>> LoosePathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.ranges
+   Ranges(1011-1013<UDIM>_1-3#)
 
 
 .. _format-loose-inter-range:
@@ -489,21 +524,66 @@ It follows the same format as for simple path sequences (see :ref:`format-simple
 Inter-range Separator
 ---------------------
 
-An inter-range separator separates one range from another in a multi-range path sequence.
-A non-empty inter-range separator MAY exist between each range.
-Omitting the inter-range separator is NOT RECOMMENDED in multi-range sequences
-because it creates abiguity when parsing a file in the sequence.
+An optional inter-range separator separates one range from another in a multi-range path sequence.
 
-An inter-range separator MUST NOT contain a valid :ref:`range string <format-simple-range>`,
-or by definition it would itself be part of the ranges.
+.. code-block:: pycon
 
-An inter-range separator MAY end with a "``-``" or digit,
-but this is NOT RECOMMENDED because it creates abiguity when parsing
-a file in the sequence.
-Similarly, an inter-range separator MAY start with a digit,
-or a "``.``" and digits,
-but this is NOT RECOMMENDED either because it creates abiguity when parsing
-a file in the sequence.
+   >>> LoosePathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.ranges.inter_ranges
+   ('_',)
+
+An inter-range separator does not have to be a single character:
+
+.. code-block:: pycon
+
+   >>> LoosePathSequence('/path/to/volume-vid1-50##-frame1-3#.vdb').parsed.ranges.inter_ranges
+   ('-frame',)
+
+.. caution::
+
+   Omitting the inter-range separator in multi-range sequences
+   creates abiguity when parsing a file in the sequence.
+
+   .. code-block:: pycon
+
+      >>> tmp = getfixture('tmp_path')
+      >>> seq = tmp / LoosePathSequence('file.1001-1003#1001-1003#.exr')
+      >>> seq[0].name
+      'file.10011001.exr'
+      >>> for path in seq:
+      ...     path.touch()
+      ...
+      >>> seq.with_existing_paths()
+      LoosePathSequence('.../file.1001100-1003100x1000#1-3#.exr')
+
+.. caution::
+
+   Ending an inter-range separator with a "``-``" or digit
+   creates abiguity in parsing the range.
+   A ``-`` would make the following range start with a negative number,
+   and a digit would affect the starting number of the following range.
+
+   .. code-block:: pycon
+
+      >>> inter_range = '-frame-'
+      >>> seq = LoosePathSequence(f'file.1001,1002<UDIM>{inter_range}1-3#.exr')
+      >>> seq.parsed.ranges.inter_ranges
+      ('-frame',)
+      >>> seq.file_num_seqs
+      (FileNumSequence(1001,1002), FileNumSequence(-1-3))
+
+.. tip::
+
+   Starting an inter-range separator with a digit,
+   or a "``.``" and digits,
+   makes it difficult to tell where the range starts and ends from
+   a file path in the sequence.
+
+   .. code-block:: pycon
+
+      >>> inter_range = '0frame'
+      >>> seq = LoosePathSequence(f'file.1001,1002#{inter_range}1-3#.exr')
+      >>> seq[0].name
+      'file.10010frame1.exr'
 
 
 .. _format-loose-postfix:
@@ -511,29 +591,88 @@ a file in the sequence.
 Postfix
 -------
 
-The prefix is a single character that separates the :ref:`ranges <format-loose-range>`
+The postfix is a separates the :ref:`ranges <format-loose-range>`
 from the next component of the sequence's name.
 
-The rules that define what is a valid postfix, depend on the type of path sequence.
+.. code-block:: pycon
 
-In path sequences where the ranges start the name:
+   >>> LoosePathSequence('/path/to/images.1-3####_postfix.exr').parsed.postfix
+   '_postfix'
+   >>> LoosePathSequence('/path/to/1-3####_images.exr').parsed.postfix
+   '_'
+   >>> LoosePathSequence('/path/to/images.exr.1-3####').parsed.postfix
+   ''
 
-* The sequence MAY contain a postfix.
-* If present, the postfix MUST be a "``_``", or it would be part of the stem.
-  If it contained a "``.``" then by definition it would be part of the suffixes.
+In path sequences where the ranges start the name,
+if the postfix is present then it can only be a "``_``",
+else the postfix will be part of the stem.
 
-In path sequences where the ranges exist inside of the name:
+.. code-block:: pycon
 
-* A postfix MAY be present.
-* The postfix can be of any length of any length.
-* The postfix MUST NOT contain a "``.``", or by definition it would be part of the suffixes.
-* The postfix MAY start with digits,
-  but this is NOT RECOMMENDED because it creates abiguity when parsing
-  a file in the sequence.
+   >>> postfix = '_postfix'
+   >>> seq = LoosePathSequence(f'/path/to/1-3####{postfix}_images.exr')
+   >>> seq.parsed.postfix
+   '_'
+   >>> seq.stem
+   'postfix_images'
 
-In path sequences where the name ends with a range:
+.. note::
 
-* A postfix CANNOT be present, otherwise the ranges would exist inside of the name.
+   If the postfix were to contain a "``.``" then it would become part of the suffixes.
+
+   .. code-block:: pycon
+
+      >>> postfix = '.postfix'
+      >>> seq = LoosePathSequence(f'/path/to/1-3####{postfix}_images.exr')
+      >>> seq.suffixes
+      ('.postfix_images', '.exr')
+      >>> seq.stem
+      ''
+      >>> LoosePathSequence(f'/path/to/1-3####{postfix}.images.exr').suffixes
+      ('.postfix', '.images', '.exr')
+
+In path sequences where the ranges exist inside of the name,
+the postfix can be of any length.
+
+.. code-block:: pycon
+
+   >>> LoosePathSequence('/path/to/images.1-3####_postfix.exr').parsed.postfix
+   '_postfix'
+
+.. caution::
+
+   Including a "``.``" in the postfix means it would become part of the suffixes.
+
+   .. code-block:: pycon
+
+      >>> postfix = 'my.postfix'
+      >>> seq = LoosePathSequence(f'/path/to/images.1-3####{postfix}.exr')
+      >>> seq.suffixes
+      ('.postfix', '.exr')
+      >>> seq.parsed.postfix
+      'my'
+
+.. tip::
+
+   Starting the postfix with digits
+   makes it difficult to tell where the range starts and ends from
+   a file path in the sequence.
+
+   .. code-block:: pycon
+
+      >>> postfix = '0postfix'
+      >>> seq = LoosePathSequence(f'images.1-3#{postfix}.exr')
+      >>> seq[0].name
+      'images.10postfix.exr'
+
+In path sequences where the name ends with a range there is no prefix,
+otherwise the ranges would exist inside of the name.
+
+.. code-block:: pycon
+
+   >>> postfix = 'postfix'
+   >>> LoosePathSequence(f'images.exr.1-3#{postfix}').parsed
+   RangesInName(...)
 
 
 .. _format-loose-suffixes:
@@ -541,26 +680,58 @@ In path sequences where the name ends with a range:
 Suffixes
 --------
 
-The file suffixes represent the file extension of the files in the path sequence.
-
-Suffixes MAY be present in the name of the sequence.
+The optional file suffixes represent the file extension of the files in the path sequence.
 The suffixes include the leading "``.``".
 
-The suffixes MUST NOT contain a valid :ref:`range string <format-simple-range>`,
-or by definition they would be part of the ranges.
+.. code-block:: pycon
 
-The suffixes MUST NOT start with a "``.``" and digits
-otherwise there is no clear end of the previous range and start to the suffixes.
+   >>> LoosePathSequence('images.1-3####.exr').suffix
+   '.exr'
+   >>> LoosePathSequence('images.1-3####.exr').suffixes
+   ('.exr',)
+   >>> LoosePathSequence('file.1-3####.tar.xz').suffix
+   '.xz'
+   >>> LoosePathSequence('file.1-3####.tar.xz').suffixes
+   ('.tar', '.xz')
+   >>> LoosePathSequence('1-3####.images.exr').suffix
+   '.exr'
+   >>> LoosePathSequence('1-3####_file.tar.xz').suffixes
+   ('.tar', '.xz')
+   >>> LoosePathSequence('images.exr.1-3####').suffix
+   '.exr'
+   >>> LoosePathSequence('images.tar.xz.1-3####').suffixes
+   ('.tar', '.xz')
 
 
-Parsing
--------
+.. tip::
 
-Like simple file sequences,
-loose file sequences are parsed by a two step process consisting of tokenisation
-and parsing those tokens with a
-`Deterministic Finite State Machine <https://en.wikipedia.org/wiki/Deterministic_finite_automaton>`_.
-That state machine is as follows:
+   In path sequences where the ranges exist inside of the name,
+   starting the suffixes with a digit, or a "``.``" and digits,
+   makes it difficult to tell where the range starts and ends from
+   a file path in the sequence.
 
-.. figure:: /_static/adrs/all_formats.svg
-   :figclass: solid-background
+   .. code-block:: pycon
+
+      >>> suffix = '.3ds'
+      >>> seq = LoosePathSequence(f'scenes.1-3#{suffix}')
+      >>> seq[0].name
+      'scenes.1.3ds'
+
+   Similarly, in path sequences where the ranges end the name,
+   ending the suffixes with a digit, or a "``.``" and digits,
+   creates abiguity with the following range.
+
+   .. code-block:: pycon
+
+      >>> suffixes = '.tar.bz2'
+      >>> tmp = getfixture('tmp_path')
+      >>> seq = tmp / LoosePathSequence(f'file{suffixes}.1-3#')
+      >>> seq.suffixes
+      ('.tar', '.bz')
+      >>> seq[0].name
+      'file.tar.bz2.1'
+      >>> for path in seq:
+      ...     path.touch()
+      ...
+      >>> seq.with_existing_paths().file_num_seqs
+      (FileNumSequence(2.1),)
