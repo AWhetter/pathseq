@@ -268,7 +268,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             if other == str(self):
                 raise ValueError("Cannot make a path sequence relative to itself")
 
-            return type(self)(self._path.relative_to(other))
+            return self.with_segments(self._path.relative_to(other))
 
     def with_name(self, name: str) -> Self:
         """Return a new sequence with the :attr:`~.name` changed.
