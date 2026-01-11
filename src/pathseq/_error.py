@@ -65,7 +65,7 @@ class IncompleteDimensionError(Exception):
             >>> seq.with_existing_paths()
             Traceback (most recent call last):
             ...
-            pathseq._error.IncompleteDimensionError: Sequence '.../file.1001,1002<UDIM>_1-3#.exr' contains an inconsistent number of files across one or more dimensions.
+            pathseq._error.IncompleteDimensionError: Sequence '...file.1001,1002<UDIM>_1-3#.exr' contains an inconsistent number of files across one or more dimensions.
             >>> (tmp / 'file.1001_3.exr').unlink()
             >>> seq.with_existing_paths()
             PathSequence('.../file.1001,1002<UDIM>_1,2#.exr')

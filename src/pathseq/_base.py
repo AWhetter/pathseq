@@ -72,8 +72,8 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
         .. code-block:: pycon
 
-            >>> seq_a = PathSequence("/path/to/image.1-3####.exr")
-            >>> seq_b = PathSequence("/path/to/image.1,2,3####.exr")
+            >>> seq_a = PurePathSequence("/path/to/image.1-3####.exr")
+            >>> seq_b = PurePathSequence("/path/to/image.1,2,3####.exr")
             >>> seq_a == seq_b
             True
         """
@@ -105,7 +105,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
         .. code-block:: pycon
 
-            >>> s = PathSequence('/path/to/image.1-3####.exr')
+            >>> s = PurePathSequence(PurePosixPath('/path/to/image.1-3####.exr'))
             >>> s.parts
             ('/', 'path', 'to', 'image.1-3####.exr')
         """
@@ -318,7 +318,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
 
         .. code-block:: pycon
 
-            >>> p = PurePathSequence('images.1-3#.exr')
+            >>> p = PurePathSequence(PurePosixPath('images.1-3#.exr'))
             >>> p.path_with_file_nums(5)
             PurePosixPath('images.5.exr')
         """
