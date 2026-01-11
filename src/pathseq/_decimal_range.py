@@ -3,7 +3,8 @@ from __future__ import annotations
 from collections.abc import Iterator
 import decimal
 import math
-from typing import Self
+
+from typing_extensions import Self  # PY311
 
 
 class DecimalRangeIterator:

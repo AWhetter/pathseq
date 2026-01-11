@@ -3,10 +3,10 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator, Sequence
 import decimal
 import itertools
-from typing import Generic, overload, Self
+from typing import Generic, overload, TypeGuard
 
 from typing_extensions import (
-    TypeGuard,  # PY310
+    Self,  # PY311
 )
 
 from ._arithmetic_sequence import ArithmeticSequence

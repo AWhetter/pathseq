@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Self, TypeAlias, Union
+from typing import Literal, TypeAlias, Union
+
+from typing_extensions import Self  # PY311
 
 from ._base import (
     non_recursive_asdict,

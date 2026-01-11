@@ -7,8 +7,21 @@ from ._ast import Formatter, PaddedRange
 class GlobFormatter(Formatter):
     """Format to a glob pattern to match paths in the given sequence."""
 
+    def __init__(self) -> None:
+        self._ignore_next_range = False
+
     def range(self, range_: PaddedRange[int] | PaddedRange[Decimal]) -> str:
+        if self._ignore_next_range:
+            self._ignore_next_range = False
+            return ""
+
         return "*"
+
+    def inter_range(self, inter_range: str) -> str:
+        if not inter_range:
+            self._ignore_next_range = True
+
+        return inter_range
 
 
 class FileNumberFormatter(Formatter):
