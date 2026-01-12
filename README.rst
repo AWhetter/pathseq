@@ -128,9 +128,9 @@ Tests are executed through `tox <https://tox.readthedocs.io/en/latest/>`_.
 Code Style
 ~~~~~~~~~~
 
-Code is formatted using `black <https://github.com/python/black>`_.
+Code is formatted using `ruff <https://github.com/python/black>`_.
 
-You can check your formatting using black's check mode:
+You can check your formatting using ruff's check mode:
 
 .. code-block:: bash
 
@@ -140,7 +140,7 @@ You can also get black to format your changes for you:
 
 .. code-block:: bash
 
-    tox -e format -- src/ tests/
+    .tox/format/bin/ruff src/ tests
 
 
 Release Notes

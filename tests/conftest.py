@@ -16,4 +16,4 @@ def pytest_collection_modifyitems(items):
         }
         for item in items:
             if item.nodeid in to_skip:
-                item.addmarker(pytest.mark.xfail)
+                item.add_marker(pytest.mark.xfail)
