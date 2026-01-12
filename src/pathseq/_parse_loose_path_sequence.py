@@ -8,8 +8,6 @@ import re
 
 from statemachine import StateMachine, State
 
-from ._error import NotASequenceError, ParseError
-from ._file_num_seq import FileNumSequence
 from ._ast import (
     PaddedRange,
     ParsedLooseSequence,
@@ -18,6 +16,8 @@ from ._ast import (
     RangesInName,
     RangesStartName,
 )
+from ._error import NotASequenceError, ParseError
+from ._file_num_seq import FileNumSequence
 
 _POSTFIX_SEPARATORS = {"_"}
 _PREFIX_SEPARATORS = _POSTFIX_SEPARATORS | {"."}

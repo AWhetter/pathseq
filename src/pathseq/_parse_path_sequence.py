@@ -8,13 +8,13 @@ import re
 
 from statemachine import StateMachine, State
 
-from ._error import NotASequenceError, ParseError
-from ._file_num_seq import FileNumSequence
 from ._ast import (
     PaddedRange,
     ParsedSequence,
     Ranges,
 )
+from ._error import NotASequenceError, ParseError
+from ._file_num_seq import FileNumSequence
 
 _PREFIX_SEPARATORS = {".", "_"}
 RANGE_RE = re.compile(

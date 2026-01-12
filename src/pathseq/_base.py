@@ -8,21 +8,17 @@ import os
 import pathlib
 import re
 import sys
-from typing import ClassVar, overload, TypeVar, Union
+from typing import ClassVar, overload, TypeAlias, TypeVar, Union
 
 from typing_extensions import (
     Self,  # PY311
-    TypeAlias,  # PY310
 )
 
-from ._ast import (
-    ParsedLooseSequence,
-    ParsedSequence,
-)
+from ._ast import ParsedLooseSequence, ParsedSequence
 from ._error import ParseError
 from ._file_num_seq import FileNumSequence
 from ._from_disk import find_on_disk
-from ._formatter import FileNumberFormatter, RegexFormatter
+from ._formatters import FileNumberFormatter, RegexFormatter
 
 Segment: TypeAlias = Union[str, os.PathLike[str]]
 PurePathT_co = TypeVar(
@@ -83,7 +79,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         return self._path.parent == other._path.parent and self._parsed == other._parsed
 
     def __repr__(self) -> str:
-        return "{}({!r})".format(self.__class__.__name__, self.as_posix())
+        return f"{self.__class__.__name__}({self.as_posix()!r})"
 
     def __str__(self) -> str:
         return str(self._path)
@@ -429,7 +425,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
     def __iter__(self) -> Iterator[PurePathT_co]:
         """Iterate over the paths in this sequence."""
         iterators = (iter(x) for x in self.file_num_seqs)
-        # TODO: Swap this out for manual looping so that are aren't using mega amounts of memory
+        # TODO: Swap this out for manual looping so that we aren't using mega amounts of memory
         for result in itertools.product(*iterators):
             # https://github.com/python/typeshed/issues/13490
             yield self.path_with_file_nums(*result)  # type: ignore[arg-type]

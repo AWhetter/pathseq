@@ -4,7 +4,7 @@ from hypothesis import assume, given
 import hypothesis.strategies as st
 import pytest
 
-from pathseq._decimal_range import DecimalRange
+from pathseq._file_num_seq._decimal_range import DecimalRange
 
 
 @st.composite

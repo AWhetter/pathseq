@@ -5,11 +5,9 @@ from typing import Literal, TypeAlias, Union
 
 from typing_extensions import Self  # PY311
 
-from ._base import (
-    non_recursive_asdict,
-    stringify_parsed_sequence,
-    Ranges,
-)
+from ._formatter import Formatter
+from ._ranges import Ranges
+from ._util import non_recursive_asdict
 
 
 @dataclass(frozen=True)
@@ -41,7 +39,7 @@ class RangesStartName:
     """
 
     def __str__(self) -> str:
-        return stringify_parsed_sequence(self)
+        return Formatter().format(self)
 
     def with_stem(self, stem: str) -> Self:
         """Return a new parsed sequence with the :attr:`~.RangesStartName.stem` changed.
@@ -110,7 +108,7 @@ class RangesInName:
     """
 
     def __str__(self) -> str:
-        return stringify_parsed_sequence(self)
+        return Formatter().format(self)
 
     def with_stem(self, stem: str) -> Self:
         """Return a new parsed sequence with the :attr:`~.RangesInName.stem` changed.
@@ -181,7 +179,7 @@ class RangesEndName:
     """
 
     def __str__(self) -> str:
-        return stringify_parsed_sequence(self)
+        return Formatter().format(self)
 
     def with_stem(self, stem: str) -> Self:
         """Return a new parsed sequence with the :attr:`~.RangesEndName.stem` changed."""

@@ -1,4 +1,3 @@
-from ._base import FileNum, FileNumT, PaddedRange, Ranges
 from ._formatter import Formatter
 from ._loose_type import (
     ParsedLooseSequence,
@@ -6,11 +5,10 @@ from ._loose_type import (
     RangesInName,
     RangesEndName,
 )
+from ._ranges import PaddedRange, Ranges
 from ._type import ParsedSequence
 
 __all__ = [
-    "FileNum",
-    "FileNumT",
     "Formatter",
     "PaddedRange",
     "ParsedLooseSequence",

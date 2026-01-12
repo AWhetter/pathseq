@@ -13,7 +13,7 @@ from ._ast import (
 )
 from ._error import IncompleteDimensionError
 from ._file_num_seq import FileNumSequence
-from ._formatter import GlobFormatter, RegexFormatter
+from ._formatters import GlobFormatter, RegexFormatter
 
 
 def find_on_disk(

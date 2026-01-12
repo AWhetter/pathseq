@@ -6,7 +6,7 @@ from typing import TypeAlias, TypeVar, Union
 import lark
 
 from ._arithmetic_sequence import ArithmeticSequence
-from ._error import ParseError
+from .._error import ParseError
 
 _GRAMMAR = r"""
     start: ranges

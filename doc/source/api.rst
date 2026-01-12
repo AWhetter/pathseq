@@ -27,9 +27,8 @@ API Reference
    Pure Path Sequences
    -------------------
 
-   .. py:data:: PurePathT_co
-      :value: TypeVar(PurePathT_co, bound=pathlib.PurePath, covariant=True)
-      :canonical: pathseq._base.PurePathT_co
+   .. py:type:: PurePathT_co
+      :canonical: TypeVar(PurePathT_co, bound=pathlib.PurePath, covariant=True)
 
       The type of pure paths contained in a :class:`~.BasePurePathSequence`.
 
@@ -41,9 +40,8 @@ API Reference
    Concrete Path Sequences
    -----------------------
 
-   .. py:data:: PathT_co
-      :value: TypeVar(PathT_co, bound=pathlib.Path, covariant=True)
-      :canonical: pathseq._base.PathT_co
+   .. py:type:: PathT_co
+      :canonical: TypeVar(PathT_co, bound=pathlib.Path, covariant=True)
 
       The type of concrete paths contained in a :class:`~.BasePathSequence`.
 
@@ -93,10 +91,8 @@ API Reference
    File Number Sequences
    ---------------------
 
-   .. py:data:: FileNumT
-      :type: typing.TypeVar
-      :value: TypeVar(FileNumT, int, decimal.Decimal)
-      :canonical: pathseq._ast._base.FileNumT
+   .. py:type:: FileNumT
+      :canonical: TypeVar(FileNumT, int, decimal.Decimal)
 
       The type of file numbers in a :class:`~.FileNumSequence`.
 
@@ -119,8 +115,8 @@ API Reference
    .. autoclass:: ParsedSequence
       :members:
 
-   .. py:data:: ParsedLooseSequence
-      :value: pathseq.RangesStartName | pathseq.RangesInName | pathseq.RangesEndName
+   .. py:type:: ParsedLooseSequence
+      :canonical: pathseq.RangesStartName | pathseq.RangesInName | pathseq.RangesEndName
 
    .. autoclass:: RangesStartName
       :members:
@@ -136,3 +132,10 @@ API Reference
 
    .. autoclass:: Ranges
       :members:
+
+   Formatter
+   ---------
+
+   .. autoclass:: Formatter
+      :members:
+      :undoc-members:

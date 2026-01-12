@@ -4,10 +4,10 @@ from typing import overload, Protocol, TypeVar
 
 from typing_extensions import Self  # PY311
 
-from ._ast import FileNumT
 from ._decimal_range import DecimalRange
 
 
+FileNumT = TypeVar("FileNumT", int, decimal.Decimal)
 FileNumT_cov = TypeVar("FileNumT_cov", covariant=True)
 
 

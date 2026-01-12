@@ -1,7 +1,7 @@
 """A pathlib-first library for working with file sequences."""
 
 from ._ast import (
-    FileNumT,
+    Formatter,
     PaddedRange,
     ParsedLooseSequence,
     ParsedSequence,
@@ -12,7 +12,7 @@ from ._ast import (
 )
 from ._base import BasePathSequence, BasePurePathSequence, PathT_co, PurePathT_co
 from ._error import IncompleteDimensionError, NotASequenceError, ParseError
-from ._file_num_seq import FileNumSequence
+from ._file_num_seq import FileNumSequence, FileNumT
 from ._loose_path_sequence import LoosePathSequence
 from ._loose_pure_path_sequence import LoosePurePathSequence
 from ._path_sequence import PathSequence
@@ -25,6 +25,7 @@ __all__ = (
     "BasePurePathSequence",
     "FileNumSequence",
     "FileNumT",
+    "Formatter",
     "IncompleteDimensionError",
     "LoosePathSequence",
     "LoosePurePathSequence",

@@ -9,8 +9,7 @@ from typing_extensions import (
     Self,  # PY311
 )
 
-from ._arithmetic_sequence import ArithmeticSequence
-from ._ast import FileNumT
+from ._arithmetic_sequence import ArithmeticSequence, FileNumT
 from ._parse_file_num_seq import parse_file_num_seq
 
 
@@ -138,6 +137,9 @@ class FileNumSequence(Sequence[FileNumT]):
         Returns:
             The resulting file number sequence.
         """
+        # We can't know what type of file sequence we're going to get back,
+        # and therefore we can't know what type of file sequence we're going to
+        # pass into the constructor. So we must ignore this error.
         return cls(parse_file_num_seq(seq))  # type: ignore[arg-type]
 
     @classmethod

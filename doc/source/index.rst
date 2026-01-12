@@ -3,7 +3,7 @@
 
 :mod:`pathseq` is a pathlib-first library for working with file sequences.
 
-Install PathSeq using pip:
+Install PathSeq from PyPI:
 
 .. code-block:: bash
 
