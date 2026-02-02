@@ -4,16 +4,22 @@ Converting Between Sequence Formats
 
 Different applications and use cases can require different formats of
 sequence strings.
-PathSeq supports converting a path sequence to other formats by overriding the
+The page on :doc:`format` describes what PathSeq accepts as input,
+and PathSeq outputs to the same format by default.
+You can output a path sequence to another format by overriding the
 :class:`~pathseq.Formatter` class.
 
-Without any changes, the Formatter class will format
-a path sequence into a string without any changes.
+Without any changes, the Formatter class will use the default formatting behaviour
+to format a path sequence into a string.
 
 .. code-block:: pycon
 
+    >>> from pathseq import Formatter, PathSequence
+    >>>
     >>> seq = PathSequence("image.1-5#.exr")
-    >>> pathseq.Formatter().format(seq.parsed)
+    >>> str(seq)
+    'image.1-5#.exr'
+    >>> Formatter().format(seq.parsed)
     'image.1-5#.exr'
 
 To convert to another format, the methods of a Formatter can be overriden.
@@ -21,12 +27,12 @@ For example, a basic formatter for Houdini strings might look like this:
 
 .. code-block:: pycon
 
-    >>> class HoudiniFormatter(pathseq.Formatter):
+    >>> class MyHoudiniFormatter(Formatter):
     ...   def range(self, range_):
     ...       return "$F"
     ...
     >>> seq = PathSequence("image.1-5#.exr")
-    >>> HoudiniFormatter().format(seq.parsed)
+    >>> MyHoudiniFormatter().format(seq.parsed)
     'image.$F.exr'
 
 There is a method on the Formatter for each attribute on a parsed sequence.
@@ -34,7 +40,7 @@ So any part of a path sequence can be changed.
 
 .. code-block:: pycon
 
-    >>> class DemoFormatter(pathseq.Formatter):
+    >>> class DemoFormatter(Formatter):
     ...     def stem(self, stem):
     ...         return "stem"
     ...     def prefix(self, prefix):
@@ -60,7 +66,7 @@ a :ref:`simple <simple-format>` might look like this:
 
 .. code-block:: pycon
 
-    >>> class ToSimpleFormatter(pathseq.Formatter):
+    >>> class ToSimpleFormatter(Formatter):
     ...     def format(self, seq):
     ...         return (
     ...             self.stem(seq.stem)

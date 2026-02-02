@@ -132,7 +132,7 @@ class FileNumSequence(Sequence[FileNumT]):
         """Parse a range string in a file number sequence.
 
         Args:
-            seq: The range string to parse (eg '1001-1005,1010-1015').
+            seq: The range string to parse (e.g. '1001-1005,1010-1015').
 
         Returns:
             The resulting file number sequence.

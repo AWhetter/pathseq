@@ -19,7 +19,7 @@ pathseq
 
 A pathlib-first library for working with file sequences.
 
-* Multi-dimension ranges (eg animated udims)
+* Multi-dimension ranges (e.g. animated udims)
 * pathlib-first API
 * Support for UDIM tokens
 
@@ -62,15 +62,19 @@ Now, let's get started:
     PosixPath('tests/fixtures/simple/images.0004.exr')
     PosixPath('tests/fixtures/simple/images.0005.exr')
 
-    >>> seq2 = PathSequence("tests/fixtures/simple/images.####.exr").with_existing_paths()
-    >>> seq2 == seq
-    True
+    >>> seq = PathSequence("tests/fixtures/simple/images.1-5####.exr")
+    >>> for path in seq:
+    ...     path.touch(exist_ok=True)
+    ...
+    >>> seq2 = PathSequence("tests/fixtures/simple/images.####.exr")
+    >>> seq2.with_existing_paths()
+    ... PathSequence("tests/fixtures/simple/images.1-5####.exr")
 
+    >>> seq = PathSequence("tests/fixtures/simple/images.1-5####.exr")
     >>> seq.parent
     PosixPath('tests/fixtures/simple')
-    >>> seq3 = seq.parent / PathSequence("images.1-5####.exr")
-    >>> seq3 == seq
-    True
+    >>> seq.parent / PathSequence("images.1-5####.exr")
+    ... PathSequence("tests/fixtures/simple/images.1-5####.exr")
 
     >>> anim_udims = PathSequence("/path/to/textures.1011-1012<UDIM>_1-3#.tex")
     >>> for path in anim_udims:
@@ -128,7 +132,7 @@ Tests are executed through `tox <https://tox.readthedocs.io/en/latest/>`_.
 Code Style
 ~~~~~~~~~~
 
-Code is formatted using `ruff <https://github.com/python/black>`_.
+Code is formatted using `ruff <https://docs.astral.sh/ruff/formatter/>`_.
 
 You can check your formatting using ruff's check mode:
 
@@ -136,11 +140,11 @@ You can check your formatting using ruff's check mode:
 
     tox -e format
 
-You can also get black to format your changes for you:
+You can also get ruff to format your changes for you:
 
 .. code-block:: bash
 
-    .tox/format/bin/ruff src/ tests
+    tox -e autoformat
 
 
 Release Notes

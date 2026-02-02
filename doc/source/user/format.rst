@@ -18,7 +18,7 @@ and choose :ref:`loose <loose-format>` if you don't.
    See :ref:`adr-001` for more information about why the simple format was chosen.
 
    See :ref:`compatibility` for a review of this format's ability to represent
-   file sequences the different DCCs accept or output.
+   file sequences that the different DCCs accept or output.
 
 
 .. _simple-format:
@@ -79,13 +79,13 @@ an inter-range separator.
 
 .. code-block:: text
 
-   /directory/ file . 1001-1002<UDIM> _ 1001-1010# .tar.gz
-         ┌────┴────┼─┼───────────────┼─┼──────────┼───────┴┐
-         │    ┌────┘ │          ┌────┘ └────┐     │        │
-         │stem│prefix│   range  │inter-range│range│suffixes│
-         └────┴──────┼──────────┴───────────┴─────┼────────┘
-                     │           ranges           │
-                     └────────────────────────────┘
+   /directory/ file . udim1001-1002<UDIM> _ 1001-1010# .tar.gz
+         ┌────┴────┼─┼────┼──────────────┼─┼───────────┼───────┴┐
+         │    ┌────┘ │    └────┐     ┌───┘ └───┐       │        │
+         │stem│prefix│pre-range|range│pre-range│ range │suffixes│
+         └────┴──────┼─────────┴─────┴─────────┴───────┼────────┘
+                     │              ranges             │
+                     └─────────────────────────────────┘
 
 
 .. _format-simple-stem:
@@ -138,7 +138,7 @@ from the :ref:`ranges <format-simple-range>`.
 Range
 -----
 
-The range is a concice representation of the file numbers of each file
+The range is a concise representation of the file numbers of each file
 in the sequence plus a definition of how those numbers are formatted
 in the resulting file names.
 
@@ -165,7 +165,7 @@ A range consists of the ranges specifier, and the padding.
 Ranges Specifier
 ~~~~~~~~~~~~~~~~
 
-The ranges specifier is a concice representation of the file numbers of each file
+The ranges specifier is a concise representation of the file numbers of each file
 in the sequence.
 
 A ranges specifier consists of comma separated range specifiers,
@@ -202,8 +202,8 @@ When no ranges specifier is present, the path sequence is considered empty.
 Padding
 ~~~~~~~
 
-The padding string (or pad string) is definition of how a file number is formatted
-in each file name contained in the sequence.
+The padding string (or pad string) is the definition of how a file number is formatted
+for each file name contained in the sequence.
 
 A pad string can be a string of "``#``" characters, or a MaterialX token.
 
@@ -212,7 +212,7 @@ A pad string can be a string of "``#``" characters, or a MaterialX token.
 ^^^^^^^^^^^^^^^^
 
 The most basic form of a pad string is a string of "``#``" characters.
-The number of "``#``" represents the minimum with of the formatted number.
+The number of "``#``" represents the minimum width of the formatted number.
 If the stringified number is smaller than the width,
 then it will be zero padded.
 
@@ -224,8 +224,6 @@ then it will be zero padded.
    '0001'
    >>> PaddedRange((), '##').format(1)
    '01'
-   >>> PaddedRange((), '####').format(-1)
-   '-001'
 
 If the stringified number is larger than the width,
 it will exceed the given width.
@@ -258,7 +256,7 @@ Pad strings can also use MaterialX tokens (https://materialx.org/Specification.h
 The "Filename Substitutions" section of the specification
 describes two tokens for representing UDIMs in file names.
 
-* ``<UDIM>``: This is equivalent to ``####``.
+* ``<UDIM>``: This token represents 4 digits of padding — the same as ``####`` does.
 
   Using ``<UDIM>`` can be useful to indicate which ranges in an
   animated texture sequence are the UDIMs
@@ -297,26 +295,20 @@ Inter-range Separator
 ---------------------
 
 An inter-range separator separates one range from another in a multi-range path sequence.
-A non-empty inter-range separator will always exist between each range.
+There will always be a separator of one or more characters between
+each range in a multi-range path sequence.
 
 .. code-block:: pycon
 
    >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.ranges.inter_ranges
    ('_',)
+
+An inter-range separator does not have to be a single character:
+
+.. code-block:: pycon
+
    >>> PathSequence('texture.1-3#_interrange_1-3#.tex').parsed.ranges.inter_ranges
    ('_interrange_',)
-
-.. tip::
-
-   Using ``_`` as an inter-range separator is recommended for best
-   compatibility with VFX software.
-   For the same reason, it is recommended to place the frame number after UDIMs
-   for animated texture sequences.
-
-   .. code-block:: text
-
-      file.1-5#_1001-1010#.vdb
-      file.1001-1005<UDIM>_1001-1010#.exr
 
 
 .. _format-simple-suffixes:
@@ -443,8 +435,8 @@ Finally, the ranges can be at the end of the name:
 Stem
 ----
 
-The stem is the name of a path sequence, without the prefix, ranges, postfix, and suffixes.
-A non-empty stem may or may not be present in the name of a path sequence.
+Unlike :ref:`stems in the simple format <format-simple-stem>`,
+a stem may or may not be present in the name of a loose path sequence.
 
 .. code-block:: pycon
 
@@ -477,8 +469,8 @@ A non-empty stem may or may not be present in the name of a path sequence.
 Prefix
 ------
 
-The prefix is an optional, single "``.``" or "``_``" character that separates the :ref:`ranges <format-simple-range>`
-from the previous component in the name.
+Like :ref:`the simple format <format-simple-prefix>`, the prefix character separates
+the :ref:`ranges <format-loose-range>` from the previous component in the name.
 
 .. code-block:: pycon
 
@@ -503,9 +495,9 @@ because there is no preceding component to separate from the ranges.
 Range
 -----
 
+A range follows the same format as for simple path sequences (see :ref:`format-simple-range`).
 A range will always be present in the name of a path sequence,
 otherwise it would be a path rather than a path sequence.
-A range follows the same format as for simple path sequences (see :ref:`format-simple-range`).
 
 .. code-block:: pycon
 
@@ -524,19 +516,13 @@ A range follows the same format as for simple path sequences (see :ref:`format-s
 Inter-range Separator
 ---------------------
 
-An optional inter-range separator separates one range from another in a multi-range path sequence.
+Unlike :ref:`the simple format <format-simple-inter-range>`,
+inter-range separators are optional in a loose path sequence.
 
 .. code-block:: pycon
 
    >>> LoosePathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.ranges.inter_ranges
    ('_',)
-
-An inter-range separator does not have to be a single character:
-
-.. code-block:: pycon
-
-   >>> LoosePathSequence('/path/to/volume-vid1-50##-frame1-3#.vdb').parsed.ranges.inter_ranges
-   ('-frame',)
 
 .. caution::
 
@@ -555,10 +541,17 @@ An inter-range separator does not have to be a single character:
       >>> seq.with_existing_paths()
       LoosePathSequence('.../file.1001100-1003100x1000#1-3#.exr')
 
+An inter-range separator does not have to be a single character:
+
+.. code-block:: pycon
+
+   >>> LoosePathSequence('/path/to/volume-vid1-50##-frame1-3#.vdb').parsed.ranges.inter_ranges
+   ('-frame',)
+
 .. caution::
 
    Ending an inter-range separator with a "``-``" or digit
-   creates abiguity in parsing the range.
+   creates abiguity in parsing the next range.
    A ``-`` would make the following range start with a negative number,
    and a digit would affect the starting number of the following range.
 
@@ -575,7 +568,7 @@ An inter-range separator does not have to be a single character:
 
    Starting an inter-range separator with a digit,
    or a "``.``" and digits,
-   makes it difficult to tell where the range starts and ends from
+   makes it difficult for a person to tell where the range starts and ends from
    a file path in the sequence.
 
    .. code-block:: pycon
@@ -591,7 +584,7 @@ An inter-range separator does not have to be a single character:
 Postfix
 -------
 
-The postfix is a separates the :ref:`ranges <format-loose-range>`
+The postfix separates the :ref:`ranges <format-loose-range>`
 from the next component of the sequence's name.
 
 .. code-block:: pycon
@@ -680,8 +673,8 @@ otherwise the ranges would exist inside of the name.
 Suffixes
 --------
 
-The optional file suffixes represent the file extension of the files in the path sequence.
-The suffixes include the leading "``.``".
+Unlike in :ref:`the simple format <format-simple-suffixes>`,
+file suffixes are optional in a loose path sequence.
 
 .. code-block:: pycon
 
@@ -707,7 +700,7 @@ The suffixes include the leading "``.``".
 
    In path sequences where the ranges exist inside of the name,
    starting the suffixes with a digit, or a "``.``" and digits,
-   makes it difficult to tell where the range starts and ends from
+   makes it difficult for a person to tell where the range starts and ends from
    a file path in the sequence.
 
    .. code-block:: pycon

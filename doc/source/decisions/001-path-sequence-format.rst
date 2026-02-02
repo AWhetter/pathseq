@@ -411,7 +411,7 @@ Houdini
 
 Source: https://www.sidefx.com/docs/houdini/vex/functions/expand_udim.html
 
-Texture sequences can be used programatically in Python (eg when using VEX strings via Python).
+Texture sequences can be used programatically in Python (e.g. when using VEX strings via Python).
 
 Additionally uses:
 
@@ -425,13 +425,16 @@ Mari
 ^^^^
 
 Source: https://learn.foundry.com/mari/Content/tutorials/tutorial_5/tutorial_exporting_importing.html
+and https://learn.foundry.com/mari/Content/user_guide/painting_animated_objects/exporting_animated_textures.html
 
-Only writes sequences, and does so using ``$UDIM``.
-Such sequences can be represented using ``<UDIM>``.
+Reads and writes sequences, and does so using ``$UDIM`` and ``$FRAME``.
+Sequences output by Mari can be represented as ``<UDIM>`` is defined.
 
-In addition, ``@`` can be used as the UDIM number and ``#`` as the frame number.
+In addition, in Mari ``@`` can be used as the UDIM number and ``#`` as the frame number.
 So supporting ``@`` as a pad string for frames would complicate support with Mari,
 and using ``#`` matches what Mari expects.
+
+There are no documented restrictions on the format of sequences with multiple ranges.
 
 It is unclear whether texture sequences are ever used programatically in Python,
 because the documentation only talks about sequences in the context
@@ -502,9 +505,9 @@ Range Formats in VFX Software
 
 Few software packages require the inclusion of range numbers in a path sequence
 because the sequence string is used to either read in a file sequence
--- in which case the range is determined by what exists on disk --
+— in which case the range is determined by what exists on disk —
 or write out a sequence
--- in which case the range is sourced from elsewhere in the software,
+— in which case the range is sourced from elsewhere in the software,
 such as the number of the frame being rendered out.
 
 

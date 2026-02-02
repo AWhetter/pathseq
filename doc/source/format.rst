@@ -118,7 +118,7 @@ The prefix character MUST be one of "``.``" or "``_``".
 Range
 -----
 
-The range is a concice representation of the file numbers of each file
+The range is a concise representation of the file numbers of each file
 in the sequence plus a definition of how those numbers are formatted
 in the resulting file names.
 
@@ -138,7 +138,7 @@ A range consists of the ranges specifier, and the padding.
 Ranges Specifier
 ~~~~~~~~~~~~~~~~
 
-The ranges specifier is a concice representation of the file numbers of each file
+The ranges specifier is a concise representation of the file numbers of each file
 in the sequence.
 
 The ranges specifier is OPTIONAL.
@@ -180,7 +180,7 @@ A pad string can be a string of "``#``" characters, or a MaterialX token.
 ^^^^^^^^^^^^^^^^
 
 The most basic form of a pad string is a string of "``#``" characters.
-The number of "``#``" represents the minimum with of the formatted number.
+The number of "``#``" represents the minimum width of the formatted number.
 If the stringified number is smaller than the width,
 then it will be zero padded.
 If the stringified number is larger than the width,
