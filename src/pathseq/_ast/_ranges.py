@@ -55,15 +55,22 @@ class Ranges:
     inter_ranges: tuple[str, ...]
     """The inter-range separators between each range in the sequence.
 
-    The number of inter-range separators is guaranteed to be ``1 - len(self.ranges)``.
+    If there are ranges then
+    the number of inter-range separators is guaranteed to be ``1 - len(self.ranges)``.
     """
 
     def __post_init__(self) -> None:
-        if len(self.inter_ranges) != len(self.ranges) - 1:
-            raise ValueError(
-                "The number of inter-range strings given does not match"
-                " the number of range strings minus one."
-            )
+        if self.ranges:
+            if len(self.inter_ranges) != len(self.ranges) - 1:
+                raise ValueError(
+                    "The number of inter-range strings given does not match"
+                    " the number of range strings minus one."
+                )
+        else:
+            if self.inter_ranges:
+                raise ValueError(
+                    "There are no ranges but there are inter-range strings."
+                )
 
     def __str__(self) -> str:
         return Formatter().ranges(self)

@@ -4,6 +4,7 @@ import collections
 from dataclasses import dataclass
 from decimal import Decimal
 import enum
+import os
 import re
 
 from statemachine import StateMachine, State
@@ -13,7 +14,7 @@ from ._ast import (
     ParsedSequence,
     Ranges,
 )
-from ._error import NotASequenceError, ParseError
+from ._error import ParseError
 from ._file_num_seq import FileNumSequence
 
 _PREFIX_SEPARATORS = {".", "_"}
@@ -71,10 +72,28 @@ class Token:
         return self.column + len(self.value)
 
 
-def _tokenise_seq(seq: str) -> list[Token]:
+def _parse_single(seq: str) -> ParsedSequence:
+    stem = seq
+    suffixes: list[str] = []
+    while True:
+        new_stem, suffix = os.path.splitext(stem)
+        if new_stem == stem:
+            break
+        stem = new_stem
+        suffixes.insert(0, suffix)
+
+    return ParsedSequence(
+        stem=stem,
+        prefix="",
+        ranges=Ranges((), ()),
+        suffixes=tuple(suffixes),
+    )
+
+
+def _tokenise_seq(seq: str) -> list[Token] | None:
     raw_tokens = re.split(RANGES_RE, seq)
     if len(raw_tokens) == 1:
-        raise NotASequenceError(seq)
+        return None
 
     return process_tokens(seq, raw_tokens)
 
@@ -166,8 +185,6 @@ def process_tokens(seq: str, raw_tokens: list[str]) -> list[Token]:
         column += len(raw_token)
 
     assert all(isinstance(token, Token) for token in tokens)
-    if not any(token.type == TokenType.RANGE for token in tokens):
-        raise NotASequenceError(seq)
 
     if __debug__:
         type_counts = collections.Counter(token.type for token in tokens)
@@ -317,6 +334,9 @@ class _SeqParser(StateMachine):
     def parse(cls, seq: str) -> ParsedSequence:
         machine = cls(seq)
         tokens = _tokenise_seq(seq)
+        if not tokens:
+            return _parse_single(seq)
+
         for token in tokens:
             machine.pump(token)
 

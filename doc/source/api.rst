@@ -80,10 +80,6 @@ API Reference
       :show-inheritance:
       :members:
 
-   .. autoexception:: NotASequenceError
-      :show-inheritance:
-      :members:
-
    .. autoexception:: ParseError
       :show-inheritance:
       :members:

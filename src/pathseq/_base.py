@@ -32,7 +32,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
     """A generic class that represents a path sequence.
 
     Raises:
-        NotASequenceError: When the given path does not represent a sequence.
         ParseError: When the given path is not a valid path sequence.
     """
 
@@ -275,7 +274,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         Raises:
             ValueError: When the given name is empty.
                 Use :attr:`~.BasePurePathSequence.parent` instead.
-            NotASequenceError: When the given name does not represent a sequence.
             ParseError: When the resulting path is not a valid path sequence.
         """
         return self.with_segments(self._path.with_name(name))
@@ -459,8 +457,6 @@ class BasePathSequence(BasePurePathSequence[PathT_co], metaclass=abc.ABCMeta):
     """A sequence of Path objects.
 
     Raises:
-        NotASequenceError: When the given path does not represent a sequence,
-            but a regular path.
         ParseError: When the given path is not a valid path sequence.
     """
 

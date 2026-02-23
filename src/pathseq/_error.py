@@ -37,17 +37,6 @@ class ParseError(ValueError):
         super().__init__(message)
 
 
-class NotASequenceError(ParseError):
-    """Raised when parsing a string that does not represent a sequence, but a regular path.
-
-    In other words, the given sequence string has no :ref:`range <format-simple-range>`
-    present.
-    """
-
-    def __init__(self, seq: str) -> None:
-        super().__init__(seq, 0, len(seq) - 1, reason="No range string is present")
-
-
 class IncompleteDimensionError(Exception):
     """A multi-dimension sequence does not contain a consistent number of files across a dimension.
 

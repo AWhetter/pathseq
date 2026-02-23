@@ -41,6 +41,9 @@ def _splice_strings_onto_ranges(
             except StopIteration:
                 return result
 
+    if not result:
+        return result
+
     raise TypeError(
         "The number of inter-range strings given does not match"
         " the number of range strings given minus one."
