@@ -7,6 +7,28 @@ import pytest
 from pathseq._file_num_seq._decimal_range import DecimalRange
 
 
+def scale_to_integer_range(r1: DecimalRange, r2: DecimalRange) -> tuple[range, range]:
+    max_exponent = max(
+        (
+            -x.as_tuple().exponent
+            for x in (r1.start, r1.stop, r1.step, r2.start, r2.stop, r2.step)
+        ),
+        default=0,
+    )
+    return (
+        range(
+            int(r1.start.scaleb(max_exponent)),
+            int(r1.stop.scaleb(max_exponent)),
+            int(r1.step.scaleb(max_exponent)),
+        ),
+        range(
+            int(r2.start.scaleb(max_exponent)),
+            int(r2.stop.scaleb(max_exponent)),
+            int(r2.step.scaleb(max_exponent)),
+        ),
+    )
+
+
 @st.composite
 def infinite_decimals(draw):
     values = st.one_of(
@@ -42,22 +64,43 @@ def invalid_ranges(draw):
 @st.composite
 def valid_ranges(draw, max_len=10000):
     places = draw(st.integers(0, 6))
-    valid_start = st.decimals(allow_nan=False, allow_infinity=False, places=places)
+    valid_start = st.decimals(
+        min_value=-max_len,
+        max_value=max_len,
+        allow_nan=False,
+        allow_infinity=False,
+        places=places,
+    )
     start = draw(valid_start)
 
     # Only allow ranges that we can loop over in a sensible amount of time
     diffs = st.decimals(
-        max_value=1500, allow_nan=False, allow_infinity=False, places=places
+        min_value=-max_len,
+        max_value=max_len,
+        allow_nan=False,
+        allow_infinity=False,
+        places=places,
     )
     diff = draw(diffs)
-    if draw(st.booleans()):
-        diff = -diff
     stop = start + diff
 
+    # Step must be nonzero and such that the number of elements does not exceed max_len.
+    abs_diff = abs(diff)
+    if abs_diff == 0:
+        min_step = decimal.Decimal("1")
+    else:
+        min_step = abs_diff / decimal.Decimal(max_len)
     valid_step = st.decimals(
-        max_value=diff / max_len, allow_nan=False, allow_infinity=False, places=places
+        min_value=min_step,
+        max_value=abs_diff if abs_diff != 0 else decimal.Decimal("1"),
+        allow_nan=False,
+        allow_infinity=False,
+        places=places,
     ).filter(lambda x: not x.is_zero())
     step = draw(valid_step)
+    # Randomly flip sign of step to allow negative steps
+    if draw(st.booleans()):
+        step = -step
 
     try:
         len(DecimalRange(start, stop, step))
@@ -98,8 +141,6 @@ def test_bool(values):
         assert not bool(range_)
 
 
-# TODO: This test is too slow
-@pytest.mark.skip
 @given(valid_ranges())
 def test_len(values):
     range_ = DecimalRange(*values)
@@ -107,56 +148,86 @@ def test_len(values):
     assert len(range_) == len_
 
 
-@st.composite
-def ranges_with_index(draw):
-    values = draw(valid_ranges())
-    range_ = DecimalRange(*values)
-    assume(bool(range_))
-    index = draw(st.integers(min_value=0, max_value=len(range_) - 1))
-    return (range_, index)
+@given(valid_ranges())
+def test_contains(values):
+    r = DecimalRange(*values)
+    last_item = None
+    for v in r:
+        assert v in r
+        last_item = v
 
-
-@given(ranges_with_index())
-def test_contains_truthy(range_and_index):
-    range_, index = range_and_index
-
-    value = range_.start + range_.step * index
-    if value in range_:
-        assert True
-    elif range_.start == pytest.approx(value):
-        # Floating point precision means that we didn't quite hit the mark.
-        # So test the iter search code path.
-        assert pytest.approx(value) in range_
+    if last_item is not None:
+        not_in_range = last_item + r.step
+        assert not_in_range not in r
     else:
-        # Assert the failed condition so that pytest gives debuggable output.
-        assert value in range_
+        assert r.start not in r
+        assert r.stop not in r
 
 
-@given(
-    valid_ranges(),
-    st.decimals(allow_nan=False, allow_infinity=False).filter(
-        lambda x: x.as_integer_ratio()[1] != 1
-    ),
-)
-def test_contains_falsey(values, index):
-    range_ = DecimalRange(*values)
-
-    value = range_.start + range_.step * index
-    if value != range_.start:
-        assert value not in range_
-
-
-def test_eq_and_hash():
-    pass
-
-
-def test_iter_and_reversed():
-    pass
+@given(valid_ranges(), valid_ranges())
+def test_eq_and_hash(values1, values2):
+    r1 = DecimalRange(*values1)
+    r2 = DecimalRange(*values2)
+    # Reflexivity
+    assert r1 == r1
+    assert hash(r1) == hash(r1)
+    # Symmetry and hash equality for equal objects.
+    # Match the behaviour of built-in range, which also only considers
+    # start and step for hashing, and ignores stop.
+    ri1, ri2 = scale_to_integer_range(r1, r2)
+    if ri1 == ri2:
+        assert r1 == r2
+        assert r2 == r1
+        assert hash(r1) == hash(r2)
+    else:
+        # Hash collisions are possible, so we don't assert hash(r1) != hash(r2)
+        assert r1 != r2
 
 
-def test_count():
-    pass
+@given(valid_ranges())
+def test_iter_and_reversed(values):
+    r = DecimalRange(*values)
+    items = list(r)
+    expected = []
+    current = r.start
+    while (r.step > 0 and current < r.stop) or (r.step < 0 and current > r.stop):
+        expected.append(current)
+        current += r.step
+
+    assert items == expected
+    assert list(reversed(r)) == expected[::-1]
 
 
-def test_index():
-    pass
+@given(valid_ranges())
+def test_count(values):
+    r = DecimalRange(*values)
+    last_item = None
+    # For each value in the range, count should be 1
+    for v in r:
+        assert r.count(v) == 1
+        last_item = v
+
+    # For a value not in the range, count should be 0
+    if last_item is not None:
+        not_in_range = last_item + r.step
+        assert r.count(not_in_range) == 0
+    else:
+        # For empty range, any value should have count 0
+        assert r.count(r.start) == 0
+        assert r.count(r.stop) == 0
+
+
+@given(valid_ranges())
+def test_index(values):
+    r = DecimalRange(*values)
+    last_item = None
+    # For each value in the range, index should return its position
+    for idx, v in enumerate(r):
+        assert r.index(v) == idx
+        last_item = v
+
+    # For a value not in the range, index should raise ValueError
+    if last_item is not None:
+        not_in_range = last_item + r.step
+        with pytest.raises(ValueError):
+            r.index(not_in_range)

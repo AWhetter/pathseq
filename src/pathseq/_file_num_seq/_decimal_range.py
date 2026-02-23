@@ -104,15 +104,25 @@ class DecimalRange:
 
     def __hash__(self) -> int:
         length = len(self)
-        to_hash: tuple[int, decimal.Decimal | None, None]
-        if length:
+        to_hash: tuple[int, decimal.Decimal | None, decimal.Decimal | None]
+        if not length:
+            to_hash = (length, None, None)
+        elif length == 1:
             to_hash = (length, self.start, None)
         else:
-            to_hash = (length, None, None)
+            to_hash = (length, self.start, self.step)
         return hash(to_hash)
 
     def __iter__(self) -> Iterator[decimal.Decimal]:
         return DecimalRangeIterator(self.start, self.stop, self.step)
+
+    def __reversed__(self) -> Iterator[decimal.Decimal]:
+        n = len(self)
+        if n == 0:
+            return iter(())
+
+        last = self.start + self.step * (n - 1)
+        return DecimalRangeIterator(last, self.start - self.step, -self.step)
 
     def __len__(self) -> int:
         # x_n = a + d(n-1)
@@ -146,14 +156,6 @@ class DecimalRange:
             return f"{self.__class__.__name__}({self._start}, {self._stop})"
 
         return f"{self.__class__.__name__}({self._start}, {self._stop}, {self._step})"
-
-    def __reversed__(self) -> Iterator[decimal.Decimal]:
-        if not len(self):
-            return iter(())
-
-        new_stop = self._start - self._step
-        new_start = new_stop + self._step * len(self)
-        return DecimalRangeIterator(new_start, new_stop, -self._step)
 
     def count(self, value: decimal.Decimal) -> int:
         return 1 if value in self else 0
