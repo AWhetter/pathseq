@@ -14,7 +14,7 @@ from ._util import non_recursive_asdict
 class RangesStartName:
     """A parsed loose path sequence where the range starts a path's name."""
 
-    prefix: Literal[""]
+    pre_range: Literal[""]
     """An optional single character separator between the ranges and the previous component.
 
     This is always empty for file names where the ranges start the name,
@@ -23,7 +23,7 @@ class RangesStartName:
     """
     ranges: Ranges
     """The file numbers of the files in the sequence and their formatting."""
-    postfix: str
+    post_range: Literal["_", ""]
     """An optional single character separator between the ranges and the next component.
 
     In sequences where the ranges start the name,
@@ -31,7 +31,7 @@ class RangesStartName:
     :ref:`stem <format-loose-stem>`.
     """
     stem: str
-    """The name of the sequence, without the prefix, ranges, postfix, and suffixes."""
+    """The name of the sequence, without the pre-range separator, ranges, post-range separator, and suffixes."""
     suffixes: tuple[str, ...]
     """The file extensions of the files in the path sequence.
 
@@ -44,12 +44,12 @@ class RangesStartName:
     def with_stem(self, stem: str) -> Self:
         """Return a new parsed sequence with the :attr:`~.RangesStartName.stem` changed.
 
-        If the stem is removed, the postfix will be as well.
+        If the stem is removed, the post-range separator will be as well.
         """
         kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         if not stem:
-            kwargs["postfix"] = ""
+            kwargs["post_range"] = ""
         return self.__class__(**kwargs)
 
     def with_suffix(self, suffix: str) -> Self:
@@ -84,8 +84,8 @@ class RangesInName:
     """A parsed loose range sequence where the range follows a path's stem."""
 
     stem: str
-    """The name of the sequence, without the prefix, ranges, postfix, and suffixes."""
-    prefix: str
+    """The name of the sequence, without the pre-range separator, ranges, post-range separator, and suffixes."""
+    pre_range: str
     """An optional single character separator between the ranges and the previous component.
 
     In sequences where the ranges are in the name,
@@ -94,8 +94,8 @@ class RangesInName:
     """
     ranges: Ranges
     """The file numbers of the files in the sequence and their formatting."""
-    postfix: str
-    """An optional single character separator between the ranges and the next component.
+    post_range: str
+    """An optional separator between the ranges and the next component.
 
     In sequences where the ranges are in the name,
     this separates the :ref:`ranges <format-loose-range>` from the
@@ -113,12 +113,12 @@ class RangesInName:
     def with_stem(self, stem: str) -> Self:
         """Return a new parsed sequence with the :attr:`~.RangesInName.stem` changed.
 
-        If the stem is removed, the prefix will be as well.
+        If the stem is removed, the pre-range separator will be as well.
         """
         kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         if not stem and self.stem:
-            kwargs["prefix"] = ""
+            kwargs["pre_range"] = ""
         return self.__class__(**kwargs)
 
     def with_suffix(self, suffix: str) -> Self:
@@ -144,7 +144,7 @@ class RangesInName:
             kwargs = non_recursive_asdict(self)
             kwargs["suffixes"] = self.suffixes[:-1]
             if not kwargs["suffixes"]:
-                kwargs["postfix"] = ""
+                kwargs["post_range"] = ""
             return self.__class__(**kwargs)
 
         return self
@@ -155,13 +155,13 @@ class RangesEndName:
     """A parsed loose range sequence where the range ends a path's name."""
 
     stem: str
-    """The name of the sequence, without the prefix, ranges, postfix, and suffixes."""
+    """The name of the sequence, without the pre-range separator, ranges, post-range separator, and suffixes."""
     suffixes: tuple[str, ...]
     """The file extensions of the files in the path sequence.
 
     Each suffix includes the leading "``.``".
     """
-    prefix: str
+    pre_range: str
     """An optional single character separator between the ranges and the previous component.
 
     In sequences where the ranges are in the name,
@@ -170,8 +170,8 @@ class RangesEndName:
     """
     ranges: Ranges
     """The file numbers of the files in the sequence and their formatting."""
-    postfix: Literal[""]
-    """An optional single character separator between the ranges and the next component.
+    post_range: Literal[""]
+    """An optional separator between the ranges and the next component.
 
     This is always empty for file names where the ranges end the name,
     but is included so that :class:`~.RangesStartName`, :class:`~.RangesInName`,

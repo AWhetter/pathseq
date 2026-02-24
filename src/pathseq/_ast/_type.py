@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 from typing_extensions import Self  # PY311
 
@@ -14,8 +15,8 @@ class ParsedSequence:
     """A parsed path sequence."""
 
     stem: str
-    """The name of the sequence, without the prefix, ranges, and suffixes."""
-    prefix: str
+    """The name of the sequence, without the pre-range separator, ranges, and suffixes."""
+    pre_range: Literal["", "_", "."]
     """An optional single character separator between the stem and the ranges."""
     ranges: Ranges
     """The file numbers of the files in the sequence and their formatting."""
@@ -31,12 +32,12 @@ class ParsedSequence:
     def with_stem(self, stem: str) -> Self:
         """Return a new parsed sequence with the :attr:`~.ParsedSequence.stem` changed.
 
-        If the stem is removed, the prefix will be as well.
+        If the stem is removed, the pre-range separator will be as well.
         """
         kwargs = non_recursive_asdict(self)
         kwargs["stem"] = stem
         if not stem and self.stem:
-            kwargs["prefix"] = ""
+            kwargs["pre_range"] = ""
         return self.__class__(**kwargs)
 
     def with_suffix(self, suffix: str) -> Self:

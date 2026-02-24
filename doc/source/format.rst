@@ -37,19 +37,19 @@ represents the name of not one file but of all the files in the sequence.
 The name has four components:
 
 * The stem
-* An optional prefix
+* An optional pre-range separator
 * The ranges
 * The suffixes
 
 .. code-block:: text
 
    /directory/ file . 1001-1010# .tar.gz
-             ┌┴────┼─┼──────────┼───────┴┐
-             │    ┌┘ └───┐      │        │
-             │stem│prefix│ranges│suffixes│
-             ├────┴──────┴──────┴────────┤
-             │           name            │
-             └───────────────────────────┘
+          ┌────┴───┼─┼──────────┼───────┴┐
+          │    ┌───┘ └───┐      │        │
+          │stem│pre-range│ranges│suffixes│
+          ├────┴─────────┴──────┴────────┤
+          │             name             │
+          └──────────────────────────────┘
 
 Supporting multiple ranges in a sequence requires an additional component:
 an inter-range separator.
@@ -57,10 +57,10 @@ an inter-range separator.
 .. code-block:: text
 
    /directory/ file . 1001-1002<UDIM> _ 1001-1010# .tar.gz
-         ┌────┴────┼─┼───────────────┼─┼──────────┼───────┴┐
-         │    ┌────┘ │          ┌────┘ └────┐     │        │
-         │stem│prefix│   range  │inter-range│range│suffixes│
-         └────┴──────┼──────────┴───────────┴─────┼────────┘
+      ┌───────┴────┼─┼───────────────┼─┼──────────┼───────┴┐
+      │    ┌───────┘ |          ┌────┘ └────┐     │        │
+      │stem│pre-range│   range  │inter-range│range│suffixes│
+      └────┴─────────┼──────────┴───────────┴─────┼────────┘
                      │           ranges           │
                      └────────────────────────────┘
 
@@ -70,7 +70,7 @@ an inter-range separator.
 Stem
 ----
 
-The stem is the name of a path sequence, without the prefix, ranges, and suffixes.
+The stem is the name of a path sequence, without the pre-range separator, ranges, and suffixes.
 A non-empty stem MUST be present in the name of a path sequence.
 
 The stem MUST NOT contain a valid :ref:`range string <spec-simple-range>`,
@@ -83,29 +83,29 @@ For example, in ``file-1.1-5#.tar.gz`` it is unclear whether the stem and range 
 
 .. note::
 
-   Although this ambiguity is removed when a prefix separator of "``_``" is included,
+   Although this ambiguity is removed when a pre-range separator of "``_``" is included,
    ending the stem with a digit is still forbidden
    to prevent complexity in an API that implements this format.
    For example, if it were possible to rename a path sequence by
-   removing or changing the prefix, doing that may not be possible unless
+   removing or changing the pre-range separator, doing that may not be possible unless
    the stem is changed first.
 
 
-.. _spec-simple-prefix:
+.. _spec-simple-prerange:
 
-Prefix
-------
+Pre-range Separator
+-------------------
 
-The prefix is a single character that separates the :ref:`stem <spec-simple-stem>`
+The pre-range separator is a single character that separates the :ref:`stem <spec-simple-stem>`
 from the :ref:`ranges <spec-simple-range>`.
 
-The name of a path sequence MAY contain a single prefix character.
+The name of a path sequence MAY contain a single pre-range separator character.
 
-The prefix character MUST be one of "``.``" or "``_``".
+The pre-range separator MUST be one of "``.``" or "``_``".
 
 .. tip::
 
-   Including a prefix as "``.``" is RECOMMENDED for best compatibility with VFX software.
+   Including a pre-range separator as "``.``" is RECOMMENDED for best compatibility with VFX software.
 
    .. code-block:: text
 
@@ -469,17 +469,17 @@ sequence string being parsed is in the simple format.
 
 In `Simple Path Sequences`_ we saw that in the simple format,
 a sequence's name has five components:
-the stem, an optional prefix, the ranges, inter-range strings, and the suffixes.
-The loose format has an additional component — the OPTIONAL postfix —
+the stem, an optional pre-range separator, the ranges, inter-range strings, and the suffixes.
+The loose format has an additional component — the OPTIONAL post-range separator —
 to support additional characters after the ranges but before the next component.
 
 .. code-block:: text
 
    /directory/ file . 1001-1002<UDIM> _ 1001-1010# _final .tar.gz
-         ┌────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴─┐
-         │    ┌────┘ │          ┌────┘ └────┐     │      └┐        │
-         │stem│prefix│   range  │inter-range│range│postfix│suffixes│
-         └────┴──────┼──────────┴───────────┴─────┼───────┴────────┘
+      ┌───────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴────┐
+      │    ┌───────┘ │          ┌────┘ └────┐     │      └───┐        │
+      │stem│pre-range│   range  │inter-range│range│post-range│suffixes│
+      └────┴─────────┼──────────┴───────────┴─────┼──────────┴────────┘
                      │           ranges           │
                      └────────────────────────────┘
 
@@ -492,10 +492,10 @@ The ranges can be at the start of the name:
 .. code-block:: text
 
    /directory/ 1001-1002<UDIM> _ 1001-1010# _ filename .tar.gz
-              ├───────────────┼─┼──────────┼─┼────────┼───────┴──┐
-              │          ┌────┘ └────┐     │ └─────┐  └─┐        │
-              │   range  │inter-range│range│postfix│stem│suffixes│
-              ├──────────┴───────────┴─────┼───────┴────┴────────┘
+              ├───────────────┼─┼──────────┼─┼────────┼───────┴────┐
+              │          ┌────┘ └────┐     │ └───────┐└───┐        │
+              │   range  │inter-range│range│postrange│stem│suffixes│
+              ├──────────┴───────────┴─────┼─────────┴────┴────────┘
               │           ranges           │
               └────────────────────────────┘
 
@@ -504,10 +504,10 @@ The ranges can be inside the name:
 .. code-block:: text
 
    /directory/ file . 1001-1002<UDIM> _ 1001-1010# _final .tar.gz
-         ┌────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴─┐
-         │    ┌────┘ │          ┌────┘ └────┐     │      └┐        │
-         │stem│prefix│   range  │inter-range│range│postfix│suffixes│
-         └────┴──────┼──────────┴───────────┴─────┼───────┴────────┘
+      ┌───────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴────┐
+      │    ┌───────┘ │          ┌────┘ └────┐     │      └───┐        │
+      │stem│pre-range│   range  │inter-range│range│post-range│suffixes│
+      └────┴─────────┼──────────┴───────────┴─────┼──────────┴────────┘
                      │           ranges           │
                      └────────────────────────────┘
 
@@ -516,10 +516,10 @@ Finally, the ranges can be at the end of the name:
 .. code-block:: text
 
    /directory/ file .tar.gz . 1001-1002<UDIM> _ 1001-1010#
-        ┌─────┴────┼───────┼─┼───────────────┼─┼──────────┤
-        │    ┌─────┘  ┌────┘ │          ┌────┘ └────┐     │
-        │stem│suffixes│prefix│   range  │inter-range│range│
-        └────┴────────┴──────┼──────────┴───────────┴─────┤
+     ┌────────┴────┼───────┼─┼───────────────┼─┼──────────┤
+     │    ┌────────┘┌──────┘ │          ┌────┘ └────┐     │
+     │stem│suffixes │prerange│   range  │inter-range│range│
+     └────┴─────────┴────────┼──────────┴───────────┴─────┤
                              │           ranges           │
                              └────────────────────────────┘
 
@@ -528,8 +528,7 @@ Finally, the ranges can be at the end of the name:
    Because the stem or suffix are allowed to be empty, the loose format is ambiguous.
    For example, ``#.tar.gz`` could be represented as a sequence where
    the range starts the string and has a blank stem,
-   or the range starts the string and has a stem of "tar" and prefix of ".",
-   or the range is in the string and has a blank stem and prefix.
+   or the range is in the string and has a blank stem.
 
    Implementations of PathSeq do not need to provide consistent behaviour when
    parsing ambiguous loose format strings.
@@ -540,7 +539,8 @@ Finally, the ranges can be at the end of the name:
 Stem
 ----
 
-The stem is the name of a path sequence, without the prefix, ranges, postfix, and suffixes.
+The stem is the name of a path sequence, without the pre-range separator, ranges,
+post-range separator, and suffixes.
 A non-empty stem MAY be present in the name of a path sequence.
 
 The stem MUST NOT contain a valid :ref:`range string <spec-simple-range>`,
@@ -568,18 +568,18 @@ a file in the sequence.
       .tar.gz1-5#
 
 
-.. _spec-loose-prefix:
+.. _spec-loose-prerange:
 
-Prefix
-------
+Pre-range Separator
+-------------------
 
-Path sequences where the name starts with a range MUST NOT contain a prefix.
+Path sequences where the name starts with a range MUST NOT contain a pre-range separator.
 Path sequences where the ranges exist inside or at the end of the name
-MAY contain a single prefix character.
+MAY contain a pre-range separator.
 
-The prefix separates the ranges from the previous component in the name.
+The pre-range separator separates the ranges from the previous component in the name.
 
-The prefix character MUST be one of "``.``" or "``_``".
+If a pre-range separator is present, it MUST be one of "``.``" or "``_``".
 
 
 .. _spec-loose-range:
@@ -613,34 +613,34 @@ but this is NOT RECOMMENDED either because it creates abiguity when parsing
 a file in the sequence.
 
 
-.. _spec-loose-postfix:
+.. _spec-loose-postrange:
 
-Postfix
--------
+Post-range Separator
+--------------------
 
-The postfix string separates the :ref:`ranges <spec-loose-range>`
+The post-range separator separates the :ref:`ranges <spec-loose-range>`
 from the next component of the sequence's name.
 
-The rules that define what is a valid postfix, depend on the type of path sequence.
+The rules that define what is a valid post-range separator, depend on the type of path sequence.
 
 In path sequences where the ranges start the name:
 
-* The sequence MAY contain a postfix.
-* If present, the postfix MUST be a "``_``", or it would be part of the stem.
+* The sequence MAY contain a post-range separator.
+* If present, the post-range separator MUST be a "``_``", or it would be part of the stem.
   If it contained a "``.``" then by definition it would be part of the suffixes.
 
 In path sequences where the ranges exist inside of the name:
 
-* The sequence MAY contain a postfix.
-* The postfix can be of any length.
-* The postfix MUST NOT contain a "``.``", or by definition it would be part of the suffixes.
-* The postfix MAY start with digits,
+* The sequence MAY contain a post-range separator.
+* The post-range separator can be of any length.
+* The post-range separator MUST NOT contain a "``.``", or by definition it would be part of the suffixes.
+* The post-range separator MAY start with digits,
   but this is NOT RECOMMENDED because it makes it difficult to tell
   where the range starts and ends from a file path in the sequence.
 
 In path sequences where the name ends with a range:
 
-* A postfix CANNOT be present, otherwise the ranges would exist inside of the name.
+* A post-range separator CANNOT be present, otherwise the ranges would exist inside of the name.
 
 
 .. _spec-loose-suffixes:

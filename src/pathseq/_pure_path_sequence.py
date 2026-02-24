@@ -30,29 +30,3 @@ class PurePathSequence(BasePurePathSequence[PathT_co]):
     def parsed(self) -> ParsedSequence:
         """The parsed sequence string, as a tree of objects."""
         return self._parsed
-
-    def with_file_num_seqs(
-        self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
-    ) -> Self:
-        """Return a new sequence with the file number sequences changed.
-
-        Raises:
-            TypeError: If the given number of file number sequences does not match
-                the sequence's number of file number sequences.
-        """
-        if len(seqs) != len(self._parsed.ranges.ranges):
-            raise TypeError(
-                f"Need {len(self._parsed.ranges.ranges)} sequences, but got {len(seqs)}"
-            )
-
-        new_ranges = tuple(
-            PaddedRange(seq, range_.pad_format)
-            for seq, range_ in zip(seqs, self._parsed.ranges.ranges)
-        )
-        new = self._parsed.__class__(
-            self._parsed.stem,
-            self._parsed.prefix,
-            Ranges(new_ranges, self._parsed.ranges.inter_ranges),
-            self._parsed.suffixes,
-        )
-        return self.__class__(self._path.with_name(str(new)))

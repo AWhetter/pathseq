@@ -19,8 +19,8 @@ from ._ast import (
 from ._error import NotASequenceError, ParseError
 from ._file_num_seq import FileNumSequence
 
-_POSTFIX_SEPARATORS = {"_"}
-_PREFIX_SEPARATORS = _POSTFIX_SEPARATORS | {"."}
+_POST_RANGE_SEPARATORS = {"_"}
+_PRE_RANGE_SEPARATORS = _POST_RANGE_SEPARATORS | {"."}
 RANGE_RE = re.compile(
     r"""
         -?\d+(?:\.\d+)?
@@ -60,8 +60,8 @@ class TokenType(enum.Enum):
     RANGE = enum.auto()
     INTER_RANGE = enum.auto()
     STEM = enum.auto()
-    PREFIX = enum.auto()
-    POSTFIX = enum.auto()
+    PRE_RANGE = enum.auto()
+    POST_RANGE = enum.auto()
     SUFFIXES = enum.auto()
 
 
@@ -93,10 +93,10 @@ def _tokenise(seq: str) -> list[Token]:
             elif not ends_with_range:
                 separator = None
                 if raw_token != "." and any(
-                    raw_token.endswith(sep) for sep in _PREFIX_SEPARATORS
+                    raw_token.endswith(sep) for sep in _PRE_RANGE_SEPARATORS
                 ):
                     separator = Token(
-                        TokenType.PREFIX,
+                        TokenType.PRE_RANGE,
                         raw_token[-1],
                         column + len(raw_token) - 1,
                     )
@@ -113,9 +113,9 @@ def _tokenise(seq: str) -> list[Token]:
                     tokens.append(separator)
             else:
                 separator = None
-                if any(raw_token.endswith(sep) for sep in _PREFIX_SEPARATORS):
+                if any(raw_token.endswith(sep) for sep in _PRE_RANGE_SEPARATORS):
                     separator = Token(
-                        TokenType.PREFIX,
+                        TokenType.PRE_RANGE,
                         raw_token[-1],
                         column + len(raw_token) - 1,
                     )
@@ -169,9 +169,9 @@ def _tokenise(seq: str) -> list[Token]:
                 )
                 tokens.append(token)
             elif starts_with_range:
-                if any(raw_token.startswith(sep) for sep in _POSTFIX_SEPARATORS):
+                if any(raw_token.startswith(sep) for sep in _POST_RANGE_SEPARATORS):
                     token = Token(
-                        TokenType.POSTFIX,
+                        TokenType.POST_RANGE,
                         raw_token[0],
                         column,
                     )
@@ -217,7 +217,7 @@ def _tokenise(seq: str) -> list[Token]:
 
                 if raw_token[:suffix_i]:
                     token = Token(
-                        TokenType.POSTFIX,
+                        TokenType.POST_RANGE,
                         raw_token[:suffix_i],
                         column,
                     )
@@ -240,10 +240,10 @@ def _tokenise(seq: str) -> list[Token]:
     if __debug__:
         type_counts = collections.Counter(token.type for token in tokens)
         assert type_counts[TokenType.STEM] <= 1
-        num_pre_seps = type_counts[TokenType.PREFIX]
+        num_pre_seps = type_counts[TokenType.PRE_RANGE]
         assert num_pre_seps <= 1
-        num_postfixes = type_counts[TokenType.POSTFIX]
-        assert num_postfixes <= 1
+        num_post_seps = type_counts[TokenType.POST_RANGE]
+        assert num_post_seps <= 1
         num_ranges = type_counts[TokenType.RANGE]
         num_inter_ranges = type_counts[TokenType.INTER_RANGE]
         assert num_inter_ranges == num_ranges - 1
@@ -256,20 +256,20 @@ class SeqParser(StateMachine):
     init = State(initial=True)
     range_starts_name = State()
     starts_inter_range = State()
-    starts_postfix = State()
+    starts_post_range = State()
     starts_stem = State()
     starts_suffixes = State()
 
     range_later = State()  # stem
 
-    in_prefix = State()
+    in_pre_range = State()
     range_in_name = State()
     in_inter_range = State()
-    in_postfix = State()
+    in_post_range = State()
     in_suffixes = State()
 
     range_ends_name = State()  # suffixes
-    ends_prefix = State()
+    ends_pre_range = State()
     ends_range = State()
     ends_inter_range = State()
 
@@ -282,28 +282,28 @@ class SeqParser(StateMachine):
         | starts_inter_range.to(range_starts_name, cond="expect_range")
         | range_starts_name.to.itself(on="on_blank_inter_range", cond="is_range")  # type: ignore[no-untyped-call]
         | range_starts_name.to(in_suffixes, cond="is_suffixes", on="switch_to_in_range")
-        | range_starts_name.to(starts_postfix, cond="is_postfix")
+        | range_starts_name.to(starts_post_range, cond="is_post_range")
         | range_starts_name.to(
-            starts_stem, validators="expect_inter_or_pre_sep_or_stem"
+            starts_stem, validators="expect_inter_or_pre_range_or_stem"
         )
-        | starts_postfix.to(starts_stem, validators="expect_stem")
+        | starts_post_range.to(starts_stem, validators="expect_stem")
         | starts_stem.to(starts_suffixes, validators="expect_suffixes")
-        | range_later.to(in_prefix, cond="is_prefix")
+        | range_later.to(in_pre_range, cond="is_pre_range")
         | range_later.to(range_in_name, cond="is_range")
-        | in_prefix.to(range_in_name, validators="expect_range")
+        | in_pre_range.to(range_in_name, validators="expect_range")
         | range_in_name.to(in_inter_range, cond="is_inter_range")
         | in_inter_range.to(range_in_name, validators="expect_range")
-        | range_in_name.to(in_postfix, cond="is_postfix")
-        | in_postfix.to(in_suffixes, validators="expect_suffixes")
+        | range_in_name.to(in_post_range, cond="is_post_range")
+        | in_post_range.to(in_suffixes, validators="expect_suffixes")
         | range_in_name.to(
-            in_suffixes, validators="expect_inter_or_post_sep_or_suffixes"
+            in_suffixes, validators="expect_inter_or_post_range_or_suffixes"
         )
         | range_later.to(
-            range_ends_name, validators="expect_pre_sep_or_range_or_suffixes"
+            range_ends_name, validators="expect_pre_range_or_range_or_suffixes"
         )
-        | range_ends_name.to(ends_prefix, cond="is_prefix")
-        | range_ends_name.to(ends_range, validators="expect_pre_sep_or_range")
-        | ends_prefix.to(ends_range, validators="expect_range")
+        | range_ends_name.to(ends_pre_range, cond="is_pre_range")
+        | range_ends_name.to(ends_range, validators="expect_pre_range_or_range")
+        | ends_pre_range.to(ends_range, validators="expect_range")
         | ends_range.to(ends_inter_range, validators="expect_inter_range")
         | ends_inter_range.to(ends_range, validators="expect_range")
     )
@@ -313,7 +313,7 @@ class SeqParser(StateMachine):
         | starts_stem.to(parsed)
         | starts_suffixes.to(parsed)
         | range_in_name.to(parsed)
-        | in_postfix.to(parsed)
+        | in_post_range.to(parsed)
         | in_suffixes.to(parsed)
         | ends_range.to(parsed)
     )
@@ -324,10 +324,10 @@ class SeqParser(StateMachine):
         self._seq = seq
         self._range_type: type[ParsedLooseSequence] | None = None
         self._stem = ""
-        self._prefix = ""
+        self._pre_range = ""
         self._ranges: list[PaddedRange[int] | PaddedRange[Decimal]] = []
         self._inter_ranges: list[str] = []
-        self._postfix = ""
+        self._post_range = ""
         self._suffixes: tuple[str, ...] = ()
 
     def is_range(self, token: Token) -> bool:
@@ -339,11 +339,11 @@ class SeqParser(StateMachine):
     def is_stem(self, token: Token) -> bool:
         return token.type == TokenType.STEM
 
-    def is_prefix(self, token: Token) -> bool:
-        return token.type == TokenType.PREFIX
+    def is_pre_range(self, token: Token) -> bool:
+        return token.type == TokenType.PRE_RANGE
 
-    def is_postfix(self, token: Token) -> bool:
-        return token.type == TokenType.POSTFIX
+    def is_post_range(self, token: Token) -> bool:
+        return token.type == TokenType.POST_RANGE
 
     def is_suffixes(self, token: Token) -> bool:
         return token.type == TokenType.SUFFIXES
@@ -351,14 +351,15 @@ class SeqParser(StateMachine):
     def expect_range_or_stem(self, token: Token) -> bool:
         return self._validate_stem(token, "Expected a range or a stem")
 
-    def expect_inter_or_pre_sep_or_stem(self, token: Token) -> bool:
+    def expect_inter_or_pre_range_or_stem(self, token: Token) -> bool:
         return self._validate_stem(
-            token, "Expected an inter-range string, a prefix separator, or a stem"
+            token, "Expected an inter-range string, a pre-range separator, or a stem"
         )
 
-    def expect_inter_or_post_sep_or_suffixes(self, token: Token) -> bool:
+    def expect_inter_or_post_range_or_suffixes(self, token: Token) -> bool:
         return self._validate_suffixes(
-            token, "Expected an inter-range string, a postfix, or file suffixes"
+            token,
+            "Expected an inter-range string, a post-range separator, or file suffixes",
         )
 
     def expect_stem(self, token: Token) -> bool:
@@ -370,15 +371,15 @@ class SeqParser(StateMachine):
     def expect_range(self, token: Token) -> bool:
         return self._validate_range(token, "Expected the ranges")
 
-    def expect_pre_sep_or_range(self, token: Token) -> bool:
-        return self._validate_range(token, "Expected a prefix separator, or a range")
+    def expect_pre_range_or_range(self, token: Token) -> bool:
+        return self._validate_range(token, "Expected a pre-range separator, or a range")
 
     def expect_inter_range(self, token: Token) -> bool:
         return self._validate_inter_range(token, "Expected an inter-range string")
 
-    def expect_pre_sep_or_range_or_suffixes(self, token: Token) -> bool:
+    def expect_pre_range_or_range_or_suffixes(self, token: Token) -> bool:
         return self._validate_suffixes(
-            token, "Expected a prefix separator, a ranges, or file suffixes"
+            token, "Expected a pre-range separator, a ranges, or file suffixes"
         )
 
     def _validate_range(self, token: Token, reason: str) -> bool:
@@ -421,8 +422,8 @@ class SeqParser(StateMachine):
     def on_blank_inter_range(self) -> None:
         self._inter_ranges.append("")
 
-    def on_enter_starts_postfix(self, token: Token) -> None:
-        self._postfix = token.value
+    def on_enter_starts_post_range(self, token: Token) -> None:
+        self._post_range = token.value
 
     def on_enter_starts_stem(self, token: Token) -> None:
         self._stem = token.value
@@ -433,8 +434,8 @@ class SeqParser(StateMachine):
     def on_enter_range_later(self, token: Token) -> None:
         self._stem = token.value
 
-    def on_enter_in_prefix(self, token: Token) -> None:
-        self._prefix = token.value
+    def on_enter_in_pre_range(self, token: Token) -> None:
+        self._pre_range = token.value
 
     def _parse_padded_range(
         self, token: Token
@@ -473,8 +474,8 @@ class SeqParser(StateMachine):
 
         self._ranges.append(self._parse_padded_range(token))
 
-    def on_enter_in_postfix(self, token: Token) -> None:
-        self._postfix = token.value
+    def on_enter_in_post_range(self, token: Token) -> None:
+        self._post_range = token.value
 
     def on_enter_in_suffixes(self, token: Token) -> None:
         self._suffixes = self._parse_suffixes(token)
@@ -487,22 +488,22 @@ class SeqParser(StateMachine):
     def on_enter_ends_range(self, token: Token) -> None:
         self._ranges.append(self._parse_padded_range(token))
 
-    def on_enter_ends_prefix(self, token: Token) -> None:
-        self._prefix = token.value
+    def on_enter_ends_pre_range(self, token: Token) -> None:
+        self._pre_range = token.value
 
     def on_finalise(self, source: State) -> ParsedLooseSequence:
         if source == self.range_starts_name:
             self._range_type = RangesInName
 
         assert self._range_type is not None, "Failed to establish a range type"
-        assert self._range_type is not RangesStartName or self._prefix == ""
-        assert self._range_type is not RangesEndName or self._postfix == ""
+        assert self._range_type is not RangesStartName or self._pre_range == ""
+        assert self._range_type is not RangesEndName or self._post_range == ""
 
         return self._range_type(
             stem=self._stem,
-            prefix=self._prefix,  # type: ignore[arg-type]
+            pre_range=self._pre_range,  # type: ignore[arg-type]
             ranges=Ranges(tuple(self._ranges), tuple(self._inter_ranges)),
-            postfix=self._postfix,  # type: ignore[arg-type]
+            post_range=self._post_range,  # type: ignore[arg-type]
             suffixes=self._suffixes,
         )
 

@@ -67,7 +67,7 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
 
     @property
     def stem(self) -> str:
-        """The final path component, without any prefix, ranges, postfix, or suffixes.
+        """The final path component, without any pre-range separator, ranges, post-range separator, or suffixes.
 
         .. code-block:: pycon
 

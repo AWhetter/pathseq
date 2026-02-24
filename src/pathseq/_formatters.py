@@ -48,8 +48,8 @@ class RegexFormatter(Formatter):
     def stem(self, stem: str) -> str:
         return re.escape(super().stem(stem))
 
-    def prefix(self, prefix: str) -> str:
-        return re.escape(super().prefix(prefix))
+    def pre_range(self, pre_range: str) -> str:
+        return re.escape(super().pre_range(pre_range))
 
     def _range(self, range_: PaddedRange[int] | PaddedRange[Decimal]) -> str:
         if range_.pad_format == "<UVTILE>":

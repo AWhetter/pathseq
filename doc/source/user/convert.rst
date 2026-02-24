@@ -43,20 +43,20 @@ So any part of a path sequence can be changed.
     >>> class DemoFormatter(Formatter):
     ...     def stem(self, stem):
     ...         return "stem"
-    ...     def prefix(self, prefix):
-    ...         return "|prefix"
+    ...     def pre_range(self, pre_range):
+    ...         return "|pre_range"
     ...     def range(self, range_):
     ...         return "|range"
     ...     def inter_range(self, inter_range):
     ...         return "|inter_range"
-    ...     def postfix(self, postfix):
-    ...         return "|postfix"
+    ...     def post_range(self, post_range):
+    ...         return "|post_range"
     ...     def suffixes(self, suffixes):
     ...         return "|suffixes"
     ...
     >>> seq = PathSequence("image.1-5#.exr")
     >>> DemoFormatter().format(seq.parsed)
-    'stem|prefix|range|suffixes'
+    'stem|pre_range|range|suffixes'
 
 The order of the parts in a :ref:`loose <loose-format>` can even be changed
 by overriding the :meth:`~pathseq.Formatter.format` or
@@ -70,7 +70,7 @@ a :ref:`simple <simple-format>` might look like this:
     ...     def format(self, seq):
     ...         return (
     ...             self.stem(seq.stem)
-    ...             + self.prefix(seq.prefix or ".")
+    ...             + self.pre_range(seq.pre_range or ".")
     ...             + self.ranges(seq.ranges)
     ...             + self.suffixes(seq.suffixes)
     ...         )

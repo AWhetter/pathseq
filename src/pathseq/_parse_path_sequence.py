@@ -16,7 +16,7 @@ from ._ast import (
 from ._error import NotASequenceError, ParseError
 from ._file_num_seq import FileNumSequence
 
-_PREFIX_SEPARATORS = {".", "_"}
+_PRE_RANGE_SEPARATORS = {".", "_"}
 RANGE_RE = re.compile(
     r"""
         -?\d+(?:\.\d+)?
@@ -56,7 +56,7 @@ class TokenType(enum.Enum):
     RANGE = enum.auto()
     INTER_RANGE = enum.auto()
     STEM = enum.auto()
-    PREFIX = enum.auto()
+    PRE_RANGE = enum.auto()
     SUFFIXES = enum.auto()
 
 
@@ -99,10 +99,10 @@ def process_tokens(seq: str, raw_tokens: list[str]) -> list[Token]:
         if i == 0:
             separator = None
             if raw_token != "." and any(
-                raw_token.endswith(sep) for sep in _PREFIX_SEPARATORS
+                raw_token.endswith(sep) for sep in _PRE_RANGE_SEPARATORS
             ):
                 separator = Token(
-                    TokenType.PREFIX,
+                    TokenType.PRE_RANGE,
                     raw_token[-1],
                     column + len(raw_token) - 1,
                 )
@@ -172,7 +172,7 @@ def process_tokens(seq: str, raw_tokens: list[str]) -> list[Token]:
     if __debug__:
         type_counts = collections.Counter(token.type for token in tokens)
         assert type_counts[TokenType.STEM] <= 1
-        num_pre_seps = type_counts[TokenType.PREFIX]
+        num_pre_seps = type_counts[TokenType.PRE_RANGE]
         assert num_pre_seps <= 1
         num_ranges = type_counts[TokenType.RANGE]
         num_inter_ranges = type_counts[TokenType.INTER_RANGE]
@@ -186,7 +186,7 @@ class _SeqParser(StateMachine):
     init = State(initial=True)
     stem = State()
 
-    in_prefix = State()
+    in_pre_range = State()
     range_in_name = State()
     in_inter_range = State()
     in_suffixes = State()
@@ -195,9 +195,9 @@ class _SeqParser(StateMachine):
 
     pump = (
         init.to(stem, validators="expect_stem")
-        | stem.to(in_prefix, cond="is_prefix")
-        | stem.to(range_in_name, validators="expect_prefix_or_range")
-        | in_prefix.to(range_in_name, validators="expect_range")
+        | stem.to(in_pre_range, cond="is_pre_range")
+        | stem.to(range_in_name, validators="expect_pre_range_or_range")
+        | in_pre_range.to(range_in_name, validators="expect_range")
         | range_in_name.to(in_inter_range, cond="is_inter_range")
         | in_inter_range.to(range_in_name, validators="expect_range")
         | range_in_name.to(in_suffixes, validators="expect_inter_range_or_suffixes")
@@ -210,7 +210,7 @@ class _SeqParser(StateMachine):
 
         self._seq = seq
         self._stem: str = ""
-        self._prefix = ""
+        self._pre_range = ""
         self._ranges: list[PaddedRange[int] | PaddedRange[Decimal]] = []
         self._inter_ranges: list[str] = []
         self._suffixes: tuple[str, ...] = ()
@@ -218,14 +218,16 @@ class _SeqParser(StateMachine):
     def is_inter_range(self, token: Token) -> bool:
         return token.type == TokenType.INTER_RANGE
 
-    def is_prefix(self, token: Token) -> bool:
-        return token.type == TokenType.PREFIX
+    def is_pre_range(self, token: Token) -> bool:
+        return token.type == TokenType.PRE_RANGE
 
     def expect_stem(self, token: Token) -> bool:
         return self._validate_stem(token, "Expected a stem")
 
-    def expect_prefix_or_range(self, token: Token) -> bool:
-        return self._validate_range(token, "Expected a prefix separator, or the ranges")
+    def expect_pre_range_or_range(self, token: Token) -> bool:
+        return self._validate_range(
+            token, "Expected a pre-range separator, or the ranges"
+        )
 
     def expect_range(self, token: Token) -> bool:
         return self._validate_range(token, "Expected the ranges")
@@ -253,8 +255,8 @@ class _SeqParser(StateMachine):
     def on_enter_stem(self, token: Token) -> None:
         self._stem = token.value
 
-    def on_enter_in_prefix(self, token: Token) -> None:
-        self._prefix = token.value
+    def on_enter_in_pre_range(self, token: Token) -> None:
+        self._pre_range = token.value
 
     def _parse_padded_range(
         self, token: Token
@@ -308,7 +310,7 @@ class _SeqParser(StateMachine):
     def on_finalise(self) -> ParsedSequence:
         return ParsedSequence(
             stem=self._stem,
-            prefix=self._prefix,
+            pre_range=self._pre_range,
             ranges=Ranges(tuple(self._ranges), tuple(self._inter_ranges)),
             suffixes=self._suffixes,
         )

@@ -46,19 +46,19 @@ represents the name of not one file but of all the files in the sequence.
 The name has four components:
 
 * The stem
-* An optional prefix
+* An optional pre-range separator
 * The ranges
 * The suffixes
 
 .. code-block:: text
 
    /directory/ file . 1001-1010# .tar.gz
-             ┌┴────┼─┼──────────┼───────┴┐
-             │    ┌┘ └───┐      │        │
-             │stem│prefix│ranges│suffixes│
-             ├────┴──────┴──────┴────────┤
-             │           name            │
-             └───────────────────────────┘
+          ┌───┴────┼─┼──────────┼───────┴┐
+          │    ┌───┘ └───┐      │        │
+          │stem│pre-range│ranges│suffixes│
+          ├────┴─────────┴──────┴────────┤
+          │             name             │
+          └──────────────────────────────┘
 
 .. code-block:: pycon
 
@@ -67,7 +67,7 @@ The name has four components:
    'file.1001-1010#.tar.gz'
    >>> seq.stem
    'file'
-   >>> seq.parsed.prefix
+   >>> seq.parsed.pre_range
    '.'
    >>> seq.parsed.ranges
    Ranges(1001-1010#)
@@ -80,10 +80,10 @@ an inter-range separator.
 .. code-block:: text
 
    /directory/ file . 1001-1002<UDIM> _ 1001-1010# .tar.gz
-         ┌────┴────┼─┼───────────────┼─┼──────────┼───────┴┐
-         │    ┌────┘ │          ┌────┘ └────┐     │        │
-         │stem│prefix│   range  │inter-range│range│suffixes│
-         └────┴──────┼──────────┴───────────┴─────┼────────┘
+      ┌───────┴────┼─┼───────────────┼─┼──────────┼───────┴┐
+      │    ┌───────┘ |          ┌────┘ └────┐     │        │
+      │stem│pre-range│   range  │inter-range│range│suffixes│
+      └────┴─────────┼──────────┴───────────┴─────┼────────┘
                      │           ranges           │
                      └────────────────────────────┘
 
@@ -93,7 +93,7 @@ an inter-range separator.
 Stem
 ----
 
-The stem is the name of a path sequence, without the prefix, ranges, and suffixes.
+The stem is the name of a path sequence, without the pre-range separator, ranges, and suffixes.
 A non-empty stem will always be present in the name of a path sequence.
 
 .. code-block:: pycon
@@ -104,28 +104,28 @@ A non-empty stem will always be present in the name of a path sequence.
    'texture'
 
 
-.. _format-simple-prefix:
+.. _format-simple-prerange:
 
-Prefix
-------
+Pre-range Separator
+-------------------
 
-The prefix is an optional, single "``.``" or "``_``" character that separates the :ref:`stem <format-simple-stem>`
+The pre-range separator is an optional, single "``.``" or "``_``" character that separates the :ref:`stem <format-simple-stem>`
 from the :ref:`ranges <format-simple-range>`.
 
 .. code-block:: pycon
 
-   >>> PathSequence('/path/to/images.1-3####.exr').parsed.prefix
+   >>> PathSequence('/path/to/images.1-3####.exr').parsed.pre_range
    '.'
-   >>> PathSequence('/path/to/images_1-3####.exr').parsed.prefix
+   >>> PathSequence('/path/to/images_1-3####.exr').parsed.pre_range
    '_'
-   >>> PathSequence('/path/to/images1-3####.exr').parsed.prefix
+   >>> PathSequence('/path/to/images1-3####.exr').parsed.pre_range
    ''
-   >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.prefix
+   >>> PathSequence('/path/to/texture.1011-1013<UDIM>_1-3#.tex').parsed.pre_range
    '.'
 
 .. tip::
 
-   Including a prefix as "``.``" is recommended for best compatibility with VFX software.
+   Including a pre-range separator as "``.``" is recommended for best compatibility with VFX software.
 
    .. code-block:: text
 
@@ -344,23 +344,23 @@ This compatibility comes at a cost of complexity and the potential for ambiguity
 
 In `Path Sequences`_ we saw that in the simple format,
 a sequence's name has five components:
-the stem, an optional prefix, the ranges, inter-range strings, and the suffixes.
-The loose format has an additional component — the optional postfix —
+the stem, an optional pre-range separator, the ranges, inter-range strings, and the suffixes.
+The loose format has an additional component — the optional post-range separator —
 to support additional characters after the ranges but before the next component.
 
 .. code-block:: text
 
    /directory/ file . 1001-1002<UDIM> _ 1001-1010# _final .tar.gz
-         ┌────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴─┐
-         │    ┌────┘ │          ┌────┘ └────┐     │      └┐        │
-         │stem│prefix│   range  │inter-range│range│postfix│suffixes│
-         └────┴──────┼──────────┴───────────┴─────┼───────┴────────┘
+      ┌───────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴────┐
+      │    ┌───────┘ │          ┌────┘ └────┐     │      └───┐        │
+      │stem│pre-range│   range  │inter-range│range│post-range│suffixes│
+      └────┴─────────┼──────────┴───────────┴─────┼──────────┴────────┘
                      │           ranges           │
                      └────────────────────────────┘
 
 .. code-block:: pycon
 
-   >>> LoosePathSequence('file.1001-1002<UDIM>_1001-1010#_final.tar.gz').parsed.postfix
+   >>> LoosePathSequence('file.1001-1002<UDIM>_1001-1010#_final.tar.gz').parsed.post_range
    '_final'
 
 In addition, ranges can be placed anywhere in a loose sequence string.
@@ -372,10 +372,10 @@ The ranges can be at the start of the name:
 .. code-block:: text
 
    /directory/ 1001-1002<UDIM> _ 1001-1010# _ filename .tar.gz
-              ├───────────────┼─┼──────────┼─┼────────┼───────┴──┐
-              │          ┌────┘ └────┐     │ └─────┐  └─┐        │
-              │   range  │inter-range│range│postfix│stem│suffixes│
-              ├──────────┴───────────┴─────┼───────┴────┴────────┘
+              ├───────────────┼─┼──────────┼─┼────────┼───────┴────┐
+              │          ┌────┘ └────┐     │ └───────┐└───┐        │
+              │   range  │inter-range│range│postrange│stem│suffixes│
+              ├──────────┴───────────┴─────┼─────────┴────┴────────┘
               │           ranges           │
               └────────────────────────────┘
 
@@ -389,10 +389,10 @@ The ranges can be inside the name:
 .. code-block:: text
 
    /directory/ file . 1001-1002<UDIM> _ 1001-1010# _final .tar.gz
-         ┌────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴─┐
-         │    ┌────┘ │          ┌────┘ └────┐     │      └┐        │
-         │stem│prefix│   range  │inter-range│range│postfix│suffixes│
-         └────┴──────┼──────────┴───────────┴─────┼───────┴────────┘
+      ┌───────┴────┼─┼───────────────┼─┼──────────┼──────┼───────┴────┐
+      │    ┌───────┘ │          ┌────┘ └────┐     │      └───┐        │
+      │stem│pre-range│   range  │inter-range│range│post-range│suffixes│
+      └────┴─────────┼──────────┴───────────┴─────┼──────────┴────────┘
                      │           ranges           │
                      └────────────────────────────┘
 
@@ -406,10 +406,10 @@ Finally, the ranges can be at the end of the name:
 .. code-block:: text
 
    /directory/ file .tar.gz . 1001-1002<UDIM> _ 1001-1010#
-        ┌─────┴────┼───────┼─┼───────────────┼─┼──────────┤
-        │    ┌─────┘  ┌────┘ │          ┌────┘ └────┐     │
-        │stem│suffixes│prefix│   range  │inter-range│range│
-        └────┴────────┴──────┼──────────┴───────────┴─────┤
+     ┌────────┴────┼───────┼─┼───────────────┼─┼──────────┤
+     │    ┌────────┘┌──────┘ │          ┌────┘ └────┐     │
+     │stem│suffixes │prerange│   range  │inter-range│range│
+     └────┴─────────┴────────┼──────────┴───────────┴─────┤
                              │           ranges           │
                              └────────────────────────────┘
 
@@ -423,8 +423,7 @@ Finally, the ranges can be at the end of the name:
    Because the stem or suffix are allowed to be empty, the loose format is ambiguous.
    For example, ``#.tar.gz`` could be represented as a sequence where
    the range starts the string and has a blank stem,
-   or the range starts the string and has a stem of "tar" and prefix of ".",
-   or the range is in the string and has a blank stem and prefix.
+   or the range is in the string and has a blank stem.
 
    Therefore the loose format can only make a best guess at how to interpret a sequence string.
    The simple format can be parsed consistently.
@@ -478,29 +477,29 @@ a stem may or may not be present in the name of a loose path sequence.
       'file'
 
 
-.. _format-loose-prefix:
+.. _format-loose-prerange:
 
-Prefix
-------
+Pre-range Separator
+-------------------
 
-Like :ref:`the simple format <format-simple-prefix>`, the prefix character separates
+Like :ref:`the simple format <format-simple-prerange>`, the pre-range separator separates
 the :ref:`ranges <format-loose-range>` from the previous component in the name.
 
 .. code-block:: pycon
 
-   >>> LoosePathSequence('/path/to/images.1-3####.exr').parsed.prefix
+   >>> LoosePathSequence('/path/to/images.1-3####.exr').parsed.pre_range
    '.'
-   >>> LoosePathSequence('/path/to/images_1-3####.exr').parsed.prefix
+   >>> LoosePathSequence('/path/to/images_1-3####.exr').parsed.pre_range
    '_'
-   >>> LoosePathSequence('/path/to/images1-3####.exr').parsed.prefix
+   >>> LoosePathSequence('/path/to/images1-3####.exr').parsed.pre_range
    ''
-   >>> LoosePathSequence('/path/to/1-3####_images.exr').parsed.prefix
+   >>> LoosePathSequence('/path/to/1-3####_images.exr').parsed.pre_range
    ''
 
-Path sequences where the name starts with a range won't contain a prefix
+Path sequences where the name starts with a range won't contain a pre-range separator
 because there is no preceding component to separate from the ranges.
 
-   >>> LoosePathSequence('/path/to/1-3####_images.exr').parsed.prefix
+   >>> LoosePathSequence('/path/to/1-3####_images.exr').parsed.pre_range
    ''
 
 
@@ -593,92 +592,92 @@ An inter-range separator does not have to be a single character:
       'file.10010frame1.exr'
 
 
-.. _format-loose-postfix:
+.. _format-loose-postrange:
 
-Postfix
--------
+Post-range Separator
+--------------------
 
-The postfix separates the :ref:`ranges <format-loose-range>`
+The post-range separator separates the :ref:`ranges <format-loose-range>`
 from the next component of the sequence's name.
 
 .. code-block:: pycon
 
-   >>> LoosePathSequence('/path/to/images.1-3####_postfix.exr').parsed.postfix
-   '_postfix'
-   >>> LoosePathSequence('/path/to/1-3####_images.exr').parsed.postfix
+   >>> LoosePathSequence('/path/to/images.1-3####_postrange.exr').parsed.post_range
+   '_postrange'
+   >>> LoosePathSequence('/path/to/1-3####_images.exr').parsed.post_range
    '_'
-   >>> LoosePathSequence('/path/to/images.exr.1-3####').parsed.postfix
+   >>> LoosePathSequence('/path/to/images.exr.1-3####').parsed.post_range
    ''
 
 In path sequences where the ranges start the name,
-if the postfix is present then it can only be a "``_``",
-else the postfix will be part of the stem.
+if the post-range separator is present then it can only be a "``_``",
+else the post-range separator will be part of the stem.
 
 .. code-block:: pycon
 
-   >>> postfix = '_postfix'
-   >>> seq = LoosePathSequence(f'/path/to/1-3####{postfix}_images.exr')
-   >>> seq.parsed.postfix
+   >>> post_range = '_postrange'
+   >>> seq = LoosePathSequence(f'/path/to/1-3####{post_range}_images.exr')
+   >>> seq.parsed.post_range
    '_'
    >>> seq.stem
-   'postfix_images'
+   'postrange_images'
 
 .. note::
 
-   If the postfix were to contain a "``.``" then it would become part of the suffixes.
+   If the post-range separator were to contain a "``.``" then it would become part of the suffixes.
 
    .. code-block:: pycon
 
-      >>> postfix = '.postfix'
-      >>> seq = LoosePathSequence(f'/path/to/1-3####{postfix}_images.exr')
+      >>> post_range = '.postrange'
+      >>> seq = LoosePathSequence(f'/path/to/1-3####{post_range}_images.exr')
       >>> seq.suffixes
-      ('.postfix_images', '.exr')
+      ('.postrange_images', '.exr')
       >>> seq.stem
       ''
-      >>> LoosePathSequence(f'/path/to/1-3####{postfix}.images.exr').suffixes
-      ('.postfix', '.images', '.exr')
+      >>> LoosePathSequence(f'/path/to/1-3####{post_range}.images.exr').suffixes
+      ('.postrange', '.images', '.exr')
 
 In path sequences where the ranges exist inside of the name,
-the postfix can be of any length.
+the post-range separator can be of any length.
 
 .. code-block:: pycon
 
-   >>> LoosePathSequence('/path/to/images.1-3####_postfix.exr').parsed.postfix
-   '_postfix'
+   >>> LoosePathSequence('/path/to/images.1-3####_postrange.exr').parsed.post_range
+   '_postrange'
 
 .. caution::
 
-   Including a "``.``" in the postfix means it would become part of the suffixes.
+   Including a "``.``" in the post-range separator means it would become part of the suffixes.
 
    .. code-block:: pycon
 
-      >>> postfix = 'my.postfix'
-      >>> seq = LoosePathSequence(f'/path/to/images.1-3####{postfix}.exr')
+      >>> post_range = 'my.postrange'
+      >>> seq = LoosePathSequence(f'/path/to/images.1-3####{post_range}.exr')
       >>> seq.suffixes
-      ('.postfix', '.exr')
-      >>> seq.parsed.postfix
+      ('.postrange', '.exr')
+      >>> seq.parsed.post_range
       'my'
 
 .. tip::
 
-   Starting the postfix with digits
+   Starting the post-range separator with digits
    makes it difficult to tell where the range starts and ends from
    a file path in the sequence.
 
    .. code-block:: pycon
 
-      >>> postfix = '0postfix'
-      >>> seq = LoosePathSequence(f'images.1-3#{postfix}.exr')
+      >>> post_range = '0postrange'
+      >>> seq = LoosePathSequence(f'images.1-3#{post_range}.exr')
       >>> seq[0].name
-      'images.10postfix.exr'
+      'images.10postrange.exr'
 
-In path sequences where the name ends with a range there is no prefix,
+In path sequences where the name ends with a range there is no pre-range separator,
 otherwise the ranges would exist inside of the name.
 
 .. code-block:: pycon
 
-   >>> postfix = 'postfix'
-   >>> LoosePathSequence(f'images.exr.1-3#{postfix}').parsed
+   >>> post_range = 'postrange'
+   >>> LoosePathSequence(f'images.exr.1-3#{post_range}').parsed
    RangesInName(...)
 
 

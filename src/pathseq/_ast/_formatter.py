@@ -70,8 +70,8 @@ class Formatter:
     def stem(self, stem: str) -> str:
         return stem
 
-    def prefix(self, prefix: str) -> str:
-        return prefix
+    def pre_range(self, pre_range: str) -> str:
+        return pre_range
 
     def range(self, range_: PaddedRange[int] | PaddedRange[Decimal]) -> str:
         return str(range_)
@@ -85,8 +85,8 @@ class Formatter:
             (self.inter_range(inter_range) for inter_range in ranges.inter_ranges),
         )
 
-    def postfix(self, postfix: str) -> str:
-        return postfix
+    def post_range(self, post_range: str) -> str:
+        return post_range
 
     def suffixes(self, suffixes: tuple[str, ...]) -> str:
         return "".join(suffixes)

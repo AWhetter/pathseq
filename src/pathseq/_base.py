@@ -14,7 +14,13 @@ from typing_extensions import (
     Self,  # PY311
 )
 
-from ._ast import PaddedRange, ParsedLooseSequence, ParsedSequence, Ranges, non_recursive_asdict
+from ._ast import (
+    PaddedRange,
+    ParsedLooseSequence,
+    ParsedSequence,
+    Ranges,
+    non_recursive_asdict,
+)
 from ._error import ParseError
 from ._file_num_seq import FileNumSequence
 from ._from_disk import find_on_disk
@@ -313,7 +319,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             PaddedRange(seq, range_.pad_format)
             for seq, range_ in zip(seqs, self._parsed.ranges.ranges)
         )
-        kwargs = non_recursive_asdict(self)
+        kwargs = non_recursive_asdict(self._parsed)
         kwargs["ranges"] = Ranges(new_ranges, self._parsed.ranges.inter_ranges)
         new = self._parsed.__class__(**kwargs)
         return self.with_segments(self._path.parent, str(new))

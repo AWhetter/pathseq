@@ -23,7 +23,7 @@ by various VFX software.
      - Ranges can start name
      - Ranges can be in name
      - Ranges can end name
-     - Prefix required
+     - Pre-range required
      - Notes
    * - Blender
      - 1
@@ -150,7 +150,7 @@ Blender does not document any use of sequence strings as input.
    * - Ranges ends name
      - ``file.ext##``
      - ``file.ext##.ext``
-   * - Prefix required
+   * - Pre-range required
      - ``file##.ext``
      - ``file##.ext``
 
