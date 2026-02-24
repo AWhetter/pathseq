@@ -14,7 +14,7 @@ from typing_extensions import (
     Self,  # PY311
 )
 
-from ._ast import ParsedLooseSequence, ParsedSequence
+from ._ast import PaddedRange, ParsedLooseSequence, ParsedSequence, Ranges, non_recursive_asdict
 from ._error import ParseError
 from ._file_num_seq import FileNumSequence
 from ._from_disk import find_on_disk
@@ -32,6 +32,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
     """A generic class that represents a path sequence.
 
     Raises:
+        NotASequenceError: When the given path does not represent a sequence.
         ParseError: When the given path is not a valid path sequence.
     """
 
@@ -274,6 +275,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         Raises:
             ValueError: When the given name is empty.
                 Use :attr:`~.BasePurePathSequence.parent` instead.
+            NotASequenceError: When the given name does not represent a sequence.
             ParseError: When the resulting path is not a valid path sequence.
         """
         return self.with_segments(self._path.with_name(name))
@@ -293,7 +295,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         parsed = self._parsed.with_stem(stem)
         return self.with_segments(self._path.parent, str(parsed))
 
-    @abc.abstractmethod
     def with_file_num_seqs(
         self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
     ) -> Self:
@@ -303,6 +304,19 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
             TypeError: If the given number of file number sequences does not match
                 the sequence's number of file number sequences.
         """
+        if len(seqs) != len(self._parsed.ranges.ranges):
+            raise TypeError(
+                f"Need {len(self._parsed.ranges.ranges)} sequences, but got {len(seqs)}"
+            )
+
+        new_ranges = tuple(
+            PaddedRange(seq, range_.pad_format)
+            for seq, range_ in zip(seqs, self._parsed.ranges.ranges)
+        )
+        kwargs = non_recursive_asdict(self)
+        kwargs["ranges"] = Ranges(new_ranges, self._parsed.ranges.inter_ranges)
+        new = self._parsed.__class__(**kwargs)
+        return self.with_segments(self._path.parent, str(new))
 
     def path_with_file_nums(self, *numbers: int | Decimal) -> PurePathT_co:
         """Return a path for the given file number(s) in the sequence.
@@ -457,6 +471,8 @@ class BasePathSequence(BasePurePathSequence[PathT_co], metaclass=abc.ABCMeta):
     """A sequence of Path objects.
 
     Raises:
+        NotASequenceError: When the given path does not represent a sequence,
+            but a regular path.
         ParseError: When the given path is not a valid path sequence.
     """
 

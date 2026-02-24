@@ -3,7 +3,7 @@
 [ADR-002] Directory Sequence Support
 ====================================
 
-:bdg-success:`Accepted`
+:bdg-success:`Rejected`
 
 Context and Problem Statement
 -----------------------------
@@ -21,13 +21,6 @@ Supporting sequences of directories will complicate the API in the following way
   respectively.
 * Methods like ``.is_relative_to`` and ``.relative_to`` will not make sense
   with directory sequences are used.
-
-
-Considered Options
-------------------
-
-* We will support directory sequences
-* We will not support directory sequences.
 
 
 Decision Outcome

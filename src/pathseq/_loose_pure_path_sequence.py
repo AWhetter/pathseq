@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from decimal import Decimal
-
 from typing_extensions import (
     Self,  # PY311
 )
 
-from ._ast import PaddedRange, ParsedLooseSequence, Ranges
+from ._ast import ParsedLooseSequence
 from ._base import BasePurePathSequence, PurePathT_co
 from ._error import ParseError
-from ._file_num_seq import FileNumSequence
 from ._parse_loose_path_sequence import parse_path_sequence
 
 
@@ -17,6 +14,8 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
     """A sequence of PurePath objects.
 
     Raises:
+        NotASequenceError: When the given path does not represent a sequence,
+            but a regular path.
         ParseError: When the given path is not a valid path sequence.
     """
 
@@ -95,30 +94,3 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
             ''
         """
         return super().stem
-
-    def with_file_num_seqs(
-        self, *seqs: FileNumSequence[int] | FileNumSequence[Decimal]
-    ) -> Self:
-        """Return a new sequence with the file number sequences changed.
-
-        Raises:
-            TypeError: If the given number of file number sequences does not match
-                the sequence's number of file number sequences.
-        """
-        if len(seqs) != len(self._parsed.ranges.ranges):
-            raise TypeError(
-                f"Need {len(self._parsed.ranges.ranges)} sequences, but got {len(seqs)}"
-            )
-
-        new_ranges = tuple(
-            PaddedRange(seq, range_.pad_format)
-            for seq, range_ in zip(seqs, self._parsed.ranges.ranges)
-        )
-        new = self._parsed.__class__(
-            stem=self._parsed.stem,
-            prefix=self._parsed.prefix,  # type: ignore[arg-type]
-            ranges=Ranges(new_ranges, self._parsed.ranges.inter_ranges),
-            postfix=self._parsed.postfix,  # type: ignore[arg-type]
-            suffixes=self._parsed.suffixes,
-        )
-        return self.__class__(self._path.with_name(str(new)))

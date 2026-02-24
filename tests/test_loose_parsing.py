@@ -5,6 +5,7 @@ from pathseq._parse_loose_path_sequence import (
 )
 from pathseq import (
     FileNumSequence,
+    NotASequenceError,
     PaddedRange,
     Ranges,
     RangesEndName,
@@ -591,111 +592,17 @@ class TestPathSequence:
         parsed = parse_path_sequence(seq)
         assert parsed == expected
 
-
-class TestFilePath:
     @pytest.mark.parametrize(
-        "seq,expected",
+        "seq",
         [
-            pytest.param(
-                "",
-                RangesInName(
-                    "",
-                    "",
-                    Ranges(
-                        (),
-                        (),
-                    ),
-                    "",
-                    (),
-                ),
-                id="<empty>",
-            ),
-            pytest.param(
-                "file",
-                RangesInName(
-                    "file",
-                    "",
-                    Ranges(
-                        (),
-                        (),
-                    ),
-                    "",
-                    (),
-                ),
-                id="file",
-            ),
-            pytest.param(
-                "dir",
-                RangesInName(
-                    "dir",
-                    "",
-                    Ranges(
-                        (),
-                        (),
-                    ),
-                    "",
-                    (),
-                ),
-                id="dir",
-            ),
-            pytest.param(
-                "file.exr",
-                RangesInName(
-                    "file",
-                    "",
-                    Ranges(
-                        (),
-                        (),
-                    ),
-                    "",
-                    (".exr",),
-                ),
-                id="file.exr",
-            ),
-            pytest.param(
-                ".file.exr",
-                RangesInName(
-                    ".file",
-                    "",
-                    Ranges(
-                        (),
-                        (),
-                    ),
-                    "",
-                    (".exr",),
-                ),
-                id=".file.exr",
-            ),
-            pytest.param(
-                ".file",
-                RangesInName(
-                    ".file",
-                    "",
-                    Ranges(
-                        (),
-                        (),
-                    ),
-                    "",
-                    (),
-                ),
-                id=".file",
-            ),
-            pytest.param(
-                "file.1.exr",
-                RangesInName(
-                    "file",
-                    "",
-                    Ranges(
-                        (),
-                        (),
-                    ),
-                    "",
-                    (".1", ".exr"),
-                ),
-                id="file.1.exr",
-            ),
+            "file",
+            "dir",
+            "file.exr",
+            ".file.exr",
+            ".file",
+            "file.1.exr",
         ],
     )
-    def test_file_path(self, seq, expected):
-        parsed = parse_path_sequence(seq)
-        assert parsed == expected
+    def test_not_a_sequence(self, seq):
+        with pytest.raises(NotASequenceError):
+            parse_path_sequence(seq)

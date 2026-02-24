@@ -79,13 +79,13 @@ an inter-range separator.
 
 .. code-block:: text
 
-   /directory/ file . udim1001-1002<UDIM> _ 1001-1010# .tar.gz
-         ┌────┴────┼─┼────┼──────────────┼─┼───────────┼───────┴┐
-         │    ┌────┘ │    └────┐     ┌───┘ └───┐       │        │
-         │stem│prefix│pre-range|range│pre-range│ range │suffixes│
-         └────┴──────┼─────────┴─────┴─────────┴───────┼────────┘
-                     │              ranges             │
-                     └─────────────────────────────────┘
+   /directory/ file . 1001-1002<UDIM> _ 1001-1010# .tar.gz
+         ┌────┴────┼─┼───────────────┼─┼──────────┼───────┴┐
+         │    ┌────┘ │          ┌────┘ └────┐     │        │
+         │stem│prefix│   range  │inter-range│range│suffixes│
+         └────┴──────┼──────────┴───────────┴─────┼────────┘
+                     │           ranges           │
+                     └────────────────────────────┘
 
 
 .. _format-simple-stem:
@@ -462,6 +462,20 @@ a stem may or may not be present in the name of a loose path sequence.
       '.'
       >>> LoosePathSequence('.tar.gz1-5#').stem
       '.tar'
+
+.. note::
+
+   For ranges that start or end the name of the sequence,
+   there is ambiguity in how to interpret the stem and suffixes.
+   Unlike :attr:`pathlib.PurePath.stem`, this will never contain a suffix
+   if the paths have multiple suffixes:
+
+   .. code-block:: pycon
+
+      >>> LoosePathSequence('file.tar.gz.1-5#').stem
+      'file'
+      >>> LoosePathSequence('1-5#file.tar.gz').stem
+      'file'
 
 
 .. _format-loose-prefix:

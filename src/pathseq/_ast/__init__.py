@@ -7,6 +7,7 @@ from ._loose_type import (
 )
 from ._ranges import PaddedRange, Ranges
 from ._type import ParsedSequence
+from ._util import non_recursive_asdict
 
 __all__ = [
     "Formatter",
@@ -17,4 +18,5 @@ __all__ = [
     "RangesStartName",
     "RangesInName",
     "RangesEndName",
+    "non_recursive_asdict",
 ]
