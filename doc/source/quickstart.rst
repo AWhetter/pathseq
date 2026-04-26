@@ -217,4 +217,4 @@ Like :class:`pathlib.Path`, the name of a path sequence can be split into its pa
 .. seealso::
 
     :doc:`/format`
-    :doc:`/user/convert`
+    :doc:`/convert`

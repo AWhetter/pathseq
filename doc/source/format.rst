@@ -340,7 +340,7 @@ Compatibility with VFX Software
 This format maximises compatibility with software commonly used in
 the VFX industry.
 Any sequence string that is not directly compatible with a DCC
-can be converted to a compatible sequence string using :ref:`format conversion <convert>`.
+can be converted to a compatible sequence string using :doc:`format conversion <convert>`.
 
 The "**File Compatible**" column notes whether pathseq can represent
 a file sequence output by the DCC.
@@ -572,15 +572,15 @@ a stem may or may not be present in the name of a loose path sequence.
 
    For ranges that start or end the name of the sequence,
    there is ambiguity in how to interpret the stem and suffixes.
-   Unlike :attr:`pathlib.PurePath.stem`, this will never contain a suffix
+   Like :attr:`pathlib.PurePath.stem`, this will contain a suffix
    if the paths have multiple suffixes:
 
    .. code-block:: pycon
 
       >>> LoosePathSequence('file.tar.gz.1-5#').stem
-      'file'
+      'file.tar'
       >>> LoosePathSequence('1-5#file.tar.gz').stem
-      'file'
+      'file.tar'
 
 
 .. _format-loose-prerange:

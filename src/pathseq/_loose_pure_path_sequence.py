@@ -78,13 +78,18 @@ class LoosePurePathSequence(BasePurePathSequence[PurePathT_co]):
             >>> LoosePurePathSequence('/path/to/images.exr.1-3####').stem
             'images'
 
-        Unlike :attr:`pathlib.PurePath.stem`, this will never contain a suffix
-        if the paths have multiple suffixes:
+        If the ranges do not start or end the path then,
+        unlike :attr:`pathlib.PurePath.stem`, this will never contain a suffix
+        if the range is in the path and the paths have multiple suffixes:
 
         .. code-block:: pycon
 
-            >>> LoosePurePathSequence('/path/to/images.tar.gz.1-3####').stem
+            >>> LoosePurePathSequence('/path/to/images.1-3####.tar.gz').stem
             'images'
+            >>> LoosePurePathSequence('/path/to/1-3####_images.tar.gz').stem
+            'images.tar'
+            >>> LoosePurePathSequence('/path/to/images.tar.gz.1-3####').stem
+            'images.tar'
 
         If the paths have no stem, then the empty string is returned:
 

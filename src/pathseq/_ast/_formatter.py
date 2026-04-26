@@ -67,6 +67,16 @@ class Formatter:
             'image.$F.exr'
     """
 
+    def __init__(self) -> None:
+        self.include_all_suffixes = False
+        """Whether to include all suffixes in the formatted sequence.
+
+        This is set by :meth:`~.Formatter.format` to indicate whether the
+        suffixes have been cleanly separated from the stem or not.
+        If this is ``False``, then the ``stem`` and ``suffixes`` will overlap
+        and both include all but the last suffix.
+        """
+
     def stem(self, stem: str) -> str:
         return stem
 
@@ -89,7 +99,7 @@ class Formatter:
         return post_range
 
     def suffixes(self, suffixes: tuple[str, ...]) -> str:
-        return "".join(suffixes)
+        return "".join(suffixes if self.include_all_suffixes else suffixes[-1:])
 
     def format(self, seq: ParsedSequence | ParsedLooseSequence) -> str:
         """Format the given path sequence into a string.
@@ -103,6 +113,14 @@ class Formatter:
         Returns:
             The formatter path sequence.
         """
+        from ._loose_type import RangesInName
+        from ._type import ParsedSequence
+
+        self.include_all_suffixes = bool(
+            isinstance(seq, ParsedSequence)
+            or (isinstance(seq, RangesInName) and seq.ranges.ranges)
+        )
+
         return "".join(
             getattr(self, field.name)(getattr(seq, field.name))
             for field in dataclasses.fields(seq)

@@ -125,13 +125,15 @@ def _tokenise(seq: str) -> list[Token]:
                     suffix_dot = 0
                     if raw_token.startswith("."):
                         suffix_dot = 1
+                    post_i = raw_token.rindex(".", suffix_dot)
                     suffix_i = raw_token.index(".", suffix_dot)
                 except ValueError:
+                    post_i = len(raw_token)
                     suffix_i = len(raw_token)
 
                 token = Token(
                     TokenType.STEM,
-                    raw_token[:suffix_i],
+                    raw_token[:post_i],
                     column,
                 )
                 tokens.append(token)
@@ -161,14 +163,7 @@ def _tokenise(seq: str) -> list[Token]:
             )
             tokens.append(token)
         elif i == len(raw_tokens) - 1:
-            if raw_token.startswith(".") and not raw_token.endswith("."):
-                token = Token(
-                    TokenType.SUFFIXES,
-                    raw_token,
-                    column,
-                )
-                tokens.append(token)
-            elif starts_with_range:
+            if starts_with_range:
                 if any(raw_token.startswith(sep) for sep in _POST_RANGE_SEPARATORS):
                     token = Token(
                         TokenType.POST_RANGE,
@@ -180,8 +175,36 @@ def _tokenise(seq: str) -> list[Token]:
                     column += 1
 
                 if raw_token.endswith("."):
+                    post_i = 0
                     suffix_i = len(raw_token)
                 elif raw_token.startswith("."):
+                    post_i = 0
+                    suffix_i = 0
+                else:
+                    try:
+                        post_i = raw_token.rindex(".")
+                        suffix_i = raw_token.index(".")
+                    except ValueError:
+                        post_i = len(raw_token)
+                        suffix_i = len(raw_token)
+
+                if raw_token[:post_i]:
+                    token = Token(
+                        TokenType.STEM,
+                        raw_token[:post_i],
+                        column,
+                    )
+                    tokens.append(token)
+
+                if raw_token[suffix_i:]:
+                    token = Token(
+                        TokenType.SUFFIXES,
+                        raw_token[suffix_i:],
+                        column + suffix_i,
+                    )
+                    tokens.append(token)
+            elif not ends_with_range:
+                if raw_token.startswith("."):
                     suffix_i = 0
                 else:
                     try:
@@ -191,7 +214,7 @@ def _tokenise(seq: str) -> list[Token]:
 
                 if raw_token[:suffix_i]:
                     token = Token(
-                        TokenType.STEM,
+                        TokenType.POST_RANGE,
                         raw_token[:suffix_i],
                         column,
                     )
@@ -205,23 +228,42 @@ def _tokenise(seq: str) -> list[Token]:
                     )
                     tokens.append(token)
             else:
-                if raw_token.endswith("."):
-                    suffix_i = len(raw_token)
-                elif raw_token.startswith("."):
-                    suffix_i = 0
-                else:
-                    try:
-                        suffix_i = raw_token.index(".")
-                    except ValueError:
-                        suffix_i = len(raw_token)
-
-                if raw_token[:suffix_i]:
+                if any(raw_token.startswith(sep) for sep in _PRE_RANGE_SEPARATORS):
                     token = Token(
-                        TokenType.POST_RANGE,
-                        raw_token[:suffix_i],
+                        TokenType.PRE_RANGE,
+                        raw_token[0],
                         column,
                     )
                     tokens.append(token)
+                    raw_token = raw_token[1:]
+                    column += 1
+
+                prerange = None
+                if any(raw_token.endswith(sep) for sep in _PRE_RANGE_SEPARATORS):
+                    prerange = Token(
+                        TokenType.PRE_RANGE,
+                        raw_token[-1],
+                        column + len(raw_token) - 1,
+                    )
+                    raw_token = raw_token[:-1]
+
+                if raw_token.startswith("."):
+                    stem_i = len(raw_token)
+                    suffix_i = 0
+                else:
+                    try:
+                        stem_i = raw_token.rindex(".")
+                        suffix_i = raw_token.index(".")
+                    except ValueError:
+                        stem_i = 0
+                        suffix_i = len(raw_token)
+
+                token = Token(
+                    TokenType.STEM,
+                    raw_token[:stem_i],
+                    column,
+                )
+                tokens.append(token)
 
                 if raw_token[suffix_i:]:
                     token = Token(
@@ -230,6 +272,10 @@ def _tokenise(seq: str) -> list[Token]:
                         column + suffix_i,
                     )
                     tokens.append(token)
+
+                if prerange:
+                    tokens.append(prerange)
+                    column += 1
 
         column += len(raw_token)
 
