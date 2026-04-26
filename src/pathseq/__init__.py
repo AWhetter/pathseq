@@ -11,8 +11,9 @@ from ._ast import (
     RangesStartName,
 )
 from ._base import BasePathSequence, BasePurePathSequence, PathT_co, PurePathT_co
-from ._error import IncompleteDimensionError, NotASequenceError, ParseError
+from ._error import NotASequenceError, ParseError
 from ._file_num_seq import FileNumSequence, FileNumT
+from ._from_disk import Completeness
 from ._loose_path_sequence import LoosePathSequence
 from ._loose_pure_path_sequence import LoosePurePathSequence
 from ._path_sequence import PathSequence
@@ -23,10 +24,10 @@ __version__ = "0.1.0"
 __all__ = (
     "BasePathSequence",
     "BasePurePathSequence",
+    "Completeness",
     "FileNumSequence",
     "FileNumT",
     "Formatter",
-    "IncompleteDimensionError",
     "LoosePathSequence",
     "LoosePurePathSequence",
     "NotASequenceError",

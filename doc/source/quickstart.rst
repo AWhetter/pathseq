@@ -112,7 +112,7 @@ and negative numbers:
 Reading From the Filesystem
 ===========================
 
-Path sequences can establish their ranges from what's on the filesystem:
+Path sequences can iterate over the paths that are on the filesystem:
 
 .. code-block:: pycon
 
@@ -121,8 +121,14 @@ Path sequences can establish their ranges from what's on the filesystem:
     ...     path.touch(exist_ok=True)
     ...
     >>> seq2 = PathSequence("tests/fixtures/simple/images.####.exr")
-    >>> seq2.with_existing_paths()
-    PathSequence('tests/fixtures/simple/images.1-5####.exr')
+    >>> for path in sorted(seq2.iter_existing_paths()):
+    ...    path
+    ...
+    PosixPath('tests/fixtures/simple/images.0001.exr')
+    PosixPath('tests/fixtures/simple/images.0002.exr')
+    PosixPath('tests/fixtures/simple/images.0003.exr')
+    PosixPath('tests/fixtures/simple/images.0004.exr')
+    PosixPath('tests/fixtures/simple/images.0005.exr')
 
 
 Equality and Hashing

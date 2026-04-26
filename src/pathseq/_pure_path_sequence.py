@@ -1,14 +1,7 @@
 from __future__ import annotations
 
-from decimal import Decimal
-
-from typing_extensions import (
-    Self,  # PY311
-)
-
-from ._ast import PaddedRange, ParsedSequence, Ranges
+from ._ast import ParsedSequence
 from ._base import BasePurePathSequence, PathT_co
-from ._file_num_seq import FileNumSequence
 from ._parse_path_sequence import parse_path_sequence
 
 

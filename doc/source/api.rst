@@ -76,10 +76,6 @@ API Reference
    Exceptions
    ----------
 
-   .. autoexception:: IncompleteDimensionError
-      :show-inheritance:
-      :members:
-
    .. autoexception:: NotASequenceError
       :show-inheritance:
       :members:

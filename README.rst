@@ -17,7 +17,7 @@ pathseq
     :target: https://pypi.org/project/pathseq/
     :alt: Supported Python Versions
 
-A pathlib-first library for working with file sequences.
+A pathlib-first library for working with path sequences.
 
 * Multi-dimension ranges (e.g. animated udims)
 * pathlib-first API
@@ -67,8 +67,14 @@ Now, let's get started:
     ...     path.touch(exist_ok=True)
     ...
     >>> seq2 = PathSequence("tests/fixtures/simple/images.####.exr")
-    >>> seq2.with_existing_paths()
-    ... PathSequence("tests/fixtures/simple/images.1-5####.exr")
+    >>> for path in seq2.iter_existing_paths():
+    ...    path
+    ...
+    PosixPath('tests/fixtures/simple/images.0001.exr')
+    PosixPath('tests/fixtures/simple/images.0002.exr')
+    PosixPath('tests/fixtures/simple/images.0003.exr')
+    PosixPath('tests/fixtures/simple/images.0004.exr')
+    PosixPath('tests/fixtures/simple/images.0005.exr')
 
     >>> seq = PathSequence("tests/fixtures/simple/images.1-5####.exr")
     >>> seq.parent

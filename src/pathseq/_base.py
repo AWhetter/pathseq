@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from decimal import Decimal
 import itertools
 import os
@@ -23,10 +23,11 @@ from ._ast import (
 )
 from ._error import ParseError
 from ._file_num_seq import FileNumSequence
-from ._from_disk import find_on_disk
+from ._from_disk import Completeness, find_on_disk, iter_on_disk
 from ._formatters import FileNumberFormatter, RegexFormatter
 
 Segment: TypeAlias = Union[str, os.PathLike[str]]
+PathT_co = TypeVar("PathT_co", covariant=True, bound=pathlib.Path)
 PurePathT_co = TypeVar(
     "PurePathT_co",
     covariant=True,
@@ -470,9 +471,6 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         return any(r.has_subsamples(r) for r in self._parsed.ranges.ranges)
 
 
-PathT_co = TypeVar("PathT_co", covariant=True, bound=pathlib.Path)
-
-
 class BasePathSequence(BasePurePathSequence[PathT_co], metaclass=abc.ABCMeta):
     """A sequence of Path objects.
 
@@ -510,15 +508,38 @@ class BasePathSequence(BasePurePathSequence[PathT_co], metaclass=abc.ABCMeta):
         """
         return self.with_segments(self._path.absolute())
 
-    def with_existing_paths(self) -> Self:
+    def iter_existing_paths(self) -> Iterable[PathT_co]:
+        """Iterate over the ranges of files that exist on disk.
+
+        This method will ignore the file number sequences in this path sequence,
+        and iterate over all paths that could be represented by the sequence string and exist on disk.
+
+        Users who wish the file number sequences to be taken into account
+        can use the existing :meth:`__iter__` method and filter the results by whether they exist on disk.
+        """
+        return iter_on_disk(self._path, self._parsed)
+
+    def resize_from_existing_paths(self) -> tuple[Self, Completeness]:
         """Return a new a sequence using the ranges of files that exist on disk.
 
         Each file number sequence in the path sequence will be ordered numerically.
 
-        Raises:
-            IncompleteDimensionError: When one or more dimensions in
-                a multi-dimension sequence does not have a consistent number of
-                files in each other dimension.
+        Note:
+            This method requires storing all file numbers in memory,
+            so it may not be suitable for sequences with large numbers of files.
+            Consider using :meth:`~.iter_existing_paths` instead if memory usage is a concern.
+
+        Returns:
+            A tuple of the new path sequence and a :class:`Completeness` value
+            indicating whether or not the sequence is complete on disk.
+            A sequence may be partially complete when:
+
+            * The given sequence represents a single path, and that path does not exist on disk.
+            * One or more dimensions in a multi-dimension sequence does not have
+              a consistent number of files in each other dimension.
+              For example, a sequence ``file.1-2#_1-2#.exr`` would be partially complete if
+              only the files ``file.1_1.exr``, ``file.1_2.exr``, and ``file.2_1.exr``
+              exist on disk, but ``file.2_2.exr`` does not.
         """
-        seqs = find_on_disk(self._path, self._parsed)
-        return self.with_file_num_seqs(*seqs)
+        seqs, completeness = find_on_disk(self._path, self._parsed)
+        return self.with_file_num_seqs(*seqs), completeness

@@ -24,15 +24,25 @@ Now, let's get started:
     PosixPath('tests/fixtures/simple/images.0004.exr')
     PosixPath('tests/fixtures/simple/images.0005.exr')
 
-    >>> seq2 = PathSequence("tests/fixtures/simple/images.####.exr").with_existing_paths()
-    >>> seq2 == seq
-    True
+    >>> seq = PathSequence("tests/fixtures/simple/images.1-5####.exr")
+    >>> for path in seq:
+    ...     path.touch(exist_ok=True)
+    ...
+    >>> seq2 = PathSequence("tests/fixtures/simple/images.####.exr")
+    >>> for path in sorted(seq2.iter_existing_paths()):
+    ...    path
+    ...
+    PosixPath('tests/fixtures/simple/images.0001.exr')
+    PosixPath('tests/fixtures/simple/images.0002.exr')
+    PosixPath('tests/fixtures/simple/images.0003.exr')
+    PosixPath('tests/fixtures/simple/images.0004.exr')
+    PosixPath('tests/fixtures/simple/images.0005.exr')
 
+    >>> seq = PathSequence("tests/fixtures/simple/images.1-5####.exr")
     >>> seq.parent
     PosixPath('tests/fixtures/simple')
-    >>> seq3 = seq.parent / PathSequence("images.1-5####.exr")
-    >>> seq3 == seq
-    True
+    >>> seq.parent / PathSequence("images.1-5####.exr")
+    PathSequence('tests/fixtures/simple/images.1-5####.exr')
 
     >>> anim_udims = PathSequence("/path/to/textures.1011-1012<UDIM>_1-3#.tex")
     >>> for path in anim_udims:

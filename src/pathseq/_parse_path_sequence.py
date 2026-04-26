@@ -308,9 +308,10 @@ class _SeqParser(StateMachine):
         self._suffixes = self._parse_suffixes(token)
 
     def on_finalise(self) -> ParsedSequence:
+        assert self._pre_range in ("", "_", ".")
         return ParsedSequence(
             stem=self._stem,
-            pre_range=self._pre_range,
+            pre_range=self._pre_range,  # type: ignore[arg-type]
             ranges=Ranges(tuple(self._ranges), tuple(self._inter_ranges)),
             suffixes=self._suffixes,
         )

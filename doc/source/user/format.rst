@@ -551,7 +551,7 @@ inter-range separators are optional in a loose path sequence.
       >>> for path in seq:
       ...     path.touch()
       ...
-      >>> seq.with_existing_paths()
+      >>> seq.resize_from_existing_paths()[0]
       LoosePathSequence('.../file.1001100-1003100x1000#1-3#.exr')
 
 An inter-range separator does not have to be a single character:
@@ -739,5 +739,5 @@ file suffixes are optional in a loose path sequence.
       >>> for path in seq:
       ...     path.touch()
       ...
-      >>> seq.with_existing_paths().file_num_seqs
+      >>> seq.resize_from_existing_paths()[0].file_num_seqs
       (FileNumSequence(2.1),)
