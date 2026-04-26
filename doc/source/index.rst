@@ -90,6 +90,6 @@ A wide range of sequence string formats are supported:
     quickstart
     user/index
     api
-    format
+    format_specification
     contributor
     decisions/index
