@@ -88,7 +88,8 @@ A wide range of sequence string formats are supported:
     :hidden:
 
     quickstart
-    user/index
+    format
+    convert
     api
     format_specification
     contributor

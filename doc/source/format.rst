@@ -332,6 +332,112 @@ They will always be present.
    ('.tar', '.xz')
 
 
+.. _compatibility:
+
+Compatibility with VFX Software
+-------------------------------
+
+This format maximises compatibility with software commonly used in
+the VFX industry.
+Any sequence string that is not directly compatible with a DCC
+can be converted to a compatible sequence string using :ref:`format conversion <convert>`.
+
+The "**File Compatible**" column notes whether pathseq can represent
+a file sequence output by the DCC.
+
+DCCs often support different sequence string formats depending on whether the
+file sequence is being read or written by the DCC.
+Therefore this table separately notes
+whether a simple pathseq sequence string can be passed to the DCC
+directly for the DCC to use to read a file sequence (**Read Compatible**),
+and whether a simple pathseq sequence string can be passed to the DCC
+directly for the DCC to use to write a file sequence (**Write Compatible**).
+
+.. list-table::
+   :header-rows: 1
+
+   * - Software
+     - File Compatible
+     - Read Compatible
+     - Write Compatible
+     - Notes
+   * - Arnold
+     - N/A
+     - ✔
+     - N/A
+     -
+   * - Blender
+     - ✔ [#]_
+     - N/A
+     - ✔
+     -
+   * - fileseq
+     - N/A
+     - ✔ [#]_
+     - N/A
+     -
+   * - Houdini
+     - Partial
+     - ✗
+     - ✗
+     - [#]_
+   * - Katana
+     - ✔
+     - N/A
+     - ✔
+     -
+   * - Mari
+     - ✔
+     - ✗
+     - ✗
+     - [#]_
+   * - Maya (file texture node)
+     - N/A
+     - ✔
+     - N/A
+     -
+   * - Maya (fcheck)
+     - Partial [#]_
+     - ✔
+     - ✔
+     -
+   * - Mudbox
+     - ✔
+     - ✗
+     - ✗
+     -
+   * - Nuke
+     - ✔
+     - ✔
+     - ✔
+     -
+   * - USD
+     - N/A
+     - ✔
+     - N/A
+     -
+   * - ZBrush
+     - ✔
+     - ✗
+     - ✗
+     -
+
+Notes:
+
+.. [#] Blender supports writing sequences that start with a range,
+   which would not be compatible with pathseq format.
+   But, unlike other formats, such ranges need to be passed as an absolute path
+   so aren't as well supported by Blender.
+.. [#] fileseq treats ``#`` as 4 digits of padding by default.
+   It must be passed an argument to treat ``#`` as a single digit of padding.
+.. [#] Houdini expressions use their own syntax (See :ref:`houdini_file_seq`).
+   Houdini syntax is infinitely flexible,
+   but it can be used to express the same sequences as pathseq.
+.. [#] Mari supports only ``$UDIM`` but files are output as interpreted by ``<UDIM>``.
+.. [#] fcheck supports writing sequences as ``file#.ext`` and ``#file.ext``,
+   but ``file.#.ext`` format must be used for pathseq's simple format.
+
+
 .. _loose-format:
 
 Loose Path Sequences
