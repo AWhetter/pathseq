@@ -19,7 +19,7 @@ from ._loose_pure_path_sequence import LoosePurePathSequence
 from ._path_sequence import PathSequence
 from ._pure_path_sequence import PurePathSequence
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 __all__ = (
     "BasePathSequence",
