@@ -78,6 +78,7 @@ directory = "doc/changes"
 filename = "CHANGELOG.rst"
 package = "pathseq"
 title_format = "pathseq v{version} ({project_date})"
+underlines = ["-", "^", "\""]
 
 [tool.pytest.ini_options]
 markers = [

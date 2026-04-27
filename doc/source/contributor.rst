@@ -43,7 +43,7 @@ Pre-Checks
 Preparation
 -----------
 
-1. Update the version numbers in ``autoapi/__init__.py``.
+1. Update the version numbers in ``src/pathseq/__init__.py`` and ``pyproject.toml``.
 2. Run ``tox -e release_notes -- build``
 3. Commit and push the changes.
 4. Check that the tests passed on github.
