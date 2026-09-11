@@ -94,3 +94,4 @@ A wide range of sequence string formats are supported:
     format_specification
     contributor
     decisions/index
+    Github Repository <https://github.com/AWhetter/pathseq>
