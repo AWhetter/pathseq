@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import collections
-from dataclasses import dataclass
-from decimal import Decimal
 import enum
 import re
+from dataclasses import dataclass
+from decimal import Decimal
 
-from statemachine import StateMachine, State
+from statemachine import State, StateMachine
 
 from ._ast import (
     PaddedRange,

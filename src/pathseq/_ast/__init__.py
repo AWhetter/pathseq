@@ -1,9 +1,9 @@
 from ._formatter import Formatter
 from ._loose_type import (
     ParsedLooseSequence,
-    RangesStartName,
-    RangesInName,
     RangesEndName,
+    RangesInName,
+    RangesStartName,
 )
 from ._ranges import PaddedRange, Ranges
 from ._type import ParsedSequence
@@ -15,8 +15,8 @@ __all__ = [
     "ParsedLooseSequence",
     "ParsedSequence",
     "Ranges",
-    "RangesStartName",
-    "RangesInName",
     "RangesEndName",
+    "RangesInName",
+    "RangesStartName",
     "non_recursive_asdict",
 ]

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
 import decimal
 import math
+from collections.abc import Iterator
 
 from typing_extensions import Self  # PY311
 

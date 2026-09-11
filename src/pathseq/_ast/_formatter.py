@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 import dataclasses
-from decimal import Decimal
 import typing
+from collections.abc import Iterable
+from decimal import Decimal
 
 if typing.TYPE_CHECKING:
     from ._loose_type import ParsedLooseSequence

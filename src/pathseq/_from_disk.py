@@ -1,17 +1,17 @@
-from collections.abc import Iterator, Sequence
-from decimal import Decimal
 import enum
 import functools
 import operator
 import pathlib
 import re
+from collections.abc import Iterator, Sequence
+from decimal import Decimal
 from typing import TypeVar
 
 from ._ast import (
-    RangesStartName,
-    RangesInName,
-    RangesEndName,
     ParsedSequence,
+    RangesEndName,
+    RangesInName,
+    RangesStartName,
 )
 from ._file_num_seq import FileNumSequence
 from ._formatters import GlobFormatter, RegexFormatter
@@ -103,8 +103,8 @@ def find_on_disk(
 
 
 def iter_on_disk(
-    path: PathT,
+    seq_as_path: PathT,
     parsed: ParsedSequence | RangesStartName | RangesInName | RangesEndName,
 ) -> Iterator[PathT]:
-    for path, _ in _find_on_disk(path, parsed):
+    for path, _ in _find_on_disk(seq_as_path, parsed):
         yield path

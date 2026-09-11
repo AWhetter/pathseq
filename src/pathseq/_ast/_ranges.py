@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import decimal
+from dataclasses import dataclass
 from typing import Generic, TypeGuard
 
+from .._file_num_seq import FileNumSequence, FileNumT
 from ._formatter import Formatter
 from ._util import pad
-from .._file_num_seq import FileNumSequence, FileNumT
 
 
 @dataclass(frozen=True)

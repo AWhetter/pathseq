@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, TypeAlias, Union
+from typing import Literal, TypeAlias
 
 from typing_extensions import Self  # PY311
 
@@ -214,4 +214,4 @@ class RangesEndName:
         return self
 
 
-ParsedLooseSequence: TypeAlias = Union[RangesStartName, RangesInName, RangesEndName]
+ParsedLooseSequence: TypeAlias = RangesStartName | RangesInName | RangesEndName

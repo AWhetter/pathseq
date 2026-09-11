@@ -1,23 +1,22 @@
-from collections.abc import Iterator, Sequence
 import decimal
-from typing import overload, Protocol, TypeVar
+from collections.abc import Iterator, Sequence
+from typing import Protocol, TypeVar, overload
 
 from typing_extensions import Self  # PY311
 
 from ._decimal_range import DecimalRange
 
-
 FileNumT = TypeVar("FileNumT", int, decimal.Decimal)
-FileNumT_cov = TypeVar("FileNumT_cov", covariant=True)
+FileNumT_co = TypeVar("FileNumT_co", covariant=True)
 
 
-class RangeProtocol(Protocol[FileNumT_cov]):
+class RangeProtocol(Protocol[FileNumT_co]):
     @property
-    def start(self) -> FileNumT_cov: ...
+    def start(self) -> FileNumT_co: ...
     @property
-    def step(self) -> FileNumT_cov: ...
+    def step(self) -> FileNumT_co: ...
 
-    def __iter__(self) -> Iterator[FileNumT_cov]: ...
+    def __iter__(self) -> Iterator[FileNumT_co]: ...
 
     def __len__(self) -> int: ...
 

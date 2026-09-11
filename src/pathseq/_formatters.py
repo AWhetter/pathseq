@@ -1,5 +1,5 @@
-from decimal import Decimal
 import re
+from decimal import Decimal
 
 from ._ast import Formatter, PaddedRange
 

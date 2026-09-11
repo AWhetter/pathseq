@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import abc
-from collections.abc import Iterable, Iterator, Sequence
-from decimal import Decimal
 import itertools
 import os
 import pathlib
 import re
 import sys
-from typing import ClassVar, overload, TypeAlias, TypeVar, Union
+from collections.abc import Iterable, Iterator, Sequence
+from decimal import Decimal
+from typing import ClassVar, TypeAlias, TypeVar, overload
 
 from typing_extensions import (
     Self,  # PY311
@@ -23,10 +23,10 @@ from ._ast import (
 )
 from ._error import ParseError
 from ._file_num_seq import FileNumSequence
-from ._from_disk import Completeness, find_on_disk, iter_on_disk
 from ._formatters import FileNumberFormatter, RegexFormatter
+from ._from_disk import Completeness, find_on_disk, iter_on_disk
 
-Segment: TypeAlias = Union[str, os.PathLike[str]]
+Segment: TypeAlias = str | os.PathLike[str]
 PathT_co = TypeVar("PathT_co", covariant=True, bound=pathlib.Path)
 PurePathT_co = TypeVar(
     "PurePathT_co",
@@ -242,7 +242,7 @@ class BasePurePathSequence(Sequence[PurePathT_co], metaclass=abc.ABCMeta):
         if self._path == other:
             raise ValueError("Cannot check if a path sequence is relative to itself")
 
-        return self._path.is_relative_to(other) and not self._path == other
+        return self._path.is_relative_to(other) and self._path != other
 
     if sys.version_info >= (3, 12):
 

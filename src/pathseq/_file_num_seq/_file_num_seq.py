@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Sequence
 import decimal
 import itertools
-from typing import Generic, overload, TypeGuard
+from collections.abc import Iterable, Iterator, Sequence
+from typing import Generic, TypeGuard, overload
 
 from typing_extensions import (
     Self,  # PY311
@@ -214,8 +214,7 @@ class FileNumSequence(Sequence[FileNumT]):
             if index < range_len:
                 return rng[index]
             index -= range_len
-        else:
-            raise IndexError(index)
+        raise IndexError(index)
 
     def __str__(self) -> str:
         return ",".join(str(rng) for rng in self._ranges)
