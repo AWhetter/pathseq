@@ -362,3 +362,22 @@ class TestIter:
     def test_simple(self, seq_str, expected):
         seq = LoosePurePathSequence(seq_str)
         assert list(str(x) for x in seq) == expected
+
+    @pytest.mark.parametrize(
+        "seq_str,expected",
+        [
+            pytest.param(
+                "image.1009-1012<UVTILE>.exr",
+                [
+                    "image.u9_v1.exr",
+                    "image.u10_v1.exr",
+                    "image.u1_v2.exr",
+                    "image.u2_v2.exr",
+                ],
+                id="image.1009-1012<UVTILE>.exr",
+            ),
+        ],
+    )
+    def test_uv_tile(self, seq_str, expected):
+        seq = LoosePurePathSequence(seq_str)
+        assert list(str(x) for x in seq) == expected

@@ -80,9 +80,6 @@ A wide range of sequence string formats are supported:
     >>> LoosePathSequence("/path/to/images.1001-1005<UDIM>.exr")[0]
     PosixPath('/path/to/images.1001.exr')
 
-    >>> LoosePathSequence("/path/to/images.1001-1005<UVTILE>.exr")[0]
-    PosixPath('/path/to/images.u1_v1.exr')
-
 
 .. toctree::
     :hidden:
