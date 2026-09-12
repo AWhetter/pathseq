@@ -65,7 +65,7 @@ to be sorted, before being split such that they don't overlap.
 Given the use cases, most of the time the sorting will take :math:`n` time
 if we're using a :math:`\Omega(n)` time sort algorithm.
 Detecting whether two sequences overlap is simple —
-though does require in depth mathemtical concepts — for integers,
+though does require in depth mathematical concepts — for integers,
 but is more involved for decimals (see Appendix A).
 If maintaining this complex code ever becomes a problem,
 we would always resort to looping over every item in the sequences.

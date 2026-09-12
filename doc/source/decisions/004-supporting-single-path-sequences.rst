@@ -61,7 +61,7 @@ we already support sequences with no ranges.
 
 A ``PathSequence`` cannot accurately reflect every sequence of paths.
 For example, files ``file.1_1.exr``, ``file.1_2.exr``, and ``file.2_2.exr``
-would be represented as ``file.1-2#_1-2.exr`` in a ``PathSequence``.
+would be represented as ``file.1-2#_1-2#.exr`` in a ``PathSequence``.
 
 
 Considered Options
