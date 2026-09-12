@@ -328,7 +328,7 @@ describes two tokens for representing UDIMs in file names.
   :math:`U` is the integer portion of the u coordinate,
   and :math:`V` is the integer portion of the v coordinate.
 * ``<UVTILE>``: Originating from Mudbox, this token represents the string
-  ":math:`\text{u}U\text{_v}V`", where :math:`U` is :math:`1+` the integer portion of the u coordinate,
+  ":math:`\text{u}U\text{\_v}V`", where :math:`U` is :math:`1+` the integer portion of the u coordinate,
   and :math:`V` is :math:`1+` the integer portion of the v coordinate.
 
 Additionally, the spec uses the ``{0Nframes}`` token for frames,

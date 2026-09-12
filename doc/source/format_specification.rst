@@ -224,7 +224,7 @@ describes two tokens for representing UDIMs in file names.
   is clearer than ``texture.1001-1010####_1001-1010####.tex``.
 
 * ``<UVTILE>``: This token represents the string
-  ":math:`\text{u}U\text{_v}V`", where :math:`U` is :math:`1+` the integer portion of the u coordinate,
+  ":math:`\text{u}U\text{\_v}V`", where :math:`U` is :math:`1+` the integer portion of the u coordinate,
   and :math:`V` is :math:`1+` the integer portion of the v coordinate.
 
 .. list-table::

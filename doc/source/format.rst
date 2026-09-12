@@ -270,7 +270,7 @@ describes two tokens for representing UDIMs in file names.
      '0001'
 
 * ``<UVTILE>``: This token represents the string
-  ":math:`\text{u}U\text{_v}V`", where :math:`U` is :math:`1+` the integer portion of the u coordinate,
+  ":math:`\text{u}U\text{\_v}V`", where :math:`U` is :math:`1+` the integer portion of the u coordinate,
   and :math:`V` is :math:`1+` the integer portion of the v coordinate.
 
   .. code-block:: pycon
