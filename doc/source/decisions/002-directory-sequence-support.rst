@@ -3,7 +3,7 @@
 [ADR-002] Directory Sequence Support
 ====================================
 
-:bdg-success:`Rejected`
+:bdg-danger:`Rejected`
 
 Context and Problem Statement
 -----------------------------
